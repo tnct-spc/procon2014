@@ -11,38 +11,9 @@
 #include <boost/filesystem/path.hpp>
 #include <boost/filesystem/fstream.hpp>
 #include <boost/noncopyable.hpp>
-
-struct question_data
-{
-    std::pair<int,int> size;
-    int selecrtable;
-    int cost_select;
-    int cost_change;
-
-    std::vector<std::vector<int>> block;
-};
-
-struct question_raw_data
-{
-    std::pair<int,int> split_num; // x * y
-    int selectable_num;
-    std::pair<int,int> cost; // 選択コスト / 交換コスト
-    std::pair<int,int> size; // x * y
-    int max_brightness; // 最大輝度
-
-    std::vector<std::vector<std::tuple<char,char,char>>> pixels;
-};
-
-struct answer_type
-{
-    enum class action_type{ change, select };
-
-    action_type type;
-    std::pair<int,int> possition;
-    char direction;
-};
-
-typedef std::vector<answer_type> answer_list;
+#include "data_type.hpp"
+#include "splitter.hpp"
+#include "algorithm.hpp"
 
 class ppm_reader : boost::noncopyable
 {
@@ -156,33 +127,6 @@ private:
     boost::filesystem::ifstream ifs_;
 };
 
-class splitter
-{
-public:
-    explicit splitter() = default;
-    virtual ~splitter() = default;
-
-    question_data operator() (question_raw_data const& raw)
-    {
-        question_data formed = {
-            raw.split_num,
-            raw.selectable_num,
-            raw.cost.first,
-            raw.cost.second,
-            std::vector<std::vector<int>>(raw.split_num.second, std::vector<int>(raw.split_num.first, INT_MAX) )
-        };
-
-        auto& block = formed.block;
-
-        //
-        // Sub Algorithm
-        // 正しい位置に並べた時に左上から，1~nまでの番号をふり，それが今どこにあるのかという情報をblockに格納
-        //
-
-        return formed;
-    }
-};
-
 class analyzer : boost::noncopyable
 {
 public:
@@ -192,7 +136,7 @@ public:
     question_data operator() ()
     {
 #if 1
-        boost::filesystem::path path("../../25th-kosen-procon/prob01.ppm");
+        boost::filesystem::path path("../../procon2014/prob01.ppm");
 #else
         boost::filesystem::path path = download();
 #endif
@@ -204,21 +148,6 @@ public:
 
 private:
     splitter split;
-};
-
-class algorithm
-{
-public:
-    explicit algorithm() = default;
-    virtual ~algorithm() = default;
-
-    void operator() (question_data const& data)
-    {
-        //
-        // Main Algorithm
-        // 正しい順序に並べてみたり，データ送ったり．
-        //
-    }
 };
 
 // 問題の並び替えパズル自体は，人間が行うほうがいいかもしれない．
