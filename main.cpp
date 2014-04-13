@@ -36,7 +36,7 @@ public:
 
         question_raw_data raw_data;
 
-        ifs_.open(filepath_, std::ios::binary || std::ios::in);
+        ifs_.open(filepath_, std::ios::binary | std::ios::in);
         read_header(raw_data);
         read_body(raw_data);
         ifs_.close();

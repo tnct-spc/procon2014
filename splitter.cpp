@@ -1,4 +1,6 @@
-﻿#include "splitter.hpp"
+﻿#include <climits>
+#include "splitter.hpp"
+
 
 question_data splitter::operator() (question_raw_data const& raw)
 {
