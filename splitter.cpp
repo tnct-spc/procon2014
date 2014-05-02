@@ -7,51 +7,51 @@ typedef std::vector<std::vector<std::vector<std::vector<std::tuple<char,char,cha
 
 void recursive_operation(std::pair<int,int> const now, split_image_type const& split_image, std::vector<std::vector<std::pair<int,int>>>& output)
 {
-#ifdef DEBUG
-    assert(output.size() == split_image.size());
-    for(int i=0; i<split_image.size(); ++i) assert(output[i].size() == split_image[i].size());
-#endif
-
-    // nowの上下左右に隣接するブロックを探して，それに再帰する
-    {
-        auto const target = std::make_pair(now.first + 1, now.second); // 右
-        bool const result = std::none_of(output.cbegin(), output.cend(),
-            [target](std::vector<std::pair<int,int>> const& inner)
-            {
-                return !std::none_of(inner.cbegin(), inner.cend(),
-                    [target](std::pair<int,int> const& p)
-                    {
-                        return p==target;
-                    });
-            });
-
-        if(result)
-        {
-            std::vecotr<std::vector<stc::tuple<char,char,char>>>& now_image;
-
-            for(int i=0; i<split_image.size(); ++i) for(int j=0; j<split_image[0].size(); ++j)
-            {
-                if(output[i][j] == now)
-                {
-                    now_image = split_image[i][j];
-                    break;
-                }
-            }
-
-            std::vector<std::vector<int>> norm(
-                split_image.size(),
-                std::vector<int>(split_image[0].size(), 0)
-                );
-
-
-
-
-
-
-
-        }
-    }
-
+//#ifdef DEBUG
+//    assert(output.size() == split_image.size());
+//    for(int i=0; i<split_image.size(); ++i) assert(output[i].size() == split_image[i].size());
+//#endif
+//
+//    // nowの上下左右に隣接するブロックを探して，それに再帰する
+//    {
+//        auto const target = std::make_pair(now.first + 1, now.second); // 右
+//        bool const result = std::none_of(output.cbegin(), output.cend(),
+//            [target](std::vector<std::pair<int,int>> const& inner)
+//            {
+//                return !std::none_of(inner.cbegin(), inner.cend(),
+//                    [target](std::pair<int,int> const& p)
+//                    {
+//                        return p==target;
+//                    });
+//            });
+//
+//        if(result)
+//        {
+//            std::vector<std::vector<std::tuple<char,char,char>>>& now_image;
+//
+//            for(int i=0; i<split_image.size(); ++i) for(int j=0; j<split_image[0].size(); ++j)
+//            {
+//                if(output[i][j] == now)
+//                {
+//                    now_image = split_image[i][j];
+//                    break;
+//                }
+//            }
+//
+//            std::vector<std::vector<int>> norm(
+//                split_image.size(),
+//                std::vector<int>(split_image[0].size(), 0)
+//                );
+//
+//
+//
+//
+//
+//
+//
+//        }
+//    }
+//
 
 
     return;
