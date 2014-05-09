@@ -79,6 +79,62 @@ uint64_t pixel_sorter::du_comparison(image_type const& lhs, image_type const& rh
     return s;
 }
 
+/*右上を選ぶ関数*/
+int RestoreImage::URChoose(int UL, int LL, int LR)
+{
+	int p;
+	long s = INT_MAX;
+	for (int i = 0; i < sepx*sepy; i++){
+		if (s > difference_of_rgb_data[LR][i].up + difference_of_rgb_data[UL][i].right && 0 < difference_of_rgb_data[LR][i].up + difference_of_rgb_data[UL][i].right){
+			s = difference_of_rgb_data[LR][i].up + difference_of_rgb_data[UL][i].right;
+			p = i;
+		}
+	}
+	return p;
+}
+
+/*左上を選ぶ関数*/
+int RestoreImage::ULChoose(int UR, int LL, int LR)
+{
+	int p;
+	long s = INT_MAX;
+	for (int i = 0; i < sepx*sepy; i++){
+		if (s > difference_of_rgb_data[LL][i].up + difference_of_rgb_data[UR][i].left && 0 < difference_of_rgb_data[LL][i].up + difference_of_rgb_data[UR][i].left){
+			s = difference_of_rgb_data[LL][i].up + difference_of_rgb_data[UR][i].left;
+			p = i;
+		}
+	}
+	return p;
+}
+
+/*右下を選ぶ関数*/
+int RestoreImage::LRChoose(int UL, int UR, int LL)
+{
+	int p = INT_MAX;
+	long s = INT_MAX;
+	for (int i = 0; i < sepx*sepy; i++){
+		if (s > difference_of_rgb_data[UR][i].down + difference_of_rgb_data[LL][i].right && 0 < difference_of_rgb_data[UR][i].down + difference_of_rgb_data[LL][i].right){
+			s = difference_of_rgb_data[UR][i].down + difference_of_rgb_data[LL][i].right;
+			p = i;
+		}
+	}
+	return p;
+}
+
+/*左下を選ぶ関数*/
+int RestoreImage::LLChoose(int UL, int UR, int LR)
+{
+	int p;
+	long s = INT_MAX;
+	for (int i = 0; i < sepx*sepy; i++){
+		if (s > difference_of_rgb_data[UL][i].down + difference_of_rgb_data[LR][i].left && 0 < difference_of_rgb_data[UL][i].down + difference_of_rgb_data[LR][i].left){
+			s = difference_of_rgb_data[UL][i].down + difference_of_rgb_data[LR][i].left;
+			p = i;
+		}
+	}
+	return p;
+}
+
 compared_type pixel_sorter::image_comp(split_image_type const& image) const
 {
     //返却用変数
@@ -137,3 +193,160 @@ compared_type pixel_sorter::image_comp(split_image_type const& image) const
     return comp;
 }
 
+/*並べてans[c][y][x]に格納する関数強化バージョン*/
+int RestoreImage::YRange2()
+{
+	int i, j, c;
+
+	//sorted_matrix_y二次元配列動的確保
+	sorted_matrix_y = new int*[sepx * 2 - 1];
+	for (i = 0; i <sepx * 2 - 1; i++)sorted_matrix_y[i] = new int[sepy * 2 - 1];
+
+
+	//ans三次元配列動的確保
+	ans = new int **[sepx*sepy * 2];
+	for (i = 0; i < sepx*sepy; ++i){
+		ans[i] = new int*[sepy];
+		for (j = 0; j < sepy; ++j){
+			ans[i][j] = new int[sepx];
+		}
+	}
+
+	//sorted_matrix_y配列初期化
+	for (i = 0; i < sepy * 2 - 1; i++){
+		for (j = 0; j < sepx * 2 - 1; j++){
+			sorted_matrix_y[j][i] = 888;
+		}
+	}
+
+	//すべてのピースから並べ始めるためのループ
+	for (c = 0; c < sepx*sepy; c++){
+		sorted_matrix_y[sepx - 1][sepy - 1] = c;
+
+		//上に見ていく
+		for (i = 0; i < sepy - 1; i++){
+			sorted_matrix_y[sepx - 1][sepy - 2 - i] = adjacent_data[sorted_matrix_y[sepx - 1][sepy - 1 - i]].up;
+			if (0 > sorted_matrix_y[sepx - 1][sepy - 2 - i] || sorted_matrix_y[sepx - 1][sepy - 2 - i] > sepx * sepy) break;
+		}
+		//下に見ていく
+		for (i = 0; i < sepy - 1; i++){
+			sorted_matrix_y[sepx - 1][sepy + i] = adjacent_data[sorted_matrix_y[sepx - 1][sepy - 1 + i]].down;
+			if (0 > sorted_matrix_y[sepx - 1][sepy + i] || sorted_matrix_y[sepx - 1][sepy + i] > sepx * sepy) break;
+		}
+		//右に見ていく
+		for (i = 0; i < sepx - 1; i++){
+			sorted_matrix_y[sepx + i][sepy - 1] = adjacent_data[sorted_matrix_y[sepx - 1 + i][sepy - 1]].right;
+			if (0 > sorted_matrix_y[sepx + i][sepy - 1] || sorted_matrix_y[sepx + i][sepy - 1] > sepx * sepy) break;
+		}
+		//左に見ていく
+		for (i = 0; i < sepx - 1; i++){
+			sorted_matrix_y[sepx - 2 - i][sepy - 1] = adjacent_data[sorted_matrix_y[sepx - 1 - i][sepy - 1]].left;
+			if (0 > sorted_matrix_y[sepx - 2 - i][sepy - 1] || sorted_matrix_y[sepx - 2 - i][sepy - 1] > sepx * sepy) break;
+		}
+		//中心を除き上に向かってループ
+		for (j = 0; j < sepy - 1; j++){
+			//右に見ていく
+			for (i = 0; i < sepx - 1; i++){
+				if (sepx*sepy <= sorted_matrix_y[sepx - 1 + i][sepy - 2 - j] || 0 > sorted_matrix_y[sepx - 1 + i][sepy - 2 - j] ||
+					sepx*sepy <= sorted_matrix_y[sepx - 1 + i][sepy - 1 - j] || 0 > sorted_matrix_y[sepx - 1 + i][sepy - 1 - j] ||
+					sepx*sepy <= sorted_matrix_y[sepx + i][sepy - 1 - j] || 0 > sorted_matrix_y[sepx + i][sepy - 1 - j])break;
+				sorted_matrix_y[sepx + i][sepy - 2 - j] = URChoose(sorted_matrix_y[sepx - 1 + i][sepy - 2 - j], sorted_matrix_y[sepx - 1 + i][sepy - 1 - j], sorted_matrix_y[sepx + i][sepy - 1 - j]);
+			}
+		}
+		//中心を除き上に向かってループ
+		for (j = 0; j < sepy - 1; j++){
+			//左に見ていく
+			for (i = 0; i < sepx - 1; i++){
+				if (sepx*sepy <= sorted_matrix_y[sepx - 1 - i][sepy - 2 - j] || 0 > sorted_matrix_y[sepx - 1 - i][sepy - 2 - j] ||
+					sepx*sepy <= sorted_matrix_y[sepx - 2 - i][sepy - 1 - j] || 0 > sorted_matrix_y[sepx - 2 - i][sepy - 1 - j] ||
+					sepx*sepy <= sorted_matrix_y[sepx - 1 - i][sepy - 1 - j] || 0 > sorted_matrix_y[sepx - 1 - i][sepy - 1 - j])break;
+				sorted_matrix_y[sepx - 2 - i][sepy - 2 - j] = ULChoose(sorted_matrix_y[sepx - 1 - i][sepy - 2 - j], sorted_matrix_y[sepx - 2 - i][sepy - 1 - j], sorted_matrix_y[sepx - 1 - i][sepy - 1 - j]);
+			}
+		}
+		//中心を除き下に向かってループ
+		for (j = 0; j < sepy - 1; j++){
+			//右に見ていく
+			for (i = 0; i < sepx - 1; i++){
+				if (sepx*sepy <= sorted_matrix_y[sepx - 1 + i][sepy - 1 + j] || 0 > sorted_matrix_y[sepx - 1 + i][sepy - 1 + j] ||
+					sepx*sepy <= sorted_matrix_y[sepx + i][sepy - 1 + j] || 0> sorted_matrix_y[sepx + i][sepy - 1 + j] ||
+					sepx*sepy <= sorted_matrix_y[sepx - 1 + i][sepy + j] || 0> sorted_matrix_y[sepx - 1 + i][sepy + j])break;
+				sorted_matrix_y[sepx + i][sepy + j] = LRChoose(sorted_matrix_y[sepx - 1 + i][sepy - 1 + j], sorted_matrix_y[sepx + i][sepy - 1 + j], sorted_matrix_y[sepx - 1 + i][sepy + j]);
+			}
+		}
+		//中心を除き下に向かってループ
+		for (j = 0; j < sepy - 1; j++){
+			//左に見ていく
+			for (i = 0; i < sepx - 1; i++){
+				if (sepx*sepy <= sorted_matrix_y[sepx - 2 - i][sepy - 1 + j] || 0 < sorted_matrix_y[sepx - 2 - i][sepy - 1 + j] ||
+					sepx*sepy <= sorted_matrix_y[sepx - 1 - i][sepy - 1 + j] || 0 < sorted_matrix_y[sepx - 1 - i][sepy - 1 + j] ||
+					sepx*sepy <= sorted_matrix_y[sepx - 1 - i][sepy + j] || 0 < sorted_matrix_y[sepx - 1 - i][sepy + j])break;
+				sorted_matrix_y[sepx - 2 - i][sepy + j] = LLChoose(sorted_matrix_y[sepx - 2 - i][sepy - 1 + j], sorted_matrix_y[sepx - 1 - i][sepy - 1 + j], sorted_matrix_y[sepx - 1 - i][sepy + j]);
+			}
+		}
+#if 0
+		/*デバッグ用*/
+		std::cout << c << "****************************************" << std::endl;
+		for (i = 0; i < sepy * 2 - 1; i++){
+			for (j = 0; j < sepx * 2 - 1; j++){
+				if (-1 > sorted_matrix_y[j][i] || sorted_matrix_y[j][i] > sepx * sepy)std::cout << " " << 999;
+				else std::cout << " " << std::setw(3) << sorted_matrix_y[j][i];
+			}
+			std::cout << std::endl;
+		}
+#endif
+		//絞り込み&出力
+		output_ans();
+
+		for (int y = 0; y < sepy; y++){
+			for (int x = 0; x < sepx; x++){
+				if (ArrySum(x, y) == ((sepx*sepy - 1)*(sepx*sepy) / 2)){
+					for (i = 0; i < sepy; i++){
+						for (int j = 0; j < sepx; j++){
+							ans[outputnum][i][j] = sorted_matrix_y[x + j][y + i];
+						}
+					}
+					outputnum++;
+					goto OUT;
+				}
+			}
+		}
+	OUT:;
+
+	}
+
+	std::cout << "There are " << outputnum << " solutions" << std::endl;
+
+	//sorted_matrix_y二次元配列解放
+	for (i = 0; i < sepx * 2 - 1; ++i)delete(sorted_matrix_y[i]);
+	delete(sorted_matrix_y);
+
+	return 0;
+}
+
+/*ans表示関数*/
+void RestoreImage::ShowAns()
+{
+	for (int k = 0; k < outputnum; k++){
+		std::cout << "**********ShowAns**********" << std::endl;
+		for (int i = 0; i < sepy; i++){
+			for (int j = 0; j < sepx; j++){
+				std::cout << " " << std::setw(3) << ans[k][i][j];
+			}
+			std::cout << std::endl;
+		}
+		std::cout << std::setw(3) << k + 1 << "個目の解" << "****************" << std::endl;
+	}
+}
+
+/*指定した範囲の配列の和を返す関数*/
+int RestoreImage::ArrySum(int i, int j)
+{
+	int s = 0;
+	for (int y = 0; y < sepy; y++){
+		for (int x = 0; x < sepx; x++){
+			if (sorted_matrix_y[i + x][j + y] > 1000)sorted_matrix_y[i + x][j + y] = 777;
+			s += sorted_matrix_y[i + x][j + y];
+		}
+	}
+	return s;
+}
