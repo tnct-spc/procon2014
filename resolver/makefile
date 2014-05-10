@@ -1,28 +1,44 @@
-CC = g++
+CXX ?= clang++
+
+buildtype := release
+OUTDIR := ../bin/$(buildtype)
+
 TARGET = procon
-CXXFLAGS = -std=c++11
-LIB = -lboost_system
+SRCS := src/main.cpp src/splitter.cpp src/ppm_reader.cpp src/pixel_sorter.cpp src/algorithm.cpp
+PROG := $(OUTDIR)/$(TARGET)
+OBJS := $(SRCS:src/%.cpp=obj/%.o)
+DEPS := $(SRCS:src/%.cpp=obj/%.d)
+LIBS :=
 
-./bin/$(TARGET) : ./bin/object/main.o ./bin/object/algorithm.o ./bin/object/splitter.o ./bin/object/ppm_reader.o ./bin/object/pixel_sorter.o
-	$(CC) $(LIB) -o $@ $^
-	@echo "file output to ./bin/$(TARGET)"
+CXXFLAGS += -std=c++11
+CPPFLAGS +=
+LDFLAGS  +=
+ifeq ($(buildtype),release)
+	CXXFLAGS += -O3
+else ifeq ($(buildtype),debug)
+	CXXFLAGS += -O0 -g
+else
+	$(error buildtype must be release, debug, profile or coverage)
+endif
 
-./bin/object/main.o : ./main.cpp directory
-	$(CC) $(CXXFLAGS) -c -o $@ $<
+.PHONY: all clean distclean
 
-./bin/object/algorithm.o : ./algorithm.cpp directory
-	$(CC) $(CXXFLAGS) -c -o $@ $<
+all : $(PROG)
 
-./bin/object/pixel_sorter.o : ./pixel_sorter.cpp directory
-	$(CC) $(CXXFLAGS) -c -o $@ $<
+-include $(DEPS)
 
-./bin/object/splitter.o : ./splitter.cpp directory
-	$(CC) $(CXXFLAGS) -c -o $@ $<
+$(PROG) : $(OBJS)
+	@if [ ! -e `dirname $@` ]; then mkdir -p `dirname $@`; fi
+	$(CXX) $(LDFLAGS) -o $@ $^ $(LIBS)
 
-./bin/object/ppm_reader.o : ./ppm_reader.cpp directory
-	$(CC) $(CXXFLAGS) -c -o $@ $<
+obj/%.o : src/%.cpp
+	@if [ ! -e `dirname $@` ]; then mkdir -p `dirname $@`; fi
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) $(DEFS) -o $@ -c -MMD -MP -MF $(@:%.o=%.d) $<
 
-directory : 
-	@mkdir -p ./bin/object
+clean:
+	rm -rf $(OUTDIR)
+
+distclean:
+	rm -rf ./bin
 
 # vim:set tabstop=4 noexpendtab
