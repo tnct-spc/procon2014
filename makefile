@@ -1,7 +1,7 @@
 CC = g++
 TARGET = procon
 CXXFLAGS = -std=c++11
-LIB = -lboost_system -lboost_filesystem$
+LIB = -lboost_system
 
 ./bin/$(TARGET) : ./bin/object/main.o ./bin/object/algorithm.o ./bin/object/splitter.o ./bin/object/ppm_reader.o ./bin/object/pixel_sorter.o
 	$(CC) $(LIB) -o $@ $^
