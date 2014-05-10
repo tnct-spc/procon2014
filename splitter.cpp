@@ -1,74 +1,45 @@
-﻿#include <algorithm>
-#include <climits>
+﻿#include <limits>
 #include "splitter.hpp"
 
-// 気持ち悪いが，[i][j]の位置に分割された画像が入っている．更に[j][k]へのアクセスによって画素にアクセス
-typedef std::vector<std::vector<std::vector<std::vector<std::tuple<char,char,char>>>>> split_image_type;
-
-void recursive_operation(std::pair<int,int> const now, split_image_type const& split_image, std::vector<std::vector<std::pair<int,int>>>& output)
+question_data splitter::operator() (question_raw_data const& raw) const
 {
-//#ifdef DEBUG
-//    assert(output.size() == split_image.size());
-//    for(int i=0; i<split_image.size(); ++i) assert(output[i].size() == split_image[i].size());
-//#endif
-//
-//    // nowの上下左右に隣接するブロックを探して，それに再帰する
-//    {
-//        auto const target = std::make_pair(now.first + 1, now.second); // 右
-//        bool const result = std::none_of(output.cbegin(), output.cend(),
-//            [target](std::vector<std::pair<int,int>> const& inner)
-//            {
-//                return !std::none_of(inner.cbegin(), inner.cend(),
-//                    [target](std::pair<int,int> const& p)
-//                    {
-//                        return p==target;
-//                    });
-//            });
-//
-//        if(result)
-//        {
-//            std::vector<std::vector<std::tuple<char,char,char>>>& now_image;
-//
-//            for(int i=0; i<split_image.size(); ++i) for(int j=0; j<split_image[0].size(); ++j)
-//            {
-//                if(output[i][j] == now)
-//                {
-//                    now_image = split_image[i][j];
-//                    break;
-//                }
-//            }
-//
-//            std::vector<std::vector<int>> norm(
-//                split_image.size(),
-//                std::vector<int>(split_image[0].size(), 0)
-//                );
-//
-//
-//
-//
-//
-//
-//
-//        }
-//    }
-//
+    question_data formed = {
+        raw.split_num,
+        raw.selectable_num,
+        raw.cost.first,
+        raw.cost.second,
+        std::vector<std::vector<int>>(raw.split_num.second, std::vector<int>(raw.split_num.first, std::numeric_limits<int>::max()) )
+    };
+
+    auto& block = formed.block;
+
+    //
+    // Sub Algorithm
+    // 正しい位置に並べた時に左上から，1~nまでの番号をふり，それが今どこにあるのかという情報をblockに格納
+    //
+
+    auto const split_pixels = split_image(raw);
 
 
-    return;
+
+    // Sub Algorithm End
+
+    return formed;
 }
 
-split_image_type split_image(question_raw_data const& raw)
+//pixel比較
+split_image_type splitter::split_image(question_raw_data const& raw) const
 {
     int const parts_width = raw.size.first / raw.split_num.first;
     int const parts_height = raw.size.second / raw.split_num.second;
 
-    std::vector<std::vector<std::vector<std::vector<std::tuple<char,char,char>>>>> split_pixels(
+    std::vector<std::vector<std::vector<std::vector<std::tuple<uint8_t,uint8_t,uint8_t>>>>> split_pixels(
         raw.split_num.second,
-        std::vector<std::vector<std::vector<std::tuple<char,char,char>>>>(
+        std::vector<std::vector<std::vector<std::tuple<uint8_t,uint8_t,uint8_t>>>>(
             raw.split_num.first,
-            std::vector<std::vector<std::tuple<char,char,char>>>(
+            std::vector<std::vector<std::tuple<uint8_t,uint8_t,uint8_t>>>(
                 parts_height,
-                std::vector<std::tuple<char,char,char>>(
+                std::vector<std::tuple<uint8_t,uint8_t,uint8_t>>(
                     parts_width,
                     std::make_tuple(0,0,0)
                 )
@@ -88,28 +59,3 @@ split_image_type split_image(question_raw_data const& raw)
     return split_pixels;
 }
 
-question_data splitter::operator() (question_raw_data const& raw)
-{
-    question_data formed = {
-        raw.split_num,
-        raw.selectable_num,
-        raw.cost.first,
-        raw.cost.second,
-        std::vector<std::vector<int>>(raw.split_num.second, std::vector<int>(raw.split_num.first, INT_MAX) )
-    };
-
-    auto& block = formed.block;
-
-    //
-    // Sub Algorithm
-    // 正しい位置に並べた時に左上から，1~nまでの番号をふり，それが今どこにあるのかという情報をblockに格納
-    //
-
-    auto const split_pixels = split_image(raw);
-
-
-
-    // Sub Algorithm End
-
-    return formed;
-}

@@ -1,9 +1,10 @@
 ﻿#ifndef DATA_TYPE_HPP
 #define DATA_TYPE_HPP
 
+#include <cstdint>
+#include <tuple>
 #include <utility>
 #include <vector>
-#include <tuple>
 
 struct question_data
 {
@@ -36,5 +37,15 @@ struct answer_type
 };
 
 typedef std::vector<answer_type> answer_list;
+
+typedef std::tuple<uint8_t,uint8_t,uint8_t>  pixel_type;
+typedef std::vector<std::vector<pixel_type>> image_type;
+
+// 気持ち悪いが，[i][j]の位置に分割された画像が入っている．更に[j][k]へのアクセスによって画素にアクセス
+typedef std::vector<std::vector<image_type>> split_image_type;
+
+// 驚きの気持ち悪さ
+// 座標(j,i)と座標(l,k)の比較結果としては，[i][j][k][l]にtuple<...>で入る
+typedef std::vector<std::vector<std::vector<std::vector<std::tuple<uint64_t,uint64_t,uint64_t,uint64_t>>>>> compared_type;
 
 #endif
