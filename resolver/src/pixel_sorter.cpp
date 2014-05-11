@@ -27,13 +27,13 @@ question_data pixel_sorter::operator() (question_raw_data const& raw, split_imag
     return formed;
 }
 
+//2つのピクセル間の距離を2乗した値を返却．result = r^2 + g^2 + b^2
 int pixel_sorter::pixel_comparison(pixel_type const& lhs, pixel_type const& rhs) const
 {
-    // TODO: Memo: えっと，これはノルムになってないよね？(commented by: godai_0519)
     int s = 0;
-    s += std::abs(std::get<0>(lhs) - std::get<0>(rhs)); //r
-    s += std::abs(std::get<1>(lhs) - std::get<1>(rhs)); //g
-    s += std::abs(std::get<2>(lhs) - std::get<2>(rhs)); //b
+    s += std::pow(std::abs(std::get<0>(lhs) - std::get<0>(rhs)), 2); //r
+    s += std::pow(std::abs(std::get<1>(lhs) - std::get<1>(rhs)), 2); //g
+    s += std::pow(std::abs(std::get<2>(lhs) - std::get<2>(rhs)), 2); //b
     return s;
 }
 
