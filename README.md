@@ -27,7 +27,11 @@ Archだと`pacman -S boost boost-libs`とでも叩いておけば，勝手にパ
 
 それぞれのプロジェクトにはsrcディレクトリが用意されているので，そこにコードを置く．
 
-VS用のプロジェクトを配置する予定(.slnなど)
+~~VS用のプロジェクトを配置する予定(.slnなど)~~  
+とりあえずresolverプロジェクトの配置はしたが，
+evaluateディレクトリ以下の構造が微妙なので，そっちは置いてない．
+
+/evaluate_positionと/evaluate_movementにした方がいいかな．
 
 
 
