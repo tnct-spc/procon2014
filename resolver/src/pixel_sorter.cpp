@@ -2,7 +2,7 @@
 #include <limits>
 #include "pixel_sorter.hpp"
 
-question_data pixel_sorter::operator() (question_raw_data const& raw) const
+question_data pixel_sorter::operator() (question_raw_data const& raw, split_image_type const & splited_image) const
 {
     question_data formed = {
         raw.split_num,

@@ -1,33 +1,6 @@
 ﻿#include <limits>
 #include "splitter.hpp"
 
-question_data splitter::operator() (question_raw_data const& raw) const
-{
-    question_data formed = {
-        raw.split_num,
-        raw.selectable_num,
-        raw.cost.first,
-        raw.cost.second,
-        std::vector<std::vector<int>>(raw.split_num.second, std::vector<int>(raw.split_num.first, std::numeric_limits<int>::max()) )
-    };
-
-    auto& block = formed.block;
-
-    //
-    // Sub Algorithm
-    // 正しい位置に並べた時に左上から，1~nまでの番号をふり，それが今どこにあるのかという情報をblockに格納
-    //
-
-    auto const split_pixels = split_image(raw);
-
-
-
-    // Sub Algorithm End
-
-    return formed;
-}
-
-//pixel比較
 split_image_type splitter::split_image(question_raw_data const& raw) const
 {
     int const parts_width = raw.size.first / raw.split_num.first;

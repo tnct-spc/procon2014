@@ -4,6 +4,7 @@
 #include <boost/noncopyable.hpp>
 #include "data_type.hpp"
 #include "splitter.hpp"
+#include "pixel_sorter.hpp"
 #include "ppm_reader.hpp"
 #include "algorithm.hpp"
 
@@ -24,11 +25,14 @@ public:
 
         ppm_reader reader(path);
         auto const raw = reader();
-        return split(raw);
+
+        auto const splited_image = split_(raw);
+        return sorter_(raw, splited_image);
     }
 
 private:
-    splitter split;
+    splitter split_;
+    pixel_sorter sorter_;
 };
 
 // 問題の並び替えパズル自体は，人間が行うほうがいいかもしれない．

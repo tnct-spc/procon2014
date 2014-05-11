@@ -6,7 +6,7 @@ public:
     explicit pixel_sorter() = default;
     virtual ~pixel_sorter() = default;
 
-    question_data operator() (question_raw_data const& raw) const;
+    question_data operator() (question_raw_data const& raw, split_image_type const & splited_image) const;
 
 private:
     //pixel比較
