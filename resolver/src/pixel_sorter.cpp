@@ -2,7 +2,7 @@
 #include <limits>
 #include "pixel_sorter.hpp"
 
-question_data pixel_sorter::operator() (question_raw_data const& raw, split_image_type const & splited_image) const
+question_data pixel_sorter::operator() (question_raw_data const& raw, split_image_type const& splited_image) const
 {
     question_data formed = {
         raw.split_num,
@@ -19,7 +19,7 @@ question_data pixel_sorter::operator() (question_raw_data const& raw, split_imag
     // 正しい位置に並べた時に左上から，1~nまでの番号をふり，それが今どこにあるのかという情報をblockに格納
     //
 
-
+    auto const& comp = this->image_comp(splited_image);
 
 
     // Sub Algorithm End
@@ -79,61 +79,77 @@ uint64_t pixel_sorter::du_comparison(image_type const& lhs, image_type const& rh
     return s;
 }
 
-///*右上を選ぶ関数*/
-//int RestoreImage::URChoose(int UL, int LL, int LR)
-//{
-//	int p;
-//	long s = INT_MAX;
-//	for (int i = 0; i < sepx*sepy; i++){
-//		if (s > difference_of_rgb_data[LR][i].up + difference_of_rgb_data[UL][i].right && 0 < difference_of_rgb_data[LR][i].up + difference_of_rgb_data[UL][i].right){
-//			s = difference_of_rgb_data[LR][i].up + difference_of_rgb_data[UL][i].right;
-//			p = i;
-//		}
-//	}
-//	return p;
-//}
-//
-///*左上を選ぶ関数*/
-//int RestoreImage::ULChoose(int UR, int LL, int LR)
-//{
-//	int p;
-//	long s = INT_MAX;
-//	for (int i = 0; i < sepx*sepy; i++){
-//		if (s > difference_of_rgb_data[LL][i].up + difference_of_rgb_data[UR][i].left && 0 < difference_of_rgb_data[LL][i].up + difference_of_rgb_data[UR][i].left){
-//			s = difference_of_rgb_data[LL][i].up + difference_of_rgb_data[UR][i].left;
-//			p = i;
-//		}
-//	}
-//	return p;
-//}
-//
-///*右下を選ぶ関数*/
-//int RestoreImage::LRChoose(int UL, int UR, int LL)
-//{
-//	int p = INT_MAX;
-//	long s = INT_MAX;
-//	for (int i = 0; i < sepx*sepy; i++){
-//		if (s > difference_of_rgb_data[UR][i].down + difference_of_rgb_data[LL][i].right && 0 < difference_of_rgb_data[UR][i].down + difference_of_rgb_data[LL][i].right){
-//			s = difference_of_rgb_data[UR][i].down + difference_of_rgb_data[LL][i].right;
-//			p = i;
-//		}
-//	}
-//	return p;
-//}
-//
-///*左下を選ぶ関数*/
-//int RestoreImage::LLChoose(int UL, int UR, int LR)
-//{
-//	int p;
-//	long s = INT_MAX;
-//	for (int i = 0; i < sepx*sepy; i++){
-//		if (s > difference_of_rgb_data[UL][i].down + difference_of_rgb_data[LR][i].left && 0 < difference_of_rgb_data[UL][i].down + difference_of_rgb_data[LR][i].left){
-//			s = difference_of_rgb_data[UL][i].down + difference_of_rgb_data[LR][i].left;
-//			p = i;
-//		}
-//	}
-//	return p;
-//}
+point_type pixel_sorter::ur_choose(compared_type const& comp, point_type const ul, point_type const dl, point_type const dr) const
+{
+    point_type possition;
+    uint64_t sum = std::numeric_limits<uint64_t>::max();
+
+    for(int i=0; i<comp.size(); ++i) for(int j=0; j<comp[0].size(); ++j)
+    {
+        uint64_t const tmp = std::get<0>(comp[dr.y][dr.x][i][j]) + std::get<1>(comp[ul.y][ul.x][i][j]);
+        if(0 < tmp && tmp < sum)
+        {
+            sum = tmp;
+            possition = {j, i};
+        }
+    }
+
+    return possition;
+}
+
+point_type pixel_sorter::ul_choose(compared_type const& comp, point_type const ur, point_type const dl, point_type const dr) const
+{
+    point_type possition;
+    uint64_t sum = std::numeric_limits<uint64_t>::max();
+
+    for(int i=0; i<comp.size(); ++i) for(int j=0; j<comp[0].size(); ++j)
+    {
+        uint64_t const tmp = std::get<0>(comp[dl.y][dl.x][i][j]) + std::get<3>(comp[ur.y][ur.x][i][j]);
+        if(0 < tmp && tmp < sum)
+        {
+            sum = tmp;
+            possition = {j, i};
+        }
+    }
+
+    return possition;
+}
+
+point_type pixel_sorter::dr_choose(compared_type const& comp, point_type const ul, point_type const ur, point_type const dl) const
+{
+    point_type possition;
+    uint64_t sum = std::numeric_limits<uint64_t>::max();
+
+    for(int i=0; i<comp.size(); ++i) for(int j=0; j<comp[0].size(); ++j)
+    {
+        uint64_t const tmp = std::get<2>(comp[ur.y][ur.x][i][j]) + std::get<1>(comp[dl.y][dl.x][i][j]);
+        if(0 < tmp && tmp < sum)
+        {
+            sum = tmp;
+            possition = {j, i};
+        }
+    }
+
+    return possition;
+}
+
+point_type pixel_sorter::dl_choose(compared_type const& comp, point_type const ul, point_type const ur, point_type const dr) const
+{
+    point_type possition;
+    uint64_t sum = std::numeric_limits<uint64_t>::max();
+
+    for(int i=0; i<comp.size(); ++i) for(int j=0; j<comp[0].size(); ++j)
+    {
+        uint64_t const tmp = std::get<2>(comp[ul.y][ul.x][i][j]) + std::get<3>(comp[dr.y][dr.x][i][j]);
+        if(0 < tmp && tmp < sum)
+        {
+            sum = tmp;
+            possition = {j, i};
+        }
+    }
+
+    return possition;
+}
 
 compared_type pixel_sorter::image_comp(split_image_type const& image) const
 {
@@ -164,8 +180,6 @@ compared_type pixel_sorter::image_comp(split_image_type const& image) const
         {
             if(k > i || (k == i && l > j)) // (j,i)より(l,k)の方が，探索順として後半に或るための条件
             {
-                //Note: 例えばCSSでは上右下左だけれども，右左上下でいいの(commented by: godai_0519)
-                
                 //綺麗に書けないわけだけれど，
                 //順序を変えて逆の逆の組み合わせの相対評価は同じであることを使用して探索量を半分にする
                 //例えば，Aから見たBは上なら，Bから見たAは下．
@@ -176,16 +190,16 @@ compared_type pixel_sorter::image_comp(split_image_type const& image) const
                     std::get<3>(comp[i][j][k][l])
                     )
                 = std::tie(
-                    std::get<1>(comp[k][l][i][j]),
-                    std::get<0>(comp[k][l][i][j]),
+                    std::get<2>(comp[k][l][i][j]),
                     std::get<3>(comp[k][l][i][j]),
-                    std::get<2>(comp[k][l][i][j])
+                    std::get<0>(comp[k][l][i][j]),
+                    std::get<1>(comp[k][l][i][j])
                     )
                 = std::make_tuple(
-                    rl_comparison(image[i][j], image[k][l]),
-                    lr_comparison(image[i][j], image[k][l]),
                     ud_comparison(image[i][j], image[k][l]),
-                    du_comparison(image[i][j], image[k][l])
+                    rl_comparison(image[i][j], image[k][l]),
+                    du_comparison(image[i][j], image[k][l]),
+                    lr_comparison(image[i][j], image[k][l])
                 );
             }
         }

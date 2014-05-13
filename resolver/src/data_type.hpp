@@ -6,6 +6,12 @@
 #include <utility>
 #include <vector>
 
+struct point_type
+{
+    int x;
+    int y;
+};
+
 struct question_data
 {
     std::pair<int,int> size;
@@ -45,7 +51,7 @@ typedef std::vector<std::vector<pixel_type>> image_type;
 typedef std::vector<std::vector<image_type>> split_image_type;
 
 // 驚きの気持ち悪さ
-// 座標(j,i)と座標(l,k)の比較結果としては，[i][j][k][l]にtuple<...>で入る
+// 座標(j,i)と座標(l,k)の比較結果としては，[i][j][k][l]にtuple<上,右,下,左>で入る
 typedef std::vector<std::vector<std::vector<std::vector<std::tuple<uint64_t,uint64_t,uint64_t,uint64_t>>>>> compared_type;
 
 #endif

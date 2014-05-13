@@ -6,9 +6,15 @@ public:
     explicit pixel_sorter() = default;
     virtual ~pixel_sorter() = default;
 
-    question_data operator() (question_raw_data const& raw, split_image_type const & splited_image) const;
+    question_data operator() (question_raw_data const& raw, split_image_type const& splited_image) const;
 
 private:
+    // それぞれ，右上，左上，右下，左下を探索する関数
+    point_type ur_choose(compared_type const& comp, point_type const ul, point_type const dl, point_type const dr) const;
+    point_type ul_choose(compared_type const& comp, point_type const ur, point_type const dl, point_type const dr) const;
+    point_type dr_choose(compared_type const& comp, point_type const ul, point_type const ur, point_type const dl) const;
+    point_type dl_choose(compared_type const& comp, point_type const ul, point_type const ur, point_type const dr) const;
+
     //pixel比較
     int pixel_comparison(pixel_type const& lhs, pixel_type const& rhs) const;
 
