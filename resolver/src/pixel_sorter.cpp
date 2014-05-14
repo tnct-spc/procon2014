@@ -31,9 +31,9 @@ question_data pixel_sorter::operator() (question_raw_data const& raw, split_imag
 int pixel_sorter::pixel_comparison(pixel_type const& lhs, pixel_type const& rhs) const
 {
     int s = 0;
-    s += std::pow(std::abs(std::get<0>(lhs) - std::get<0>(rhs)), 2); //r
-    s += std::pow(std::abs(std::get<1>(lhs) - std::get<1>(rhs)), 2); //g
-    s += std::pow(std::abs(std::get<2>(lhs) - std::get<2>(rhs)), 2); //b
+    s += static_cast<int>(std::pow(std::abs(std::get<0>(lhs) - std::get<0>(rhs)), 2)); //r
+    s += static_cast<int>(std::pow(std::abs(std::get<1>(lhs) - std::get<1>(rhs)), 2)); //g
+    s += static_cast<int>(std::pow(std::abs(std::get<2>(lhs) - std::get<2>(rhs)), 2)); //b
     return s;
 }
 
@@ -86,7 +86,7 @@ point_type pixel_sorter::ur_choose(compared_type const& comp, point_type const u
 
     for(int i=0; i<comp.size(); ++i) for(int j=0; j<comp[0].size(); ++j)
     {
-        uint64_t const tmp = std::get<0>(comp[dr.y][dr.x][i][j]) + std::get<1>(comp[ul.y][ul.x][i][j]);
+        uint64_t const tmp = comp[dr.y][dr.x][i][j].up + comp[ul.y][ul.x][i][j].right;
         if(0 < tmp && tmp < sum)
         {
             sum = tmp;
@@ -104,7 +104,7 @@ point_type pixel_sorter::ul_choose(compared_type const& comp, point_type const u
 
     for(int i=0; i<comp.size(); ++i) for(int j=0; j<comp[0].size(); ++j)
     {
-        uint64_t const tmp = std::get<0>(comp[dl.y][dl.x][i][j]) + std::get<3>(comp[ur.y][ur.x][i][j]);
+        uint64_t const tmp = comp[dl.y][dl.x][i][j].up + comp[ur.y][ur.x][i][j].left;
         if(0 < tmp && tmp < sum)
         {
             sum = tmp;
@@ -122,7 +122,7 @@ point_type pixel_sorter::dr_choose(compared_type const& comp, point_type const u
 
     for(int i=0; i<comp.size(); ++i) for(int j=0; j<comp[0].size(); ++j)
     {
-        uint64_t const tmp = std::get<2>(comp[ur.y][ur.x][i][j]) + std::get<1>(comp[dl.y][dl.x][i][j]);
+        uint64_t const tmp = comp[ur.y][ur.x][i][j].down + comp[dl.y][dl.x][i][j].right;
         if(0 < tmp && tmp < sum)
         {
             sum = tmp;
@@ -140,7 +140,7 @@ point_type pixel_sorter::dl_choose(compared_type const& comp, point_type const u
 
     for(int i=0; i<comp.size(); ++i) for(int j=0; j<comp[0].size(); ++j)
     {
-        uint64_t const tmp = std::get<2>(comp[ul.y][ul.x][i][j]) + std::get<3>(comp[dr.y][dr.x][i][j]);
+        uint64_t const tmp = comp[ul.y][ul.x][i][j].down + comp[dr.y][dr.x][i][j].left;
         if(0 < tmp && tmp < sum)
         {
             sum = tmp;
@@ -157,19 +157,18 @@ compared_type pixel_sorter::image_comp(split_image_type const& image) const
     //"最大距離が収納されたtuple"の4次元配列になる
     compared_type comp(
         image.size(),
-        std::vector<std::vector<std::vector<std::tuple<uint64_t,uint64_t,uint64_t,uint64_t>>>>(
+        std::vector<std::vector<std::vector<direction_type<uint64_t>>>>(
             image[0].size(),
-            std::vector<std::vector<std::tuple<uint64_t,uint64_t,uint64_t,uint64_t>>>(
+            std::vector<std::vector<direction_type<uint64_t>>>(
                 image.size(),
-                std::vector<std::tuple<uint64_t,uint64_t,uint64_t,uint64_t>>(
+                std::vector<direction_type<uint64_t>>(
                     image[0].size(),
-                    std::make_tuple(
+                    {
                         std::numeric_limits<uint64_t>::max(),
                         std::numeric_limits<uint64_t>::max(),
                         std::numeric_limits<uint64_t>::max(),
                         std::numeric_limits<uint64_t>::max()
-                        )
-                    )
+                    })
                 )
             )
         );
@@ -180,27 +179,12 @@ compared_type pixel_sorter::image_comp(split_image_type const& image) const
         {
             if(k > i || (k == i && l > j)) // (j,i)より(l,k)の方が，探索順として後半に或るための条件
             {
-                //綺麗に書けないわけだけれど，
                 //順序を変えて逆の逆の組み合わせの相対評価は同じであることを使用して探索量を半分にする
                 //例えば，Aから見たBは上なら，Bから見たAは下．
-                std::tie(
-                    std::get<0>(comp[i][j][k][l]),
-                    std::get<1>(comp[i][j][k][l]),
-                    std::get<2>(comp[i][j][k][l]),
-                    std::get<3>(comp[i][j][k][l])
-                    )
-                = std::tie(
-                    std::get<2>(comp[k][l][i][j]),
-                    std::get<3>(comp[k][l][i][j]),
-                    std::get<0>(comp[k][l][i][j]),
-                    std::get<1>(comp[k][l][i][j])
-                    )
-                = std::make_tuple(
-                    ud_comparison(image[i][j], image[k][l]),
-                    rl_comparison(image[i][j], image[k][l]),
-                    du_comparison(image[i][j], image[k][l]),
-                    lr_comparison(image[i][j], image[k][l])
-                );
+                comp[i][j][k][l].up    = comp[k][l][i][j].down  = ud_comparison(image[i][j], image[k][l]);
+                comp[i][j][k][l].right = comp[k][l][i][j].left  = rl_comparison(image[i][j], image[k][l]);
+                comp[i][j][k][l].down  = comp[k][l][i][j].up    = du_comparison(image[i][j], image[k][l]);
+                comp[i][j][k][l].left  = comp[k][l][i][j].right = lr_comparison(image[i][j], image[k][l]);
             }
         }
     }

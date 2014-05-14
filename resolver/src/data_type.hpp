@@ -42,6 +42,16 @@ struct answer_type
     char direction;
 };
 
+template<class T>
+struct direction_type
+{
+    // 所謂CSSなどの順番に記述
+    T up;
+    T right;
+    T down;
+    T left;
+};
+
 typedef std::vector<answer_type> answer_list;
 
 typedef std::tuple<uint8_t,uint8_t,uint8_t>  pixel_type;
@@ -52,6 +62,6 @@ typedef std::vector<std::vector<image_type>> split_image_type;
 
 // 驚きの気持ち悪さ
 // 座標(j,i)と座標(l,k)の比較結果としては，[i][j][k][l]にtuple<上,右,下,左>で入る
-typedef std::vector<std::vector<std::vector<std::vector<std::tuple<uint64_t,uint64_t,uint64_t,uint64_t>>>>> compared_type;
+typedef std::vector<std::vector<std::vector<std::vector<direction_type<uint64_t>>>>> compared_type;
 
 #endif
