@@ -191,6 +191,92 @@ compared_type pixel_sorter::image_comp(split_image_type const& image) const
     return comp;
 }
 
+adjacent_type select_minimum(compared_type const& compared_data)
+{
+    auto const height = compared_data.size();
+    auto const width = compared_data.at(0).size();
+
+    adjacent_type adjacent_data(
+        height,
+        std::vector<direction_type<point_type>>(width)
+        );
+
+    for(int i=0; i<height; ++i) for(int j=0; j<width; ++j)
+    {
+        uint64_t norm_rl, norm_lr, norm_ud, norm_du;
+        norm_rl = norm_lr = norm_ud = norm_du = std::numeric_limits<uint64_t>::max();
+
+        for(int k=0; k<height; ++k) for(int l=0; l<width; ++l)
+        {
+            if(i==k && j==l) continue;
+
+            if(compared_data[i][j][k][l].right < norm_rl)
+            {
+                norm_rl = compared_data[i][j][k][l].right;
+                adjacent_data[i][j].right = point_type{l, k};
+            }
+            if(compared_data[i][j][k][l].left < norm_lr)
+            {
+                norm_lr = compared_data[i][j][k][l].left;
+                adjacent_data[i][j].left = point_type{l, k};
+            }
+            if(compared_data[i][j][k][l].up < norm_ud)
+            {
+                norm_ud = compared_data[i][j][k][l].up;
+                adjacent_data[i][j].up = point_type{l, k};
+            }
+            if(compared_data[i][j][k][l].down < norm_du)
+            {
+                norm_du = compared_data[i][j][k][l].down;
+                adjacent_data[i][j].down = point_type{l, k};
+            }
+        }
+    }
+
+    return adjacent_data;
+}
+
+int yrange2(std::vector<std::vector<int>>& out, adjacent_type const& adjacent_data)
+{
+    auto const height = out.size();
+    auto const width = out.at(0).size();
+
+    std::vector<std::vector<point_type>> sorted_matrix(
+        height*2-1,
+        std::vector<point_type>(
+            width*2-1
+            )
+        );
+
+    std::vector<std::vector<std::vector<int>>> answer;
+
+    //すべてのピースから並べ始めるためのループ
+    for(int c_y=0; c_y<out.size(); ++c_y) for(int c_x=0; c_x<out.at(0).size(); ++c_x)
+    {
+        sorted_matrix[height-1][width-1] = point_type{c_x, c_y};
+
+        //上に見ていく
+        for(int i=0; i<height-1; ++i)
+        {
+            auto const& adjacent = sorted_matrix[height-1-i][width-1];
+            sorted_matrix[height-2-i][width-1] = adjacent_data[adjacent.y][adjacent.x].up;
+            if(sorted_matrix[height-2-i][width-1].y < 0 || sorted_matrix[height-2-i][width-1].y >= height) break;
+        }
+        //下に見ていく
+        for(int i=0; i<height-1; ++i)
+        {
+            auto const& adjacent = sorted_matrix[height-1+i][width-1];
+            sorted_matrix[height+i][width-1] = adjacent_data[adjacent.y][adjacent.x].down;
+            if(sorted_matrix[height+i][width-1].y < 0 || sorted_matrix[height+i][width-1].y >= height) break;
+        }
+
+    }
+
+
+    return 0;
+
+}
+
 ///*並べてans[c][y][x]に格納する関数強化バージョン*/
 //int RestoreImage::YRange2()
 //{

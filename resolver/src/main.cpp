@@ -18,7 +18,7 @@ public:
     question_data operator() ()
     {
 #if 1
-        std::string path("../../procon2014/prob01.ppm");
+        std::string path("prob01.ppm");
 #else
         std::string path = download();
 #endif

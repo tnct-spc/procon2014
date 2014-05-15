@@ -64,4 +64,7 @@ typedef std::vector<std::vector<image_type>> split_image_type;
 // 座標(j,i)と座標(l,k)の比較結果としては，[i][j][k][l]にtuple<上,右,下,左>で入る
 typedef std::vector<std::vector<std::vector<std::vector<direction_type<uint64_t>>>>> compared_type;
 
+//その縮小版
+typedef std::vector<std::vector<direction_type<point_type>>> adjacent_type;
+
 #endif
