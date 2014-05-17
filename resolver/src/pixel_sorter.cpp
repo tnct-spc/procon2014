@@ -1,4 +1,8 @@
-﻿#include <algorithm>
+﻿#ifdef DEBUG
+#include <iostream>
+#endif
+
+#include <algorithm>
 #include <limits>
 #include "pixel_sorter.hpp"
 
@@ -236,15 +240,21 @@ adjacent_type select_minimum(compared_type const& compared_data)
     return adjacent_data;
 }
 
-int yrange2(std::vector<std::vector<int>>& out, adjacent_type const& adjacent_data)
+int pixel_sorter::yrange2(std::vector<std::vector<int>>& out, adjacent_type const& adjacent_data, compared_type const& compared_data) const
 {
     auto const height = out.size();
     auto const width = out.at(0).size();
 
+    auto const exists = [height, width](point_type const& p)
+    {
+        return 0 <= p.x && p.x < width && 0 <= p.y && p.y < height;
+    };
+
     std::vector<std::vector<point_type>> sorted_matrix(
         height*2-1,
         std::vector<point_type>(
-            width*2-1
+            width*2-1,
+            {std::numeric_limits<int>::max(), std::numeric_limits<int>::max()}
             )
         );
 
@@ -269,144 +279,87 @@ int yrange2(std::vector<std::vector<int>>& out, adjacent_type const& adjacent_da
             sorted_matrix[height+i][width-1] = adjacent_data[adjacent.y][adjacent.x].down;
             if(sorted_matrix[height+i][width-1].y < 0 || sorted_matrix[height+i][width-1].y >= height) break;
         }
+        //右に見ていく
+        for(int i=0; i<width-1; ++i)
+        {
+            auto const& adjacent = sorted_matrix[height-1][width-1+i];
+            sorted_matrix[height-1][width+i] = adjacent_data[adjacent.y][adjacent.x].right;
+            if(sorted_matrix[height-1][width+i].x < 0 || sorted_matrix[height-1][width+i].x >= width) break;
+        }
+        //左に見ていく
+        for(int i=0; i<width-1; ++i)
+        {
+            auto const& adjacent = sorted_matrix[height-1][width-1-i];
+            sorted_matrix[height-1][width-2-i] = adjacent_data[adjacent.y][adjacent.x].left;
+            if(sorted_matrix[height-1][width-2-i].x < 0 || sorted_matrix[height-1][width-2-i].x >= width) break;
+        }
 
+        //中心を除き上に向かってループ，右に見ていく
+        for(int i=0; i<height-1; ++i) for(int j=0; j<width-1; ++j)
+        {
+            auto const& center = sorted_matrix[height - i - 1][width + j - 1];
+            auto const& upper  = sorted_matrix[height - i - 2][width + j - 1];
+            auto const& right  = sorted_matrix[height - i - 1][width + j    ];
+
+            if(exists(center) && exists(upper) && exists(right))
+                sorted_matrix[height - i - 2][width + j] = ur_choose(compared_data, upper, center, right);
+            else
+                break;
+        }
+        //中心を除き上に向かってループ，左に見ていく
+        for(int i=0; i<height-1; ++i) for(int j=0; j<width-1; ++j)
+        {
+            auto const& center = sorted_matrix[height - i - 1][width - j - 1];
+            auto const& upper  = sorted_matrix[height - i - 2][width - j - 1];
+            auto const& left   = sorted_matrix[height - i - 1][width - j - 2];
+
+            if(exists(center) && exists(upper) && exists(left))
+                sorted_matrix[height - i - 2][width - j - 2] = ul_choose(compared_data, upper,left, center);
+            else
+                break;
+        }
+        //中心を除き下に向かってループ，右に見ていく
+        for(int i=0; i<height-1; ++i) for(int j=0; j<width-1; ++j)
+        {
+            auto const& center = sorted_matrix[height + i - 1][width + j - 1];
+            auto const& lower  = sorted_matrix[height + i    ][width + j - 1];
+            auto const& right  = sorted_matrix[height + i - 1][width + j    ];
+            
+            if(exists(center) && exists(lower) && exists(right))
+                sorted_matrix[height + i][width + j] = dr_choose(compared_data, center, right, lower);
+            else
+                break;
+        }
+        //中心を除き下に向かってループ，左に見ていく
+        for(int i=0; i<height-1; ++i) for(int j=0; j<width-1; ++j)
+        {
+            auto const& center = sorted_matrix[height + i - 1][width - j - 1];
+            auto const& lower  = sorted_matrix[height + i    ][width - j - 1];
+            auto const& left   = sorted_matrix[height + i + j][width - j - 2];
+            
+            if(exists(center) && exists(lower) && exists(left))
+                sorted_matrix[height + i][width + j] = dl_choose(compared_data, left, center, lower);
+            else
+                break;
+        }
+
+        std::vector<std::vector<int>> one_answer;
+        
+        for(int i=0; i<height-1; ++i) for(int j=0; j<width-1; ++j)
+        {
+        }
+
+        answer.push_back(std::move(one_answer));
     }
 
+#ifdef DEBUG
+    std::cout << "There are " << answer.size() << " solutions" << std::endl;
+#endif
 
     return 0;
 
 }
 
-///*並べてans[c][y][x]に格納する関数強化バージョン*/
-//int RestoreImage::YRange2()
-//{
-//	int i, j, c;
-//
-//	//sorted_matrix_y二次元配列動的確保
-//	sorted_matrix_y = new int*[sepx * 2 - 1];
-//	for (i = 0; i <sepx * 2 - 1; i++)sorted_matrix_y[i] = new int[sepy * 2 - 1];
-//
-//
-//	//ans三次元配列動的確保
-//	ans = new int **[sepx*sepy * 2];
-//	for (i = 0; i < sepx*sepy; ++i){
-//		ans[i] = new int*[sepy];
-//		for (j = 0; j < sepy; ++j){
-//			ans[i][j] = new int[sepx];
-//		}
-//	}
-//
-//	//sorted_matrix_y配列初期化
-//	for (i = 0; i < sepy * 2 - 1; i++){
-//		for (j = 0; j < sepx * 2 - 1; j++){
-//			sorted_matrix_y[j][i] = 888;
-//		}
-//	}
-//
-//	//すべてのピースから並べ始めるためのループ
-//	for (c = 0; c < sepx*sepy; c++){
-//		sorted_matrix_y[sepx - 1][sepy - 1] = c;
-//
-//		//上に見ていく
-//		for (i = 0; i < sepy - 1; i++){
-//			sorted_matrix_y[sepx - 1][sepy - 2 - i] = adjacent_data[sorted_matrix_y[sepx - 1][sepy - 1 - i]].up;
-//			if (0 > sorted_matrix_y[sepx - 1][sepy - 2 - i] || sorted_matrix_y[sepx - 1][sepy - 2 - i] > sepx * sepy) break;
-//		}
-//		//下に見ていく
-//		for (i = 0; i < sepy - 1; i++){
-//			sorted_matrix_y[sepx - 1][sepy + i] = adjacent_data[sorted_matrix_y[sepx - 1][sepy - 1 + i]].down;
-//			if (0 > sorted_matrix_y[sepx - 1][sepy + i] || sorted_matrix_y[sepx - 1][sepy + i] > sepx * sepy) break;
-//		}
-//		//右に見ていく
-//		for (i = 0; i < sepx - 1; i++){
-//			sorted_matrix_y[sepx + i][sepy - 1] = adjacent_data[sorted_matrix_y[sepx - 1 + i][sepy - 1]].right;
-//			if (0 > sorted_matrix_y[sepx + i][sepy - 1] || sorted_matrix_y[sepx + i][sepy - 1] > sepx * sepy) break;
-//		}
-//		//左に見ていく
-//		for (i = 0; i < sepx - 1; i++){
-//			sorted_matrix_y[sepx - 2 - i][sepy - 1] = adjacent_data[sorted_matrix_y[sepx - 1 - i][sepy - 1]].left;
-//			if (0 > sorted_matrix_y[sepx - 2 - i][sepy - 1] || sorted_matrix_y[sepx - 2 - i][sepy - 1] > sepx * sepy) break;
-//		}
-//		//中心を除き上に向かってループ
-//		for (j = 0; j < sepy - 1; j++){
-//			//右に見ていく
-//			for (i = 0; i < sepx - 1; i++){
-//				if (sepx*sepy <= sorted_matrix_y[sepx - 1 + i][sepy - 2 - j] || 0 > sorted_matrix_y[sepx - 1 + i][sepy - 2 - j] ||
-//					sepx*sepy <= sorted_matrix_y[sepx - 1 + i][sepy - 1 - j] || 0 > sorted_matrix_y[sepx - 1 + i][sepy - 1 - j] ||
-//					sepx*sepy <= sorted_matrix_y[sepx + i][sepy - 1 - j] || 0 > sorted_matrix_y[sepx + i][sepy - 1 - j])break;
-//				sorted_matrix_y[sepx + i][sepy - 2 - j] = URChoose(sorted_matrix_y[sepx - 1 + i][sepy - 2 - j], sorted_matrix_y[sepx - 1 + i][sepy - 1 - j], sorted_matrix_y[sepx + i][sepy - 1 - j]);
-//			}
-//		}
-//		//中心を除き上に向かってループ
-//		for (j = 0; j < sepy - 1; j++){
-//			//左に見ていく
-//			for (i = 0; i < sepx - 1; i++){
-//				if (sepx*sepy <= sorted_matrix_y[sepx - 1 - i][sepy - 2 - j] || 0 > sorted_matrix_y[sepx - 1 - i][sepy - 2 - j] ||
-//					sepx*sepy <= sorted_matrix_y[sepx - 2 - i][sepy - 1 - j] || 0 > sorted_matrix_y[sepx - 2 - i][sepy - 1 - j] ||
-//					sepx*sepy <= sorted_matrix_y[sepx - 1 - i][sepy - 1 - j] || 0 > sorted_matrix_y[sepx - 1 - i][sepy - 1 - j])break;
-//				sorted_matrix_y[sepx - 2 - i][sepy - 2 - j] = ULChoose(sorted_matrix_y[sepx - 1 - i][sepy - 2 - j], sorted_matrix_y[sepx - 2 - i][sepy - 1 - j], sorted_matrix_y[sepx - 1 - i][sepy - 1 - j]);
-//			}
-//		}
-//		//中心を除き下に向かってループ
-//		for (j = 0; j < sepy - 1; j++){
-//			//右に見ていく
-//			for (i = 0; i < sepx - 1; i++){
-//				if (sepx*sepy <= sorted_matrix_y[sepx - 1 + i][sepy - 1 + j] || 0 > sorted_matrix_y[sepx - 1 + i][sepy - 1 + j] ||
-//					sepx*sepy <= sorted_matrix_y[sepx + i][sepy - 1 + j] || 0> sorted_matrix_y[sepx + i][sepy - 1 + j] ||
-//					sepx*sepy <= sorted_matrix_y[sepx - 1 + i][sepy + j] || 0> sorted_matrix_y[sepx - 1 + i][sepy + j])break;
-//				sorted_matrix_y[sepx + i][sepy + j] = LRChoose(sorted_matrix_y[sepx - 1 + i][sepy - 1 + j], sorted_matrix_y[sepx + i][sepy - 1 + j], sorted_matrix_y[sepx - 1 + i][sepy + j]);
-//			}
-//		}
-//		//中心を除き下に向かってループ
-//		for (j = 0; j < sepy - 1; j++){
-//			//左に見ていく
-//			for (i = 0; i < sepx - 1; i++){
-//				if (sepx*sepy <= sorted_matrix_y[sepx - 2 - i][sepy - 1 + j] || 0 < sorted_matrix_y[sepx - 2 - i][sepy - 1 + j] ||
-//					sepx*sepy <= sorted_matrix_y[sepx - 1 - i][sepy - 1 + j] || 0 < sorted_matrix_y[sepx - 1 - i][sepy - 1 + j] ||
-//					sepx*sepy <= sorted_matrix_y[sepx - 1 - i][sepy + j] || 0 < sorted_matrix_y[sepx - 1 - i][sepy + j])break;
-//				sorted_matrix_y[sepx - 2 - i][sepy + j] = LLChoose(sorted_matrix_y[sepx - 2 - i][sepy - 1 + j], sorted_matrix_y[sepx - 1 - i][sepy - 1 + j], sorted_matrix_y[sepx - 1 - i][sepy + j]);
-//			}
-//		}
-//#if 0
-//		/*デバッグ用*/
-//		std::cout << c << "****************************************" << std::endl;
-//		for (i = 0; i < sepy * 2 - 1; i++){
-//			for (j = 0; j < sepx * 2 - 1; j++){
-//				if (-1 > sorted_matrix_y[j][i] || sorted_matrix_y[j][i] > sepx * sepy)std::cout << " " << 999;
-//				else std::cout << " " << std::setw(3) << sorted_matrix_y[j][i];
-//			}
-//			std::cout << std::endl;
-//		}
-//#endif
-//		//絞り込み&出力
-//		output_ans();
-//
-//		for (int y = 0; y < sepy; y++){
-//			for (int x = 0; x < sepx; x++){
-//				if (ArrySum(x, y) == ((sepx*sepy - 1)*(sepx*sepy) / 2)){
-//					for (i = 0; i < sepy; i++){
-//						for (int j = 0; j < sepx; j++){
-//							ans[outputnum][i][j] = sorted_matrix_y[x + j][y + i];
-//						}
-//					}
-//					outputnum++;
-//					goto OUT;
-//				}
-//			}
-//		}
-//	OUT:;
-//
-//	}
-//
-//	std::cout << "There are " << outputnum << " solutions" << std::endl;
-//
-//	//sorted_matrix_y二次元配列解放
-//	for (i = 0; i < sepx * 2 - 1; ++i)delete(sorted_matrix_y[i]);
-//	delete(sorted_matrix_y);
-//
-//	return 0;
-//}
-//
 ///*ans表示関数*/
 //void RestoreImage::ShowAns()
 //{

@@ -7,6 +7,8 @@ public:
     virtual ~pixel_sorter() = default;
 
     question_data operator() (question_raw_data const& raw, split_image_type const& splited_image) const;
+    
+    int yrange2(std::vector<std::vector<int>>& out, adjacent_type const& adjacent_data, compared_type const& compared_data) const;
 
 private:
     // それぞれ，右上，左上，右下，左下を探索する関数
