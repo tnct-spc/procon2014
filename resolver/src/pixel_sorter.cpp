@@ -258,7 +258,7 @@ int pixel_sorter::yrange2(std::vector<std::vector<int>>& out, adjacent_type cons
             )
         );
 
-    std::vector<std::vector<std::vector<int>>> answer;
+    std::vector<std::vector<std::vector<point_type>>> answer;
 
     //すべてのピースから並べ始めるためのループ
     for(int c_y=0; c_y<out.size(); ++c_y) for(int c_x=0; c_x<out.at(0).size(); ++c_x)
@@ -343,13 +343,26 @@ int pixel_sorter::yrange2(std::vector<std::vector<int>>& out, adjacent_type cons
                 break;
         }
 
-        std::vector<std::vector<int>> one_answer;
+        std::vector<std::vector<point_type>> one_answer(
+            height,
+            std::vector<point_type>(width)
+            );
         
-        for(int i=0; i<height-1; ++i) for(int j=0; j<width-1; ++j)
+        for(int y=0; y<height; ++y) for(int x=0; x<width; ++x)
         {
-        }
+            if(array_sum(sorted_matrix, x, y, height, width) == ((width*height-1)*(width*height)/2))
+            {
+                for(int i=0; i<height; ++i) for(int j=0; j<width; ++j)
+                {
+                    one_answer[i][j] = sorted_matrix[y + i][x + j];
+                }
 
-        answer.push_back(std::move(one_answer));
+                answer.push_back(std::move(one_answer));
+                goto OUT;
+            }
+        }
+    OUT:
+        continue;
     }
 
 #ifdef DEBUG
@@ -358,6 +371,26 @@ int pixel_sorter::yrange2(std::vector<std::vector<int>>& out, adjacent_type cons
 
     return 0;
 
+}
+
+// 2値座標系式から1値座標系式に変えながら和
+// 指定した範囲の配列の和を返す
+int pixel_sorter::array_sum(std::vector<std::vector<point_type>> const& array_, int const x, int const y, int const height, int const width) const
+{
+    int sum = 0;
+    for(int i=0; i<height; ++i)
+    {
+        for(int j=0; j<width; ++j)
+        {
+            auto const& target_point = array_[i + y][j + x];
+            if(target_point.x != std::numeric_limits<int>::max() && target_point.y != std::numeric_limits<int>::max())
+            {
+                auto const point = target_point.y * width + target_point.x;
+                sum += (point > 1000) ? 777 : point;
+            }
+        }
+    }
+    return sum;
 }
 
 ///*ans表示関数*/
@@ -373,17 +406,4 @@ int pixel_sorter::yrange2(std::vector<std::vector<int>>& out, adjacent_type cons
 //		}
 //		std::cout << std::setw(3) << k + 1 << "個目の解" << "****************" << std::endl;
 //	}
-//}
-//
-///*指定した範囲の配列の和を返す関数*/
-//int RestoreImage::ArrySum(int i, int j)
-//{
-//	int s = 0;
-//	for (int y = 0; y < sepy; y++){
-//		for (int x = 0; x < sepx; x++){
-//			if (sorted_matrix_y[i + x][j + y] > 1000)sorted_matrix_y[i + x][j + y] = 777;
-//			s += sorted_matrix_y[i + x][j + y];
-//		}
-//	}
-//	return s;
 //}

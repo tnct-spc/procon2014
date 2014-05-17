@@ -33,5 +33,6 @@ private:
     uint64_t du_comparison(image_type const& lhs, image_type const& rhs) const;
 
     compared_type image_comp(split_image_type const& image) const;
+    int array_sum(std::vector<std::vector<point_type>> const& array_, int const i, int const j, int const height, int const width) const;
 };
 
