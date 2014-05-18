@@ -8,7 +8,6 @@
 #include "ppm_reader.hpp"
 #include "algorithm.hpp"
 
-
 class analyzer : boost::noncopyable
 {
 public:
@@ -35,8 +34,6 @@ public:
             raw.cost.second,
             sorter_(raw, splited_image)
         };
-        
-        //std::vector<std::vector<int>>(raw.split_num.second, std::vector<int>(raw.split_num.first, std::numeric_limits<int>::max()) )
 
         return formed;
     }

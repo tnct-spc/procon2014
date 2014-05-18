@@ -8,20 +8,16 @@
 
 std::vector<std::vector<point_type>> pixel_sorter::operator() (question_raw_data const& raw, split_image_type const& splited_image) const
 {
-    std::vector<std::vector<point_type>> block;
-
     //
     // Sub Algorithm
-    // 正しい位置に並べた時に左上から，1~nまでの番号をふり，それが今どこにあるのかという情報をblockに格納
+    // 正しい位置に並べた時に左上から，1~nまでの番号をふり，それが今どこにあるのかという情報をreturn
     //
 
     auto const& comp = this->image_comp(splited_image);
     auto const& proposed = yrange2(raw.split_num.first, raw.split_num.second, select_minimum(comp), comp);
 
-    block = proposed[0]; //仮
+    return proposed[0]; //仮
     // Sub Algorithm End
-
-    return block;
 }
 
 //2つのピクセル間の距離を2乗した値を返却．result = r^2 + g^2 + b^2
@@ -148,7 +144,7 @@ point_type pixel_sorter::dl_choose(compared_type const& comp, point_type const u
     return possition;
 }
 
-compared_type pixel_sorter::image_comp(split_image_type const& image) const
+auto pixel_sorter::image_comp(split_image_type const& image) const -> compared_type
 {
     //返却用変数
     //"最大距離が収納されたtuple"の4次元配列になる
@@ -188,7 +184,7 @@ compared_type pixel_sorter::image_comp(split_image_type const& image) const
     return comp;
 }
 
-adjacent_type pixel_sorter:: select_minimum(compared_type const& compared_data) const
+auto pixel_sorter:: select_minimum(compared_type const& compared_data) const -> adjacent_type
 {
     auto const height = compared_data.size();
     auto const width = compared_data.at(0).size();

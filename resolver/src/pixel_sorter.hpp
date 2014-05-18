@@ -3,6 +3,14 @@
 class pixel_sorter
 {
 public:
+    
+    // 驚きの気持ち悪さ
+    // 座標(j,i)と座標(l,k)の比較結果としては，[i][j][k][l]にtuple<上,右,下,左>で入る
+    typedef std::vector<std::vector<std::vector<std::vector<direction_type<uint64_t>>>>> compared_type;
+
+    // その最小値が入る
+    typedef std::vector<std::vector<direction_type<point_type>>> adjacent_type;
+
     explicit pixel_sorter() = default;
     virtual ~pixel_sorter() = default;
 
