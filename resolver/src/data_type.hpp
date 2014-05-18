@@ -27,7 +27,7 @@ struct question_data
     int cost_select;
     int cost_change;
 
-    std::vector<std::vector<int>> block;
+    std::vector<std::vector<point_type>> block;
 };
 
 struct question_raw_data

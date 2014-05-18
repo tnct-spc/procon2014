@@ -6,17 +6,9 @@
 #include <limits>
 #include "pixel_sorter.hpp"
 
-question_data pixel_sorter::operator() (question_raw_data const& raw, split_image_type const& splited_image) const
+std::vector<std::vector<point_type>> pixel_sorter::operator() (question_raw_data const& raw, split_image_type const& splited_image) const
 {
-    question_data formed = {
-        raw.split_num,
-        raw.selectable_num,
-        raw.cost.first,
-        raw.cost.second,
-        std::vector<std::vector<int>>(raw.split_num.second, std::vector<int>(raw.split_num.first, std::numeric_limits<int>::max()) )
-    };
-
-    auto& block = formed.block;
+    std::vector<std::vector<point_type>> block;
 
     //
     // Sub Algorithm
@@ -24,16 +16,12 @@ question_data pixel_sorter::operator() (question_raw_data const& raw, split_imag
     //
 
     auto const& comp = this->image_comp(splited_image);
+    auto const& proposed = yrange2(raw.split_num.first, raw.split_num.second, select_minimum(comp), comp);
 
-    std::vector<std::vector<point_type>> ans(
-        raw.split_num.second,
-        std::vector<point_type>(raw.split_num.first)
-        );
-    yrange2(ans, select_minimum(comp), comp);
-
+    block = proposed[0]; //仮
     // Sub Algorithm End
 
-    return formed;
+    return block;
 }
 
 //2つのピクセル間の距離を2乗した値を返却．result = r^2 + g^2 + b^2
@@ -245,11 +233,8 @@ adjacent_type pixel_sorter:: select_minimum(compared_type const& compared_data) 
     return adjacent_data;
 }
 
-int pixel_sorter::yrange2(std::vector<std::vector<point_type>>& out, adjacent_type const& adjacent_data, compared_type const& compared_data) const
+std::vector<std::vector<std::vector<point_type>>> pixel_sorter::yrange2(const int width, const int height, adjacent_type const& adjacent_data, compared_type const& compared_data) const
 {
-    auto const height = out.size();
-    auto const width = out.at(0).size();
-
     auto const exists = [height, width](point_type const& p)
     {
         return 0 <= p.x && p.x < width && 0 <= p.y && p.y < height;
@@ -266,7 +251,7 @@ int pixel_sorter::yrange2(std::vector<std::vector<point_type>>& out, adjacent_ty
     std::vector<std::vector<std::vector<point_type>>> answer;
 
     //すべてのピースから並べ始めるためのループ
-    for(int c_y=0; c_y<out.size(); ++c_y) for(int c_x=0; c_x<out.at(0).size(); ++c_x)
+    for(int c_y=0; c_y<height; ++c_y) for(int c_x=0; c_x<width; ++c_x)
     {
         sorted_matrix[height-1][width-1] = point_type{c_x, c_y};
 
@@ -374,7 +359,7 @@ int pixel_sorter::yrange2(std::vector<std::vector<point_type>>& out, adjacent_ty
     std::cout << "There are " << answer.size() << " solutions" << std::endl;
 #endif
 
-    return 0;
+    return answer;
 }
 
 // 2値座標系式から1値座標系式に変えながら和

@@ -27,7 +27,18 @@ public:
         auto const raw = reader();
 
         auto const splited_image = split_(raw);
-        return sorter_(raw, splited_image);
+        
+        question_data formed = {
+            raw.split_num,
+            raw.selectable_num,
+            raw.cost.first,
+            raw.cost.second,
+            sorter_(raw, splited_image)
+        };
+        
+        //std::vector<std::vector<int>>(raw.split_num.second, std::vector<int>(raw.split_num.first, std::numeric_limits<int>::max()) )
+
+        return formed;
     }
 
 private:

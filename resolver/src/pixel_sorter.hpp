@@ -6,9 +6,9 @@ public:
     explicit pixel_sorter() = default;
     virtual ~pixel_sorter() = default;
 
-    question_data operator() (question_raw_data const& raw, split_image_type const& splited_image) const;
+    std::vector<std::vector<point_type>> operator() (question_raw_data const& raw, split_image_type const& splited_image) const;
     
-    int yrange2(std::vector<std::vector<point_type>>& out, adjacent_type const& adjacent_data, compared_type const& compared_data) const;
+    std::vector<std::vector<std::vector<point_type>>> yrange2(const int width, const int height, adjacent_type const& adjacent_data, compared_type const& compared_data) const;
 
 private:
     // それぞれ，右上，左上，右下，左下を探索する関数
