@@ -6,15 +6,15 @@ split_image_type splitter::split_image(question_raw_data const& raw) const
     int const parts_width = raw.size.first / raw.split_num.first;
     int const parts_height = raw.size.second / raw.split_num.second;
 
-    std::vector<std::vector<std::vector<std::vector<std::tuple<uint8_t,uint8_t,uint8_t>>>>> split_pixels(
+    std::vector<std::vector<std::vector<std::vector<pixel_type>>>> split_pixels(
         raw.split_num.second,
-        std::vector<std::vector<std::vector<std::tuple<uint8_t,uint8_t,uint8_t>>>>(
+        std::vector<std::vector<std::vector<pixel_type>>>(
             raw.split_num.first,
-            std::vector<std::vector<std::tuple<uint8_t,uint8_t,uint8_t>>>(
+            std::vector<std::vector<pixel_type>>(
                 parts_height,
-                std::vector<std::tuple<uint8_t,uint8_t,uint8_t>>(
+                std::vector<pixel_type>(
                     parts_width,
-                    std::make_tuple(0,0,0)
+                    {0,0,0}
                 )
             )
         )

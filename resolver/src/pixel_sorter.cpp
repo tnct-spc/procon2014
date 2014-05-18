@@ -40,9 +40,9 @@ question_data pixel_sorter::operator() (question_raw_data const& raw, split_imag
 int pixel_sorter::pixel_comparison(pixel_type const& lhs, pixel_type const& rhs) const
 {
     int s = 0;
-    s += static_cast<int>(std::pow(std::abs(std::get<0>(lhs) - std::get<0>(rhs)), 2)); //r
-    s += static_cast<int>(std::pow(std::abs(std::get<1>(lhs) - std::get<1>(rhs)), 2)); //g
-    s += static_cast<int>(std::pow(std::abs(std::get<2>(lhs) - std::get<2>(rhs)), 2)); //b
+    s += static_cast<int>(std::pow(std::abs(lhs.r - rhs.r), 2)); //r
+    s += static_cast<int>(std::pow(std::abs(lhs.g - rhs.g), 2)); //g
+    s += static_cast<int>(std::pow(std::abs(lhs.b - rhs.b), 2)); //b
     return s;
 }
 

@@ -11,6 +11,14 @@ struct point_type
     int x;
     int y;
 };
+struct pixel_type
+{
+    uint8_t r;
+    uint8_t g;
+    uint8_t b;
+};
+
+typedef std::vector<std::vector<pixel_type>> image_type;
 
 struct question_data
 {
@@ -30,7 +38,7 @@ struct question_raw_data
     std::pair<int,int> size; // x * y
     int max_brightness; // 最大輝度
 
-    std::vector<std::vector<std::tuple<char,char,char>>> pixels;
+    image_type pixels;
 };
 
 struct answer_type
@@ -38,7 +46,7 @@ struct answer_type
     enum class action_type{ change, select };
 
     action_type type;
-    std::pair<int,int> possition;
+    point_type possition;
     char direction;
 };
 
@@ -54,8 +62,6 @@ struct direction_type
 
 typedef std::vector<answer_type> answer_list;
 
-typedef std::tuple<uint8_t,uint8_t,uint8_t>  pixel_type;
-typedef std::vector<std::vector<pixel_type>> image_type;
 
 // 気持ち悪いが，[i][j]の位置に分割された画像が入っている．更に[j][k]へのアクセスによって画素にアクセス
 typedef std::vector<std::vector<image_type>> split_image_type;
