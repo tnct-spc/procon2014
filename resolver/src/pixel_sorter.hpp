@@ -8,7 +8,7 @@ public:
 
     question_data operator() (question_raw_data const& raw, split_image_type const& splited_image) const;
     
-    int yrange2(std::vector<std::vector<int>>& out, adjacent_type const& adjacent_data, compared_type const& compared_data) const;
+    int yrange2(std::vector<std::vector<point_type>>& out, adjacent_type const& adjacent_data, compared_type const& compared_data) const;
 
 private:
     // それぞれ，右上，左上，右下，左下を探索する関数
@@ -33,6 +33,7 @@ private:
     uint64_t du_comparison(image_type const& lhs, image_type const& rhs) const;
 
     compared_type image_comp(split_image_type const& image) const;
+    adjacent_type select_minimum(compared_type const& compared_data) const;
     int array_sum(std::vector<std::vector<point_type>> const& array_, int const i, int const j, int const height, int const width) const;
 };
 

@@ -25,6 +25,11 @@ question_data pixel_sorter::operator() (question_raw_data const& raw, split_imag
 
     auto const& comp = this->image_comp(splited_image);
 
+    std::vector<std::vector<point_type>> ans(
+        raw.split_num.second,
+        std::vector<point_type>(raw.split_num.first)
+        );
+    yrange2(ans, select_minimum(comp), comp);
 
     // Sub Algorithm End
 
@@ -195,7 +200,7 @@ compared_type pixel_sorter::image_comp(split_image_type const& image) const
     return comp;
 }
 
-adjacent_type select_minimum(compared_type const& compared_data)
+adjacent_type pixel_sorter:: select_minimum(compared_type const& compared_data) const
 {
     auto const height = compared_data.size();
     auto const width = compared_data.at(0).size();
@@ -240,7 +245,7 @@ adjacent_type select_minimum(compared_type const& compared_data)
     return adjacent_data;
 }
 
-int pixel_sorter::yrange2(std::vector<std::vector<int>>& out, adjacent_type const& adjacent_data, compared_type const& compared_data) const
+int pixel_sorter::yrange2(std::vector<std::vector<point_type>>& out, adjacent_type const& adjacent_data, compared_type const& compared_data) const
 {
     auto const height = out.size();
     auto const width = out.at(0).size();
@@ -370,7 +375,6 @@ int pixel_sorter::yrange2(std::vector<std::vector<int>>& out, adjacent_type cons
 #endif
 
     return 0;
-
 }
 
 // 2値座標系式から1値座標系式に変えながら和
