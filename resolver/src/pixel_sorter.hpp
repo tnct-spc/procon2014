@@ -1,4 +1,7 @@
-﻿#include "data_type.hpp"
+﻿#ifndef RESOLVER_PIXEL_SORTER_HPP
+#define RESOLVER_PIXEL_SORTER_HPP
+
+#include "data_type.hpp"
 
 class pixel_sorter
 {
@@ -45,3 +48,4 @@ private:
     int array_sum(std::vector<std::vector<point_type>> const& array_, int const i, int const j, int const height, int const width) const;
 };
 
+#endif

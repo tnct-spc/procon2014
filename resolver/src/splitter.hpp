@@ -1,4 +1,7 @@
-﻿#include "data_type.hpp"
+﻿#ifndef RESOLVER_SPLITTER_HPP
+#define RESOLVER_SPLITTER_HPP
+
+#include "data_type.hpp"
 
 class splitter
 {
@@ -15,3 +18,5 @@ private:
     //イメージ分割関数
     split_image_type split_image(question_raw_data const& raw) const;
 };
+
+#endif

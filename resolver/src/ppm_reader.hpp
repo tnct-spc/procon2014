@@ -1,5 +1,5 @@
-﻿#ifndef PPM_READER_HPP
-#define PPM_READER_HPP
+﻿#ifndef RESOLVER_PPM_READER_HPP
+#define RESOLVER_PPM_READER_HPP
 
 #include <fstream>
 #include <boost/noncopyable.hpp>
