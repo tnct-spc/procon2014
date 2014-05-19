@@ -120,6 +120,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\evaluate\position\src\main.cpp" />
     <ClCompile Include="src\algorithm.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\pixel_sorter.cpp" />
