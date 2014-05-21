@@ -1,4 +1,4 @@
-#include <iostream>
+ï»¿#include <iostream>
 #include <fstream>
 
 int main()
@@ -7,7 +7,7 @@ int main()
 	int failure = 0;
 	int correct = 0;
 #if 0
-	//³‰ğƒs[ƒX‚ğ’T‚·
+	//æ­£è§£ãƒ”ãƒ¼ã‚¹ã‚’æ¢ã™
 	for (int k = 0; k < outputnum; k++){
 		for (int j = 0; j < sepy; j++){
 			for (int i = 0; i < sepx; i++){
@@ -16,7 +16,7 @@ int main()
 		}
 	}
 
-	//Š®‘Sˆê’v‚ğ’T‚·
+	//å®Œå…¨ä¸€è‡´ã‚’æ¢ã™
 	for (int k = 0; k < outputnum; k++){
 		for (int j = 0; j < sepy; j++){
 			for (int i = 0; i < sepx; i++){
@@ -30,7 +30,7 @@ int main()
 	failure = outputnum - success;
 	std::ofstream ofs("solusions.csv", std::ios::out | std::ios::app | std::ios::ate);
 	ofs << usefile << "," << outputnum << "," << success << "," << failure << "," << correct << "," << outputnum*sepx*sepy << "," << std::endl;
-	//ƒtƒ@ƒCƒ‹–¼,o—Í‚³‚ê‚½‰ğ“š‚Ì”CŠ®‘Sˆê’v‚µ‚½‰ğ“š‚Ì”C‚»‚¤‚Å‚È‚¢‰ğ“š‚Ì”Cˆê’v‚µ‚½ƒs[ƒX‚Ì”C‘S‘Ì‚Ìƒs[ƒX‚Ì”
+	//ãƒ•ã‚¡ã‚¤ãƒ«å,å‡ºåŠ›ã•ã‚ŒãŸè§£ç­”ã®æ•°ï¼Œå®Œå…¨ä¸€è‡´ã—ãŸè§£ç­”ã®æ•°ï¼Œãã†ã§ãªã„è§£ç­”ã®æ•°ï¼Œä¸€è‡´ã—ãŸãƒ”ãƒ¼ã‚¹ã®æ•°ï¼Œå…¨ä½“ã®ãƒ”ãƒ¼ã‚¹ã®æ•°
 #endif
 	std::cout << "Output solusions done." << std::endl;
 
