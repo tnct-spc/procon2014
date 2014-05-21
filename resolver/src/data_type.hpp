@@ -5,6 +5,7 @@
 #include <tuple>
 #include <utility>
 #include <vector>
+#include <boost/noncopyable.hpp>
 
 struct point_type
 {
@@ -33,7 +34,7 @@ struct question_data
     std::vector<std::vector<point_type>> block;
 };
 
-struct question_raw_data
+struct question_raw_data : boost::noncopyable
 {
 public:
     std::pair<int,int> split_num; // x * y
@@ -43,6 +44,24 @@ public:
     int max_brightness; // 最大輝度
 
     image_type pixels;
+    
+    question_raw_data()
+    {
+    }
+    question_raw_data(question_raw_data&& other)
+    {
+        *this = std::move(other);
+    }
+    question_raw_data& operator=(question_raw_data&& other)
+    {
+        this->split_num      = std::move(other.split_num);
+        this->selectable_num = other.selectable_num;
+        this->cost           = std::move(other.cost);
+        this->size           = std::move(other.size);
+        this->max_brightness = other.max_brightness;
+        this->pixels         = std::move(other.pixels);
+        return *this;
+    }
 };
 
 struct answer_type
