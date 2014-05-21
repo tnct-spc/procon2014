@@ -6,13 +6,14 @@
 #include <limits>
 #include "pixel_sorter.hpp"
 
-std::vector<std::vector<point_type>> pixel_sorter::operator() (question_raw_data const& raw, split_image_type const& splited_image) const
+std::vector<std::vector<point_type>> pixel_sorter::operator() (question_raw_data const& raw) const
 {
     //
     // Sub Algorithm
     // 正しい位置に並べた時に左上から，1~nまでの番号をふり，それが今どこにあるのかという情報をreturn
     //
 
+    auto const& splited_image = split_(raw);
     auto const& comp = this->image_comp(splited_image);
     auto const& proposed = yrange2(raw.split_num.first, raw.split_num.second, select_minimum(comp), comp);
 
@@ -360,14 +361,14 @@ std::vector<std::vector<std::vector<point_type>>> pixel_sorter::yrange2(const in
 
 // 2値座標系式から1値座標系式に変えながら和
 // 指定した範囲の配列の和を返す
-int pixel_sorter::array_sum(std::vector<std::vector<point_type>> const& array_, int const x, int const y, int const height, int const width) const
+int pixel_sorter::array_sum(return_type const& array_, int const x, int const y, int const height, int const width) const
 {
     int sum = 0;
     for(int i=0; i<height; ++i)
     {
         for(int j=0; j<width; ++j)
         {
-            auto const& target_point = array_[i + y][j + x];
+            auto const& target_point = array_[y + i][x + j];
             if(target_point.x != std::numeric_limits<int>::max() && target_point.y != std::numeric_limits<int>::max())
             {
                 auto const point = target_point.y * width + target_point.x;

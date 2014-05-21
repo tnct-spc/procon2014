@@ -3,7 +3,6 @@
 #include <vector>
 #include <boost/noncopyable.hpp>
 #include "data_type.hpp"
-#include "splitter.hpp"
 #include "pixel_sorter.hpp"
 #include "ppm_reader.hpp"
 #include "algorithm.hpp"
@@ -24,22 +23,19 @@ public:
 
         ppm_reader reader(path);
         auto const raw = reader();
-
-        auto const splited_image = split_(raw);
         
         question_data formed = {
             raw.split_num,
             raw.selectable_num,
             raw.cost.first,
             raw.cost.second,
-            sorter_(raw, splited_image)
+            sorter_(raw)
         };
 
-        return formed;
+        return std::move(formed);
     }
 
 private:
-    splitter split_;
     pixel_sorter sorter_;
 };
 

@@ -35,6 +35,7 @@ struct question_data
 
 struct question_raw_data
 {
+public:
     std::pair<int,int> split_num; // x * y
     int selectable_num;
     std::pair<int,int> cost; // 選択コスト / 交換コスト
