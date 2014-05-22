@@ -1,4 +1,7 @@
-﻿#include "data_type.hpp"
+﻿#ifndef RESOLVER_SPLITTER_HPP
+#define RESOLVER_SPLITTER_HPP
+
+#include "data_type.hpp"
 
 class splitter
 {
@@ -6,14 +9,14 @@ public:
     explicit splitter() = default;
     virtual ~splitter() = default;
 
-    question_data operator() (question_raw_data const& raw) const;
+    inline split_image_type operator() (question_raw_data const& raw) const
+    {
+        return split_image(raw);
+    }
 
 private:
-    //nまでの和を求める関数
-    inline int n_sum(int n) const;
-
     //イメージ分割関数
     split_image_type split_image(question_raw_data const& raw) const;
-
-
 };
+
+#endif
