@@ -36,9 +36,9 @@ obj/%.o : src/%.cpp
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) $(DEFS) -o $@ -c -MMD -MP -MF $(@:%.o=%.d) $<
 
 clean:
-	rm -rf $(OUTDIR)
+	rm -rf $(OUTDIR) ./obj
 
 distclean:
-	rm -rf ./bin
+	rm -rf ../bin ./obj
 
 # vim:set tabstop=4 noexpendtab
