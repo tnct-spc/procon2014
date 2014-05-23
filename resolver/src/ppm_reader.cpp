@@ -98,17 +98,17 @@ void ppm_reader::read_header(question_raw_data& output)
 
 void ppm_reader::read_body(question_raw_data& output)
 {
-    std::vector<char> data(output.size.first * 3);
+    std::vector<uint8_t> data(output.size.first * 3);
 
     for(int i=0; i<output.size.second; ++i)
     {
-        ifs_.read(data.data(), output.size.first * 3);
+        ifs_.read(reinterpret_cast<char*>(data.data()), output.size.first * 3);
 
-        std::vector<std::tuple<char,char,char>> pixel_line;
+        std::vector<pixel_type> pixel_line;
         pixel_line.reserve(output.size.first);
 
         for(int j=0; j<output.size.first; ++j)
-            pixel_line.emplace_back(data[j*3+0], data[j*3+1], data[j*3+2]);
+            pixel_line.push_back(pixel_type{data[j*3+0], data[j*3+1], data[j*3+2]});
 
         output.pixels.push_back(std::move(pixel_line));
     }

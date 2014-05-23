@@ -1,9 +1,9 @@
 CXX ?= clang++
 
 buildtype := release
-OUTDIR := ../../bin/$(buildtype)
+OUTDIR := ../bin/$(buildtype)
 
-TARGET = evaluate_movement
+TARGET = eval_position
 SRCS := src/main.cpp
 PROG := $(OUTDIR)/$(TARGET)
 OBJS := $(SRCS:src/%.cpp=obj/%.o)
@@ -39,6 +39,6 @@ clean:
 	rm -rf $(OUTDIR)
 
 distclean:
-	rm -rf ../../bin
+	rm -rf ../bin
 
 # vim:set tabstop=4 noexpendtab
