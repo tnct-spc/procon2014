@@ -4,19 +4,21 @@ buildtype := release
 OUTDIR := ../bin/$(buildtype)
 
 TARGET = procon
-SRCS := src/main.cpp src/splitter.cpp src/ppm_reader.cpp src/pixel_sorter.cpp src/algorithm.cpp
+SRCS := src/main.cpp
 PROG := $(OUTDIR)/$(TARGET)
-OBJS := $(SRCS:src/%.cpp=obj/%.o)
-DEPS := $(SRCS:src/%.cpp=obj/%.d)
+OBJS := $(SRCS:src/%.cpp=obj/$(buildtype)/%.o)
+DEPS := $(SRCS:src/%.cpp=obj/$(buildtype)/%.d)
 LIBS :=
 
 CXXFLAGS += -std=c++11
-CPPFLAGS +=
-LDFLAGS  +=
+CPPFLAGS += -I../clammbon/include
+LDFLAGS  += -L../lib
 ifeq ($(buildtype),release)
 	CXXFLAGS += -O3
+	LIBS += -lclammbon
 else ifeq ($(buildtype),debug)
-	CXXFLAGS += -O0 -g
+	CXXFLAGS += -O0 -g -D_DEBUG
+	LIBS += -lclammbond
 else
 	$(error buildtype must be release, debug, profile or coverage)
 endif
@@ -27,11 +29,14 @@ all : $(PROG)
 
 -include $(DEPS)
 
-$(PROG) : $(OBJS)
-	@if [ ! -e `dirname $@` ]; then mkdir -p `dirname $@`; fi
-	$(CXX) $(LDFLAGS) -o $@ $^ $(LIBS)
+clammbon :
+	cd ../clammbon; buildtype=$(buildtype) make
 
-obj/%.o : src/%.cpp
+$(PROG) : $(OBJS) clammbon
+	@if [ ! -e `dirname $@` ]; then mkdir -p `dirname $@`; fi
+	$(CXX) $(LDFLAGS) -o $@ $(OBJS) $(LIBS)
+
+obj/$(buildtype)/%.o : src/%.cpp
 	@if [ ! -e `dirname $@` ]; then mkdir -p `dirname $@`; fi
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) $(DEFS) -o $@ -c -MMD -MP -MF $(@:%.o=%.d) $<
 
