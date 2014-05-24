@@ -1,12 +1,23 @@
-﻿#ifdef DEBUG
+﻿#ifdef _DEBUG
 #include <iostream>
+#include <boost/format.hpp>
 #endif
 
 #include <algorithm>
 #include <limits>
 #include "pixel_sorter.hpp"
 
-std::vector<std::vector<point_type>> pixel_sorter::operator() (question_raw_data const& raw) const
+auto pixel_sorter::operator() (question_raw_data const& raw) const -> return_type
+{
+    auto const& proposed = proposed_answer(raw);
+
+    // TODO: ここで返却されたデータのうち，適しているものを選択してreturn
+    
+    return proposed[1];
+}
+
+// 提案された配置リストを返却
+auto pixel_sorter::proposed_answer(question_raw_data const& raw) const -> std::vector<return_type>
 {
     //
     // Sub Algorithm
@@ -17,8 +28,7 @@ std::vector<std::vector<point_type>> pixel_sorter::operator() (question_raw_data
     auto const& comp = this->image_comp(splited_image);
     auto const& proposed = yrange2(raw.split_num.first, raw.split_num.second, select_minimum(comp), comp);
 
-    return proposed[0]; //仮
-    // Sub Algorithm End
+    return proposed;
 }
 
 //2つのピクセル間の距離を2乗した値を返却．result = r^2 + g^2 + b^2
@@ -352,8 +362,21 @@ std::vector<std::vector<std::vector<point_type>>> pixel_sorter::yrange2(const in
         continue;
     }
 
-#ifdef DEBUG
+#ifdef _DEBUG
     std::cout << "There are " << answer.size() << " solutions" << std::endl;
+    for(auto const& one_answer : answer)
+    {
+        for(int i=0; i<one_answer.size(); ++i)
+        {
+            for(int j=0; j<one_answer.at(0).size(); ++j)
+            {
+                auto const& data = one_answer[i][j];
+                std::cout << boost::format("(%2d,%2d) ") % data.x % data.y;
+            }
+            std::cout << "\n";
+        }
+        std::cout << "\n";
+    }
 #endif
 
     return answer;

@@ -1,8 +1,11 @@
-﻿Microsoft Visual Studio Solution File, Format Version 12.00
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.30219.0
+VisualStudioVersion = 12.0.30501.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "resolver", "resolver\resolver.vcxproj", "{16C7CC2F-ADB7-4F08-A2B2-66CA1BDC39CA}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "eval_position", "eval_position\eval_position.vcxproj", "{02CB53ED-EB62-48A4-8E2C-2377379C3973}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -20,6 +23,14 @@ Global
 		{16C7CC2F-ADB7-4F08-A2B2-66CA1BDC39CA}.Release|Win32.Build.0 = Release|Win32
 		{16C7CC2F-ADB7-4F08-A2B2-66CA1BDC39CA}.Release|x64.ActiveCfg = Release|x64
 		{16C7CC2F-ADB7-4F08-A2B2-66CA1BDC39CA}.Release|x64.Build.0 = Release|x64
+		{02CB53ED-EB62-48A4-8E2C-2377379C3973}.Debug|Win32.ActiveCfg = Debug|Win32
+		{02CB53ED-EB62-48A4-8E2C-2377379C3973}.Debug|Win32.Build.0 = Debug|Win32
+		{02CB53ED-EB62-48A4-8E2C-2377379C3973}.Debug|x64.ActiveCfg = Debug|x64
+		{02CB53ED-EB62-48A4-8E2C-2377379C3973}.Debug|x64.Build.0 = Debug|x64
+		{02CB53ED-EB62-48A4-8E2C-2377379C3973}.Release|Win32.ActiveCfg = Release|Win32
+		{02CB53ED-EB62-48A4-8E2C-2377379C3973}.Release|Win32.Build.0 = Release|Win32
+		{02CB53ED-EB62-48A4-8E2C-2377379C3973}.Release|x64.ActiveCfg = Release|x64
+		{02CB53ED-EB62-48A4-8E2C-2377379C3973}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

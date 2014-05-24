@@ -17,7 +17,8 @@ public:
 
     typedef std::vector<std::vector<point_type>> return_type;
     return_type operator() (question_raw_data const& raw) const;
-    
+    std::vector<return_type> proposed_answer(question_raw_data const& raw) const;
+
     std::vector<return_type> yrange2(const int width, const int height, adjacent_type const& adjacent_data, compared_type const& compared_data) const;
 
 private:
