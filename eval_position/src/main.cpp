@@ -1,17 +1,50 @@
 ﻿#include <fstream>
+#include <boost/format.hpp>
 #include "ppm_reader.hpp"
 #include "pixel_sorter.hpp"
-
 
 int main(int argc, char *argv[])
 {
     pixel_sorter sorter;
+    std::ofstream ofs("test.csv");
 
-    for(int i=1; i<argc; ++i)
+    for(int n=1; n<argc; ++n)
     {
-        ppm_reader reader(argv[i]);
+        ppm_reader reader(argv[n]);
         auto const raw = reader();
-        auto const answers = sorter(raw);
+        auto const answers = sorter.proposed_answer(raw);
+
+        int correct = 0;
+        for(auto const& ans : answers)
+        {
+            for(int i=0; i<ans.size(); ++i)
+            {
+                for(int j=0; j<ans.at(0).size(); ++j)
+                {
+                    if(ans[i][j] == point_type{j, i}) ++correct;
+                }
+            }
+        }
+
+        int success = 0;
+        for(auto const& ans : answers)
+        {
+            for(int i=0; i<ans.size(); ++i)
+            {
+                for(int j=0; j<ans.at(0).size(); ++j)
+                {
+                    if(ans[i][j] == point_type{j, i}) goto OUT;
+                }
+            }
+            ++success;
+OUT:        ;
+        }
+
+        int const failure = answers.size() - success;
+        ofs << 
+            boost::format("%s,%d,%d,%d,%d,%d\n")
+            % argv[n] % answers.size() % success % failure % correct 
+            % (answers.size() * answers.at(0).size() * answers.at(0).at(0).size());
 
         //
         // とりあえず，ここでcsv評価する．
@@ -19,29 +52,6 @@ int main(int argc, char *argv[])
     }
 
 
-//	int success = 0;
-//	int failure = 0;
-//	int correct = 0;
-//#if 0
-//	//正解ピースを探す
-//	for (int k = 0; k < outputnum; k++){
-//		for (int j = 0; j < sepy; j++){
-//			for (int i = 0; i < sepx; i++){
-//				if (ans[k][i][j] == sepy*j + i)correct++;
-//			}
-//		}
-//	}
-//
-//	//完全一致を探す
-//	for (int k = 0; k < outputnum; k++){
-//		for (int j = 0; j < sepy; j++){
-//			for (int i = 0; i < sepx; i++){
-//				if (ans[k][i][j] != sepy*j + i)goto OUT;
-//			}
-//		}
-//		success++;
-//		OUT:;
-//	}
 //
 //	failure = outputnum - success;
 //	std::ofstream ofs("solusions.csv", std::ios::out | std::ios::app | std::ios::ate);
