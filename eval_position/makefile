@@ -8,7 +8,7 @@ SRCS := src/main.cpp
 PROG := $(OUTDIR)/$(TARGET)
 OBJS := $(SRCS:src/%.cpp=obj/$(buildtype)/%.o)
 DEPS := $(SRCS:src/%.cpp=obj/$(buildtype)/%.d)
-LIBS :=
+LIBS := -lboost_filesystem -lboost_system
 
 CXXFLAGS += -std=c++11
 CPPFLAGS += -I../clammbon/include
