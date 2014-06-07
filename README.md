@@ -18,30 +18,23 @@ Boost周りの詳しい説明は，後ほど書こうと思うが，Windowsな�
     * bin/
     * lib/
     * clammbon/
-    * eval_movement/
-    * eval_position/
+    * eval\_movement/
+    * eval\_position/
     * resolver/
+    * question/
+        * *.ppm
+        * *.ans
     * makefile
     * procon2014.sln
 
 /binにmakeされた実行ファイルが乗る．  
 /libはclammbonディレクトリよりmakeされた.a(.lib)が乗る．  
-/clammbonは共通ヘッダ，もしくは共通ライブラリにすべきものが乗る．
-/eval_position/は画像から元画像を求めるアルゴリズムの検証コード置き場  
-/eval_movement/は並び替えアルゴリズムの検証コード置き場  
+/clammbonは共通ヘッダ，もしくは共通ライブラリにすべきものが乗る．  
+/eval\_position/は画像から元画像を求めるアルゴリズムの検証コード置き場  
+/eval\_movement/は並び替えアルゴリズムの検証コード置き場  
 /resolver/は実際に使用するプログラムの開発現場．  
 
 
-/clammbon，/eval_*，/resolverディレクトリの中には./src，./includeディレクトリがあり，
+/clammbon，/eval\_\*，/resolverディレクトリの中には./src，./includeディレクトリがあり，
 それぞれ.cppファイル，.h{,pp}ファイルが入る．
-
-
-~~VS用のプロジェクトを配置する予定(.slnなど)~~ 
-とりあえずresolverプロジェクトの配置はしたが，
-evaluateディレクトリ以下の構造が微妙なので，そっちは置いてない．
-
-~~/evaluate_positionと/evaluate_movementにした方がいいかな．~~  
-もうした．従って，VSプロジェクトもおけるようになったはず．
-
-
 
