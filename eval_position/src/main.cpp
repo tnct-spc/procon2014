@@ -88,6 +88,8 @@ boost::optional<typename pixel_sorter::return_type> read_answer(fs::path const& 
         {
             return boost::none;
         }
+
+        ret.push_back(std::move(line));
     }
 
     return ret;
@@ -145,7 +147,7 @@ int main(int argc, char *argv[])
         // 正しいものの数を数える
         int correct = 0;
         for(int i=0; i<proposed_answers.size(); ++i)
-            if(proposed_answers[i] == correct_answer)
+            if(proposed_answers[i] == *correct_answer)
                 ++correct;
 
         csv.push(filepath.stem().string(), proposed_answers.size(), correct);
