@@ -1,4 +1,5 @@
-﻿#include <fstream>
+﻿#include <cstdlib>
+#include <fstream>
 #include <boost/foreach.hpp>
 #include <boost/format.hpp>
 #include <boost/filesystem/path.hpp>
@@ -95,6 +96,18 @@ boost::optional<typename pixel_sorter::return_type> read_answer(fs::path const& 
     return ret;
 }
 
+namespace clammbon{
+    void exit(int const status)
+    {
+        // Visual Studioが実装してないから
+#ifdef _MSC_VER
+        std::exit(status);
+#else
+        std::quick_exit(status);
+#endif
+    }
+}
+
 int main(int argc, char *argv[])
 {
     pixel_sorter sorter;
@@ -103,14 +116,14 @@ int main(int argc, char *argv[])
     if(argc != 2)
     {
         std::cout << "Usage: " << argv[0] << " <directory_path>" << std::endl;
-        std::quick_exit(1);
+        clammbon::exit(1);
     }
 
     fs::path const directory_path(argv[1]);
     if(!fs::exists(directory_path))
     {
         std::cout << "Not found: " << directory_path << std::endl;
-        std::quick_exit(2);
+        clammbon::exit(2);
     }
 
     // 指定ディレクトリ内のファイルをループ

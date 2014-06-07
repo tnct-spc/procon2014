@@ -16,6 +16,9 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "clammbon", "clammbon\clammbon.vcxproj", "{A8EE0710-0A8D-4910-BB42-2BD617A5AEAB}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "eval_movement", "eval_movement\eval_movement.vcxproj", "{5FD19C06-FF14-4B15-A465-3116556911F1}"
+	ProjectSection(ProjectDependencies) = postProject
+		{A8EE0710-0A8D-4910-BB42-2BD617A5AEAB} = {A8EE0710-0A8D-4910-BB42-2BD617A5AEAB}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
