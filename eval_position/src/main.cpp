@@ -101,9 +101,9 @@ namespace clammbon{
     {
         // Visual Studioが実装してないから
 #ifdef _MSC_VER
-        std::exit(1);
+        std::exit(status);
 #else
-        std::quick_exit(1);
+        std::quick_exit(status);
 #endif
     }
 }
