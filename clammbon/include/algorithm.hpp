@@ -10,6 +10,8 @@ public:
     virtual ~algorithm() = default;
 
     void operator() (question_data const& data);
+
+    int distance_between(point_type const& p0, point_type const& p1);
 };
 
 #endif
