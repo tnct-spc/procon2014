@@ -10,13 +10,13 @@ else ifeq ($(buildtype),debug)
 	TARGET = libclammbond.a
 endif
 
-SRCS := src/splitter.cpp src/ppm_reader.cpp src/pixel_sorter.cpp src/algorithm.cpp
+SRCS := src/splitter.cpp src/ppm_reader.cpp src/pixel_sorter.cpp src/algorithm.cpp src/gui.cpp
 PROG := $(OUTDIR)/$(TARGET)
 OBJS := $(SRCS:src/%.cpp=obj/$(buildtype)/%.o)
 DEPS := $(SRCS:src/%.cpp=obj/$(buildtype)/%.d)
-LIBS :=
+LIBS := -lXext -lXft -lfontconfig -lXinerama -lpthread -ldl -lm -lX11 -lfltk
 
-CXXFLAGS += -std=c++11
+CXXFLAGS += -std=c++1y
 CPPFLAGS += -Iinclude
 LDFLAGS  +=
 ifeq ($(buildtype),release)
