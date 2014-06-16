@@ -9,12 +9,6 @@ public:
     explicit splitter() = default;
     virtual ~splitter() = default;
 
-    // 廃止予定
-    inline split_image_type operator() (question_raw_data const& raw) const
-    {
-        return split_image(raw);
-    }
-
     //イメージ分割関数
     split_image_type split_image(question_raw_data const& raw) const;
 
