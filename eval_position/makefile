@@ -24,7 +24,7 @@ clammbon :
 
 $(PROG) : $(OBJS) clammbon
 	@if [ ! -e `dirname $@` ]; then mkdir -p `dirname $@`; fi
-	$(CXX) $(LDFLAGS) -o $@ $(OBJS) $(LIBS)
+	$(CXX) -o $@ $(OBJS) $(LIBS) $(LDFLAGS)
 
 obj/$(buildtype)/%.o : src/%.cpp
 	@if [ ! -e `dirname $@` ]; then mkdir -p `dirname $@`; fi
