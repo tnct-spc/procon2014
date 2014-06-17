@@ -1,9 +1,6 @@
-CXX ?= clang++
-AR := ar
+include ../makefile.in
 
-buildtype := release
 OUTDIR := ../lib
-
 ifeq ($(buildtype),release)
 	TARGET = libclammbon.a
 else ifeq ($(buildtype),debug)
@@ -14,18 +11,9 @@ SRCS := src/splitter.cpp src/ppm_reader.cpp src/pixel_sorter.cpp src/algorithm.c
 PROG := $(OUTDIR)/$(TARGET)
 OBJS := $(SRCS:src/%.cpp=obj/$(buildtype)/%.o)
 DEPS := $(SRCS:src/%.cpp=obj/$(buildtype)/%.d)
-LIBS := -lXext -lXft -lfontconfig -lXinerama -lpthread -ldl -lm -lX11 -lfltk
 
-CXXFLAGS += -std=c++1y
+CXXFLAGS +=
 CPPFLAGS += -Iinclude
-LDFLAGS  +=
-ifeq ($(buildtype),release)
-	CXXFLAGS += -O3
-else ifeq ($(buildtype),debug)
-	CXXFLAGS += -O0 -g -D_DEBUG
-else
-	$(error buildtype must be release, debug, profile or coverage)
-endif
 
 .PHONY: all clean distclean
 

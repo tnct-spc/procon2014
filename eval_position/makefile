@@ -1,27 +1,17 @@
-CXX ?= clang++
+include ../makefile.in
 
-buildtype := release
 OUTDIR := ../bin/$(buildtype)
-
 TARGET = eval_position
+
 SRCS := src/main.cpp
 PROG := $(OUTDIR)/$(TARGET)
 OBJS := $(SRCS:src/%.cpp=obj/$(buildtype)/%.o)
 DEPS := $(SRCS:src/%.cpp=obj/$(buildtype)/%.d)
-LIBS := -lboost_filesystem -lboost_system
 
-CXXFLAGS += -std=c++11
-CPPFLAGS += -I../clammbon/include
-LDFLAGS  += -L../lib
-ifeq ($(buildtype),release)
-	CXXFLAGS += -O3
-	LIBS += -lclammbon
-else ifeq ($(buildtype),debug)
-	CXXFLAGS += -O0 -g
-	LIBS += -lclammbond
-else
-	$(error buildtype must be release, debug, profile or coverage)
-endif
+CXXFLAGS +=
+CPPFLAGS +=
+LDFLAGS  +=
+LIBS     += -lboost_filesystem -lboost_system
 
 .PHONY: all clean distclean
 
