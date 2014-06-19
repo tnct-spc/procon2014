@@ -1,0 +1,20 @@
+CXX ?= clang++
+AR ?= ar
+
+buildtype ?= release
+ifeq ($(buildtype),release)
+	CXXFLAGS += -O3
+	LIBS += -lclammbon
+else ifeq ($(buildtype),debug)
+	CXXFLAGS += -O0 -g -D_DEBUG
+	LIBS += -lclammbond
+else
+	$(error buildtype must be release, debug, profile or coverage)
+endif
+
+CXXFLAGS += -std=c++1y $(shell fltk-config --cxxflags)
+CPPFLAGS += -I../clammbon/include
+LDFLAGS  += -L../lib $(shell fltk-config --ldflags)
+LIBS     +=
+
+# vim:set tabstop=4 noexpendtab
