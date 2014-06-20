@@ -43,24 +43,3 @@ bool algorithm::check_finish()
 
     return finished;
 }
-
-std::vector<point_type>* algorithm::gen_select_queue()
-{
-    // 選択キューを作る
-    // とりあえずフラットにするだけ
-    std::vector<point_type> *select_queue = new std::vector<point_type>;
-    for (std::vector<point_type> row : matrix) {
-        for (point_type point : row) {
-            select_queue->push_back(point);
-        }
-    }
-    return select_queue;
-}
-
-std::vector<point_type>* algorithm::gen_change_queue()
-{
-    // 交換キューを作る
-    // 幅優先なので順番はどうでもいい
-
-   // std::vector<point_type>* change_queue = new std::vector<point_type>;
-}
