@@ -10,6 +10,7 @@ void algorithm::operator() (question_data const& data)
 
     matrix = data.block;
     direction_type<int>* directions = new direction_type<int>;
+    directions->up = 0, directions->right = 1, directions->down = 2, directions->left = 3;
 }
 
 int algorithm::manhattan_distance(point_type& p0, point_type& p1)
@@ -22,6 +23,25 @@ int algorithm::distance_to_origial(point_type& point)
 {
     // 1つの座標を受け取って, その座標に存在する断片画像の, 原座標までのマンハッタン距離を返す
     return manhattan_distance(point, matrix[point.y][point.x]);
+}
+
+bool algorithm::check_finish()
+{
+    // 終了判定
+    bool finished = true;
+    for (std::vector<point_type> row : matrix) {
+        for (point_type point : row) {
+            if (distance_to_origial(point) != 0) {
+                finished = false;
+            }
+            break;
+        }
+        if (!finished) {
+            break;
+        }
+    }
+
+    return finished;
 }
 
 std::vector<point_type>* algorithm::gen_select_queue()
