@@ -11,7 +11,15 @@ public:
 
     void operator() (question_data const& data);
 
-    int distance_between(point_type const& p0, point_type const& p1);
+    int manhattan_distance(point_type& p0, point_type& p1);
+    int distance_to_origial(point_type& point);
+    std::vector<point_type>* gen_select_queue();
+    std::vector<point_type>* gen_change_queue();
+
+private:
+    std::vector<std::vector<point_type>> matrix;
+    point_type selecting;
+    direction_type<int>* directions;
 };
 
 #endif
