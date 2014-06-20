@@ -8,7 +8,7 @@
 
 namespace gui
 {
-    std::future<int> make_window(image_type const& image)
+    std::future<int> make_window(image_type const& image, std::string const& window_name)
     {
         splitter sp;
 
@@ -20,7 +20,7 @@ namespace gui
             std::launch::async,
             [=]() -> int
             {
-                auto window = std::make_unique<Fl_Window>(width, height, "Test Window");
+                auto window = std::make_unique<Fl_Window>(width, height, window_name.c_str());
                 auto box    = std::make_unique<Fl_Box>(0, 0, width, height);
 
                 Fl_RGB_Image image(cloned_image->data(), width, height);

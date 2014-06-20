@@ -6,7 +6,7 @@
 
 namespace gui
 {
-    std::future<int> make_window(image_type const& image);
+    std::future<int> make_window(image_type const& image, std::string const& window_name = "Untitled");
 } // namespace gui
 
 #endif
