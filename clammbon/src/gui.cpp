@@ -68,7 +68,7 @@ namespace gui
                 if(text.size() == 0) break;
 
                 MoveBox* before = reinterpret_cast<MoveBox*>(std::stoull(text, nullptr, 16));
-                if((std::abs(before->point_.x - this->point_.x) + std::abs(before->point_.y - this->point_.y)) == 1) //マンハッタン距離が1なら
+                if(point_.manhattan(before->point_) == 1) //マンハッタン距離が1なら
                     position_swap(before, this);
 
                 ret = 1;

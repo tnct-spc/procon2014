@@ -2,6 +2,7 @@
 #define RESOLVER_DATA_TYPE_HPP
 
 #include <cstdint>
+#include <cmath>
 #include <tuple>
 #include <utility>
 #include <vector>
