@@ -148,11 +148,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\gui.hpp" />
-    <ClInclude Include="src\algorithm.hpp" />
-    <ClInclude Include="src\data_type.hpp" />
-    <ClInclude Include="src\pixel_sorter.hpp" />
-    <ClInclude Include="src\ppm_reader.hpp" />
-    <ClInclude Include="src\splitter.hpp" />
+    <ClInclude Include="include\algorithm.hpp" />
+    <ClInclude Include="include\data_type.hpp" />
+    <ClInclude Include="include\pixel_sorter.hpp" />
+    <ClInclude Include="include\ppm_reader.hpp" />
+    <ClInclude Include="include\splitter.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
