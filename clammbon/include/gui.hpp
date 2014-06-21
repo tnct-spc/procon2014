@@ -12,12 +12,14 @@ namespace gui
     class MoveBox : public Fl_Box
     {
     public:
-        MoveBox(int const x, int const y, int const w, int const h);
+        MoveBox(point_type const& point, int const x, int const y, int const w, int const h);
         virtual ~MoveBox() = default;
 
     private:
         void position_swap(MoveBox* lhs, MoveBox* rhs);
         int handle(int const event) override;
+
+        point_type point_;
     };
     
     class MoveWindow : public Fl_Window

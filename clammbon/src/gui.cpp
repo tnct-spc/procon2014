@@ -5,6 +5,7 @@
 #include <FL/Fl_Box.H>
 #include <FL/Fl_Image.H>
 #include "gui.hpp"
+#include "data_type.hpp"
 #include "splitter.hpp"
 
 namespace gui
@@ -33,17 +34,20 @@ namespace gui
         );
     }
 
-    MoveBox::MoveBox(int const x, int const y, int const w, int const h)
-        : Fl_Box(x, y, w, h)
+    MoveBox::MoveBox(point_type const& point, int const x, int const y, int const w, int const h)
+        : Fl_Box(x, y, w, h), point_(point)
     {
     }
 
     void MoveBox::position_swap(MoveBox* lhs, MoveBox* rhs)
     {
+        std::swap(lhs->point_, this->point_);
+
         int const x = lhs->x();
         int const y = lhs->y();
         lhs->position(rhs->x(), rhs->y());
         rhs->position(x, y);
+
         lhs->redraw();
         rhs->redraw();
     }
@@ -59,8 +63,10 @@ namespace gui
                 if(text.size() == 0) break;
 
                 MoveBox* before = reinterpret_cast<MoveBox*>(std::stoull(text, nullptr, 16));
-                position_swap(before, this);
-                ret =1;
+                if((std::abs(before->point_.x - this->point_.x) + std::abs(before->point_.y - this->point_.y)) == 1) //マンハッタン距離が1なら
+                    position_swap(before, this);
+
+                ret = 1;
                 break;
             }
 
@@ -136,7 +142,7 @@ namespace gui
             line.reserve(split_x);
             for(int j=0; j<split_x; ++j)
             {
-                auto box = std::make_unique<MoveBox>(image_width*j, image_height*i, image_width, image_height);
+                auto box = std::make_unique<MoveBox>(point_type{j,i}, image_width*j, image_height*i, image_width, image_height);
                 box->image(rgbs_[i][j]);
                 line.push_back(std::move(box));
             }
