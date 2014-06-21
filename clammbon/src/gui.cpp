@@ -39,6 +39,11 @@ namespace gui
     {
     }
 
+    point_type const& MoveBox::point() const
+    {
+        return this->point_;
+    }
+
     void MoveBox::position_swap(MoveBox* lhs, MoveBox* rhs)
     {
         std::swap(lhs->point_, this->point_);
@@ -150,5 +155,25 @@ namespace gui
         }
     }
 
+    std::vector<std::vector<point_type>> MoveWindow::result() const
+    {
+        int const split_x = image_[0].size();
+        int const split_y = image_   .size();
+        std::vector<std::vector<point_type>> result(
+            split_y,
+            std::vector<point_type>(split_x, point_type{-1,-1})
+            );
+
+        for(int i=0; i<split_y; ++i)
+        {
+            for(int j=0; j<split_x; ++j)
+            {
+                auto const& target = boxes_[i][j]->point();
+                result[target.y][target.x] = point_type{j, i};
+            }
+        }
+
+        return result;
+    }
 } // namespace gui
 

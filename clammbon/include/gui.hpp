@@ -15,19 +15,23 @@ namespace gui
         MoveBox(point_type const& point, int const x, int const y, int const w, int const h);
         virtual ~MoveBox() = default;
 
+        point_type const& point() const;
+
     private:
         void position_swap(MoveBox* lhs, MoveBox* rhs);
         int handle(int const event) override;
 
         point_type point_;
     };
-    
+
     class MoveWindow : public Fl_Window
     {
     public:
         MoveWindow(split_image_type const& images, std::string const& window_name);
         virtual ~MoveWindow() = default;
-    
+
+        std::vector<std::vector<point_type>> result() const;
+
     private:
         splitter sp_;
         std::string const window_name_;
