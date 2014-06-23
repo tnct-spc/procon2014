@@ -24,7 +24,7 @@ auto pixel_sorter::proposed_answer(question_raw_data const& raw) const -> std::v
     // 正しい位置に並べた時に左上から，1~nまでの番号をふり，それが今どこにあるのかという情報をreturn
     //
 
-    auto const& splited_image = split_(raw);
+    auto const& splited_image = split_.split_image(raw);
     auto const& comp = this->image_comp(splited_image);
     auto const& proposed = yrange2(raw.split_num.first, raw.split_num.second, select_minimum(comp), comp);
 

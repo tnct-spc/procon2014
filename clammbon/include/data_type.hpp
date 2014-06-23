@@ -2,6 +2,7 @@
 #define RESOLVER_DATA_TYPE_HPP
 
 #include <cstdint>
+#include <cmath>
 #include <tuple>
 #include <utility>
 #include <vector>
@@ -11,9 +12,27 @@ struct point_type
 {
     int x;
     int y;
-    friend bool operator== (point_type const& lhs, point_type const& rhs)
+    
+    friend inline bool operator== (point_type const& lhs, point_type const& rhs)
     {
         return lhs.x == rhs.x && lhs.y == rhs.y;
+    }
+    friend inline point_type const operator- (point_type const& lhs, point_type const& rhs)
+    {
+        return point_type{lhs.x - rhs.x, lhs.y - rhs.y};
+    }
+
+    inline int manhattan(point_type const& other) const
+    {
+        return std::abs(this->x - other.x) + std::abs(this->y - other.y);
+    }
+    template<class T = double>
+    inline T euclid(point_type const& other) const
+    {
+        return std::sqrt<T>(
+            std::pow<T>(this->x - other.x, 2) + 
+            std::pow<T>(this->y - other.y, 2)
+            );
     }
 };
 struct pixel_type
@@ -21,8 +40,14 @@ struct pixel_type
     uint8_t r;
     uint8_t g;
     uint8_t b;
+
+    friend bool operator== (pixel_type const& lhs, pixel_type const& rhs)
+    {
+        return lhs.r == rhs.r && lhs.g == rhs.g && lhs.b == rhs.b;
+    }
 };
 
+typedef std::vector<uint8_t>                 unfold_image_type;
 typedef std::vector<std::vector<pixel_type>> image_type;
 
 // 気持ち悪いが，[i][j]の位置に分割された画像が入っている．更に[j][k]へのアクセスによって画素にアクセス

@@ -66,38 +66,39 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>C:\boost\include\boost-1_55;$(SolutionDir)clammbon\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\boost\lib;$(SolutionDir)lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\boost\include\boost-1_55;$(SolutionDir)clammbon\include;$(IncludePath);C:\fltk-1.3.2;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\boost\lib;$(SolutionDir)lib;C:\fltk-1.3.2\lib;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)bin\$(Configuration)\</OutDir>
     <IntDir>obj\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>C:\boost\include\boost-1_55;$(SolutionDir)clammbon\include;$(IncludePath)</IncludePath>
+    <IncludePath>C:\boost\include\boost-1_55;$(SolutionDir)clammbon\include;$(IncludePath);C:\fltk-1.3.2;$(IncludePath)</IncludePath>
     <IntDir>obj\$(Configuration)\</IntDir>
     <OutDir>$(SolutionDir)bin\$(Configuration)\</OutDir>
-    <LibraryPath>C:\boost\lib;$(SolutionDir)lib;$(LibraryPath)</LibraryPath>
+    <LibraryPath>C:\boost\lib;$(SolutionDir)lib;C:\fltk-1.3.2\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>$(SolutionDir)bin\$(Configuration)\</OutDir>
     <IntDir>obj\$(Configuration)\</IntDir>
-    <IncludePath>C:\boost\include\boost-1_55;$(SolutionDir)clammbon\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\boost\lib;$(SolutionDir)lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\boost\include\boost-1_55;$(SolutionDir)clammbon\include;$(IncludePath);C:\fltk-1.3.2;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\boost\lib;$(SolutionDir)lib;C:\fltk-1.3.2\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(SolutionDir)bin\$(Configuration)\</OutDir>
     <IntDir>obj\$(Configuration)\</IntDir>
-    <IncludePath>C:\boost\include\boost-1_55;$(SolutionDir)clammbon\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\boost\lib;$(SolutionDir)lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\boost\include\boost-1_55;$(SolutionDir)clammbon\include;$(IncludePath);C:\fltk-1.3.2;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\boost\lib;$(SolutionDir)lib;C:\fltk-1.3.2\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>clammbond.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>clammbond.lib;fltkd.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -105,10 +106,11 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>clammbond.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>clammbond.lib;fltkd.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -118,12 +120,13 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>clammbon.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>clammbon.lib;fltk.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -133,12 +136,13 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>clammbon.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>clammbon.lib;fltk.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>

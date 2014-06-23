@@ -66,13 +66,13 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>$(ProjectDir)include;C:\boost\include\boost-1_55;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)include;C:\boost\include\boost-1_55;$(IncludePath);C:\fltk-1.3.2;$(IncludePath)</IncludePath>
     <OutDir>$(SolutionDir)lib\</OutDir>
     <IntDir>obj\$(Configuration)\</IntDir>
     <TargetName>$(ProjectName)d</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(ProjectDir)include;C:\boost\include\boost-1_55;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)include;C:\boost\include\boost-1_55;$(IncludePath);C:\fltk-1.3.2;$(IncludePath)</IncludePath>
     <OutDir>$(SolutionDir)lib\</OutDir>
     <IntDir>obj\$(Configuration)\</IntDir>
     <TargetName>$(ProjectName)d</TargetName>
@@ -80,18 +80,19 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>$(SolutionDir)lib\</OutDir>
     <IntDir>obj\$(Configuration)\</IntDir>
-    <IncludePath>$(ProjectDir)include;C:\boost\include\boost-1_55;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)include;C:\boost\include\boost-1_55;$(IncludePath);C:\fltk-1.3.2;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(SolutionDir)lib\</OutDir>
     <IntDir>obj\$(Configuration)\</IntDir>
-    <IncludePath>$(ProjectDir)include;C:\boost\include\boost-1_55;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)include;C:\boost\include\boost-1_55;$(IncludePath);C:\fltk-1.3.2;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -102,6 +103,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -114,6 +116,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -128,6 +131,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -137,16 +141,18 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\algorithm.cpp" />
+    <ClCompile Include="src\gui.cpp" />
     <ClCompile Include="src\pixel_sorter.cpp" />
     <ClCompile Include="src\ppm_reader.cpp" />
     <ClCompile Include="src\splitter.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\algorithm.hpp" />
-    <ClInclude Include="src\data_type.hpp" />
-    <ClInclude Include="src\pixel_sorter.hpp" />
-    <ClInclude Include="src\ppm_reader.hpp" />
-    <ClInclude Include="src\splitter.hpp" />
+    <ClInclude Include="include\gui.hpp" />
+    <ClInclude Include="include\algorithm.hpp" />
+    <ClInclude Include="include\data_type.hpp" />
+    <ClInclude Include="include\pixel_sorter.hpp" />
+    <ClInclude Include="include\ppm_reader.hpp" />
+    <ClInclude Include="include\splitter.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
