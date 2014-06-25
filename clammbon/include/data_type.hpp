@@ -1,4 +1,4 @@
-﻿#ifndef RESOLVER_DATA_TYPE_HPP
+#ifndef RESOLVER_DATA_TYPE_HPP
 #define RESOLVER_DATA_TYPE_HPP
 
 #include <cstdint>
@@ -20,6 +20,10 @@ struct point_type
     friend inline point_type const operator- (point_type const& lhs, point_type const& rhs)
     {
         return point_type{lhs.x - rhs.x, lhs.y - rhs.y};
+    }
+    friend inline point_type const operator+ (point_type const& lhs, point_type const& rhs)
+    {
+        return point_type{lhs.x + rhs.x, lhs.y + rhs.y};
     }
 
     inline int manhattan(point_type const& other) const
