@@ -139,4 +139,14 @@ struct direction_type
     T left;
 };
 
+enum struct TurnSide { UpperLeft, DownerRight };
+
+template<typename CharT, typename Traits>
+std::basic_ostream<CharT, Traits>&
+operator<<(std::basic_ostream<CharT, Traits>& os, point_type const& point)
+{
+    os << point.x << "," << point.y;
+    return os;
+}
+
 #endif
