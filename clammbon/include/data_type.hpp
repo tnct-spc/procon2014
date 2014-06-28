@@ -141,6 +141,7 @@ struct direction_type
 
 enum struct TurnSide { UpperLeft, DownerRight };
 
+// ostream に吐けると便利だよね
 template<typename CharT, typename Traits>
 std::basic_ostream<CharT, Traits>&
 operator<<(std::basic_ostream<CharT, Traits>& os, point_type const& point)

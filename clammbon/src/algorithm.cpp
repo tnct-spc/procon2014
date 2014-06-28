@@ -46,7 +46,7 @@ point_type algorithm::current_point(point_type const& point)
     // point を原座標として持つ断片画像の現在の座標を返す
     for (int y = 0; y < height; ++y) {
         auto p = std::find(matrix[y].begin(), matrix[y].end(), point);
-        if (p == matrix[y].end()) {
+        if (p == matrix[y].end() && matrix[y].end() != point) {
             continue;
         }
         return point_type{static_cast<int>(std::distance(matrix[y].begin(), p)), y};
@@ -226,6 +226,8 @@ void algorithm::move_direction(point_type const& target, int const& direction)
         std::swap(matrix[target.y][target.x], matrix[target.y + 1][target.x]);
     } else if (direction == directions.left) {
         std::swap(matrix[target.y][target.x], matrix[target.y][target.x - 1]);
+    } else {
+        throw std::runtime_error("ギャア");
     }
 }
 
