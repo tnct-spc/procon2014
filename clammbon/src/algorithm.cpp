@@ -46,7 +46,7 @@ point_type algorithm::current_point(point_type const& point)
     // point を原座標として持つ断片画像の現在の座標を返す
     for (int y = 0; y < height; ++y) {
         auto p = std::find(matrix[y].begin(), matrix[y].end(), point);
-        if (p == matrix[y].end() && matrix[y].end() != point) {
+        if (p == matrix[y].end() && !(*matrix[y].end() == point)) {
             continue;
         }
         return point_type{static_cast<int>(std::distance(matrix[y].begin(), p)), y};
@@ -105,6 +105,7 @@ void algorithm::greedy()
         // まず斜めに移動
         point_diff = target - current_point(target);
         i = 0;
+
         while (point_diff.x < 0 && point_diff.y < 0) {
             // 原座標に対して右下にあるので左上へ移動
             if (current_point(target).x == width - 1 || current_point(target).y == height - 1) {
