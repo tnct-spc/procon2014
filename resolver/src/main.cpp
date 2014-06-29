@@ -6,11 +6,15 @@
 #include "pixel_sorter.hpp"
 #include "ppm_reader.hpp"
 #include "algorithm.hpp"
+#include "network.hpp"
 
 class analyzer : boost::noncopyable
 {
 public:
-    explicit analyzer() = default;
+    explicit analyzer()
+        : netclient_()
+    {
+    }
     virtual ~analyzer() = default;
 
     question_data operator() ()
@@ -18,7 +22,7 @@ public:
 #if 1
         std::string path("prob01.ppm");
 #else
-        std::string path = download();
+        std::string path = netclient_.get_problem(01).get();
 #endif
 
         ppm_reader reader(path);
@@ -36,6 +40,7 @@ public:
     }
 
 private:
+    network::client netclient_;
     pixel_sorter sorter_;
 };
 
