@@ -6,6 +6,7 @@
 #include "pixel_sorter.hpp"
 #include "ppm_reader.hpp"
 #include "algorithm.hpp"
+#include "gui.hpp"
 
 class analyzer : boost::noncopyable
 {
@@ -23,7 +24,9 @@ public:
 
         ppm_reader reader(path);
         auto const raw = reader();
-        
+
+        auto future = gui::make_mansort_window(raw, "test");
+
         question_data formed = {
             raw.split_num,
             raw.selectable_num,
@@ -31,6 +34,11 @@ public:
             raw.cost.second,
             sorter_(raw)
         };
+
+        auto man_resolved = future.get();
+
+        // TODO: ここで，sorter_(raw)の結果がイマイチなら，
+        // man_resolvedが結果を置き換える可能性を考慮．
 
         return std::move(formed);
     }

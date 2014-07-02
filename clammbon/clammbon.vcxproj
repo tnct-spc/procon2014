@@ -154,6 +154,9 @@
     <ClInclude Include="include\ppm_reader.hpp" />
     <ClInclude Include="include\splitter.hpp" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="src\impl\gui_move.ipp" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
