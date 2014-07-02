@@ -1,4 +1,5 @@
-﻿#include <vector>
+﻿#include <mutex>
+#include <vector>
 #include <FL/Fl.H>
 #include <FL/Fl_Window.H>
 #include <FL/Fl_Image.H>
@@ -60,6 +61,7 @@ namespace impl
         point_type move_begin_;
         point_type select_begin_;
         point_type select_end_;
+        std::mutex handler_mutex_;
 
         std::vector<std::vector<unfold_image_type>> image_;
         std::vector<std::vector<Fl_RGB_Image*>> rgbs_;
@@ -223,8 +225,76 @@ namespace impl
             else
             {
                 // 矩形交換
+                if(event_box.manhattan(move_begin_) == 1)
+                {
+                    //　移動方向
+                    point_type direction = event_box - move_begin_;
 
-                // 端チェック
+                    // 端チェック
+                    if(
+                        (select_begin_.x + direction.x < 0) || (select_end_.x + direction.x >= split_x_) ||
+                        (select_begin_.y + direction.y < 0) || (select_end_.y + direction.y >= split_y_)
+                        )
+                    {
+                        // 移動不可
+                        return;
+                    }
+
+                    if(direction.x == 1)       // 右
+                    {
+                        for(int i=select_end_.x; i>=select_begin_.x; --i)
+                        {
+                            for(int j=select_begin_.y; j<=select_end_.y; ++j)
+                            {
+                                box_swap({i, j}, {i+1, j});
+                            }
+                        }
+                        
+                        ++select_begin_.x;
+                        ++select_end_.x;
+                    }
+                    else if(direction.x == -1) // 左
+                    {
+                        for(int i=select_begin_.x; i<=select_end_.x; ++i)
+                        {
+                            for(int j=select_begin_.y; j<=select_end_.y; ++j)
+                            {
+                                box_swap({i, j}, {i-1, j});
+                            }
+                        }
+                        
+                        --select_begin_.x;
+                        --select_end_.x;
+                    }
+                    else if(direction.y == 1)  // 下
+                    {
+                        for(int i=select_end_.y; i>=select_begin_.y; --i)
+                        {
+                            for(int j=select_begin_.x; j<=select_end_.x; ++j)
+                            {
+                                box_swap({j, i}, {j, i+1});
+                            }
+                        }
+
+                        ++select_begin_.y;
+                        ++select_end_.y;
+                    }
+                    else if(direction.y == -1) // 上
+                    {
+                        for(int i=select_begin_.y; i<=select_end_.y; ++i)
+                        {
+                            for(int j=select_begin_.x; j<=select_end_.x; ++j)
+                            {
+                                box_swap({j, i}, {j, i-1});
+                            }
+                        }
+
+                        --select_begin_.y;
+                        --select_end_.y;
+                    }
+                    boxes_redraw();
+                    move_begin_ = event_box;
+                }
             }
         }
     }
@@ -236,6 +306,16 @@ namespace impl
         {
             // 右クリックは同時移動ブロックの選択終了
             select_end_ = event_box;
+
+            // 正格化: select_{begin,end}_を，beginが左上になるようにする
+            point_type new_begin, new_end;
+            new_begin.x = std::min(select_begin_.x, select_end_.x);
+            new_begin.y = std::min(select_begin_.y, select_end_.y);
+            new_end.x   = std::max(select_begin_.x, select_end_.x);
+            new_end.y   = std::max(select_begin_.y, select_end_.y);
+
+            select_begin_ = new_begin;
+            select_end_   = new_end;
         }
     }
 
@@ -254,6 +334,7 @@ namespace impl
 
     int MoveWindow::handle(int event)
     {
+        std::lock_guard<std::mutex> lock(handler_mutex_);
         switch(event)
         {
             case FL_PUSH:
