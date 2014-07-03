@@ -23,8 +23,6 @@ void algorithm::operator() (question_data const& data)
 
     // 画像
     matrix = data.block;
-    // 方向
-    directions = direction_type<int>{0, 1, 2, 3};
     // 幅と高さ
     width = data.size.first;
     height = data.size.second;
@@ -46,7 +44,7 @@ point_type algorithm::current_point(point_type const& point)
     // point を原座標として持つ断片画像の現在の座標を返す
     for (int y = 0; y < height; ++y) {
         auto p = std::find(matrix[y].begin(), matrix[y].end(), point);
-        if (p == matrix[y].end() && !(*matrix[y].end() == point)) {
+        if (p == matrix[y].end()) {
             continue;
         }
         return point_type{static_cast<int>(std::distance(matrix[y].begin(), p)), y};
@@ -85,6 +83,7 @@ void algorithm::greedy()
     // 貪欲法で解く 一番要の部分
 
     // ターゲットをキューに入れる
+    // ここで target の中身は原座標である
     // queue なのに vector とはこれいかに
     std::vector<point_type> target_queue;
     for (int i = sorted_col; i < width; i++) {
@@ -96,27 +95,22 @@ void algorithm::greedy()
 
     // 原座標と現在の座標との差
     point_type point_diff;
-    // mover が target の周りを周るときにどちらを通るか
-    // 最下行, 最右列でなければ右下でよい
+    // どっちを周るか
     TurnSide turnside;
     // カウンタ
     int i;
     for (point_type target : target_queue) {
         // まず斜めに移動
         point_diff = target - current_point(target);
-        i = 0;
 
+        // TODO: 水平垂直のどちらを先に動かすかの判断も必要では
+        i = 0;
         while (point_diff.x < 0 && point_diff.y < 0) {
             // 原座標に対して右下にあるので左上へ移動
-            if (current_point(target).x == width - 1 || current_point(target).y == height - 1) {
-                turnside = TurnSide::UpperLeft;
-            } else {
-                turnside = TurnSide::DownerRight;
-            }
             if (i % 2 == 0) {
-                move_target_direction(current_point(target), directions.up, turnside);
+                move_target_direction(current_point(target), Direction::Up, TurnSide::DownerRight);
             } else {
-                move_target_direction(current_point(target), directions.left, turnside);
+                move_target_direction(current_point(target), Direction::Left, TurnSide::DownerRight);
             }
             ++i;
             point_diff = target - current_point(target);
@@ -124,15 +118,10 @@ void algorithm::greedy()
         i = 0;
         while (point_diff.x < 0 && point_diff.y > 0) {
             // 原座標に対して右上にあるので左下へ移動
-            if (current_point(target).x == width - 1 || current_point(target).y == height - 1) {
-                turnside = TurnSide::UpperLeft;
-            } else {
-                turnside = TurnSide::DownerRight;
-            }
             if (i % 2 == 0) {
-                move_target_direction(current_point(target), directions.down, turnside);
+                move_target_direction(current_point(target), Direction::Down, TurnSide::UpperRight);
             } else {
-                move_target_direction(current_point(target), directions.left, turnside);
+                move_target_direction(current_point(target), Direction::Left, TurnSide::UpperRight);
             }
             ++i;
             point_diff = target - current_point(target);
@@ -140,15 +129,10 @@ void algorithm::greedy()
         i = 0;
         while (point_diff.x > 0 && point_diff.y < 0) {
             // 原座標に対して左下にあるので右上へ移動
-            if (current_point(target).x == width - 1 || current_point(target).y == height - 1) {
-                turnside = TurnSide::UpperLeft;
-            } else {
-                turnside = TurnSide::DownerRight;
-            }
             if (i % 2 == 0) {
-                move_target_direction(current_point(target), directions.up, turnside);
+                move_target_direction(current_point(target), Direction::Up, TurnSide::DownerLeft);
             } else {
-                move_target_direction(current_point(target), directions.right, turnside);
+                move_target_direction(current_point(target), Direction::Right, TurnSide::DownerLeft);
             }
             ++i;
             point_diff = target - current_point(target);
@@ -156,53 +140,63 @@ void algorithm::greedy()
         i = 0;
         while (point_diff.x > 0 && point_diff.y > 0) {
             // 原座標に対して左上にあるので右下へ移動
-            if (current_point(target).x == width - 1 || current_point(target).y == height - 1) {
-                turnside = TurnSide::UpperLeft;
-            } else {
-                turnside = TurnSide::DownerRight;
-            }
             if (i % 2 == 0) {
-                move_target_direction(current_point(target), directions.down, turnside);
+                move_target_direction(current_point(target), Direction::Down, TurnSide::UpperLeft);
             } else {
-                move_target_direction(current_point(target), directions.right, turnside);
+                move_target_direction(current_point(target), Direction::Right, TurnSide::UpperLeft);
             }
             ++i;
             point_diff = target - current_point(target);
         }
 
         // ここまでで x または y 座標が揃っていることになるので真横か真上への移動を行う
-        if (current_point(target).x == width - 1 || current_point(target).y == height - 1) {
-            turnside = TurnSide::UpperLeft;
+
+        // 周る方向を決める
+        if (target.x < width / 2) {
+            // ターゲットが上側なので下側を周る
+            if (target.y < width / 2) {
+                // ターゲットが左側なので右側を周る
+                turnside = TurnSide::DownerRight;
+            } else {
+                // ターゲットが右側なので左側を周る
+                turnside = TurnSide::DownerLeft;
+            }
         } else {
-            turnside = TurnSide::DownerRight;
+            // ターゲットが下側なので上側を周る
+            if (target.y < width / 2) {
+                // ターゲットが左側なので右側を周る
+                turnside = TurnSide::UpperRight;
+            } else {
+                // ターゲットが右側なので左側を周る
+                turnside = TurnSide::UpperLeft;
+            }
         }
+
         point_diff = target - current_point(target);
         if (point_diff.x != 0) {
             // 横に移動する場合
             while (point_diff.x < 0) {
                 // 原座標より右にいるので左へ移動
-                move_target_direction(current_point(target), directions.left, turnside);
+                move_target_direction(current_point(target), Direction::Left, turnside);
                 point_diff = target - current_point(target);
             }
             while (point_diff.x > 0) {
                 // 原座標より左にいるので右へ移動
-                move_target_direction(current_point(target), directions.right, turnside);
+                move_target_direction(current_point(target), Direction::Right, turnside);
                 point_diff = target - current_point(target);
             }
         } else if (point_diff.y != 0) {
             // 縦に移動する場合
             while (point_diff.y > 0) {
                 // 原座標より上にいるので下へ移動
-                move_target_direction(current_point(target), directions.down, turnside);
+                move_target_direction(current_point(target), Direction::Down, turnside);
                 point_diff = target - current_point(target);
             }
             while (point_diff.y < 0) {
                 // 原座標より下にいるので上へ移動
-                move_target_direction(current_point(target), directions.up, turnside);
+                move_target_direction(current_point(target), Direction::Up, turnside);
                 point_diff = target - current_point(target);
             }
-        } else {
-            throw std::runtime_error("ギャア");
         }
     }
 }
@@ -215,20 +209,23 @@ void algorithm::brute_force()
     // TODO: これからやる
 }
 
-void algorithm::move_direction(point_type const& target, int const& direction)
+void algorithm::move_direction(point_type const& target, Direction const& direction)
 {
     // target に存在する断片画像を指定された方向へ移動する
     print();
-    if (direction == directions.up) {
+    assert(0 <= target.x && target.x < width && 0 <= target.y && target.y < height);
+    if (direction == Direction::Up) {
+        assert(target.y > 0);
         std::swap(matrix[target.y][target.x], matrix[target.y - 1][target.x]);
-    } else if (direction == directions.right) {
+    } else if (direction == Direction::Right) {
+        assert(target.x < width - 1);
         std::swap(matrix[target.y][target.x], matrix[target.y][target.x + 1]);
-    } else if (direction == directions.down) {
+    } else if (direction == Direction::Down) {
+        assert(target.y < height - 1);
         std::swap(matrix[target.y][target.x], matrix[target.y + 1][target.x]);
-    } else if (direction == directions.left) {
+    } else if (direction == Direction::Left) {
+        assert(target.x > 0);
         std::swap(matrix[target.y][target.x], matrix[target.y][target.x - 1]);
-    } else {
-        throw std::runtime_error("ギャア");
     }
 }
 
@@ -237,16 +234,15 @@ void algorithm::move_from_to(point_type from, point_type const& to)
     // from に存在する断片画像を to まで移動させる
 
     // 斜め方向への移動はとりあえずダメってことで
-    std::cout << "(" << from << ") (" << to << ")" << std::endl;
     assert(from.x == to.x || from.y == to.y);
 
     // Y座標が異なる場合に縦に移動する
     while (from.y != to.y) {
         if (from.y > to.y) {
-            move_direction(from, directions.up);
+            move_direction(from, Direction::Up);
             --from.y;
         } else {
-            move_direction(from, directions.down);
+            move_direction(from, Direction::Down);
             ++from.y;
         }
     }
@@ -254,30 +250,37 @@ void algorithm::move_from_to(point_type from, point_type const& to)
     // X座標が異なる場合に横に移動する
     while (from.x != to.x) {
         if (from.x > to.x) {
-            move_direction(from, directions.left);
+            move_direction(from, Direction::Left);
             --from.x;
         } else {
-            move_direction(from, directions.right);
+            move_direction(from, Direction::Right);
             ++from.x;
         }
     }
 }
 
-void algorithm::move_target_direction(point_type const& target, int const& direction, TurnSide const& turnside)
+void algorithm::move_target_direction(point_type const& target, Direction const& direction, TurnSide const& turnside)
 {
     // mover の操作によって target に存在する断片画像を指定の方向へ移動させる.
-    // mover は turnside が TurnSide::DownerRight のときは target の 右側・下側を,
-    // TurnSide::UpperLeft のときは 左側・上側を回る.
+    // NOTE: 無条件に縦に先に移動する仕様だがこれでいいのか？
 
     // mover を操作のための初期位置に移動させる.
     // 例えば, target を上へ移動させる場合, mover は target の1つ上にいる必要がある.
+
+    // mover の現在の座標
     point_type mover_cur = current_point(mover);
-    std::tuple<point_type, point_type, point_type> pass_points;  // 通過点
-    if (direction == directions.up) {
+    // 通過点3箇所
+    std::tuple<point_type, point_type, point_type> pass_points;
+
+    if (direction == Direction::Up) {
+        // 上方向に移動させたい
         if (mover_cur.x == target.x && mover_cur.y > target.y) {
-            if (turnside == TurnSide::DownerRight) {
+            // mover が target の真下にいる場合
+            if (turnside == TurnSide::UpperRight || turnside == TurnSide::DownerRight) {
+                // 右側を周る場合
                 std::get<0>(pass_points) = mover_cur + point_type{1, 0};
             } else {
+                // 左側を周る場合
                 std::get<0>(pass_points) = mover_cur + point_type{-1, 0};
             }
         } else {
@@ -285,11 +288,15 @@ void algorithm::move_target_direction(point_type const& target, int const& direc
         }
         std::get<1>(pass_points) = point_type{std::get<0>(pass_points).x, target.y - 1};
         std::get<2>(pass_points) = point_type{target.x, target.y - 1};
-    } else if (direction == directions.right) {
+    } else if (direction == Direction::Right) {
+        // 右方向に移動させたい
         if (mover_cur.y == target.y && mover_cur.x < target.x) {
-            if (turnside == TurnSide::DownerRight) {
+            // mover が target の真左にいる場合
+            if (turnside == TurnSide::DownerRight || turnside == TurnSide::DownerLeft) {
+                // 下側を周る場合
                 std::get<0>(pass_points) = mover_cur + point_type{0, 1};
             } else {
+                // 上側を周る場合
                 std::get<0>(pass_points) = mover_cur + point_type{0, -1};
             }
         } else {
@@ -297,11 +304,15 @@ void algorithm::move_target_direction(point_type const& target, int const& direc
         }
         std::get<1>(pass_points) = point_type{target.x + 1, std::get<0>(pass_points).y};
         std::get<2>(pass_points) = point_type{target.x + 1, target.y};
-    } else if (direction == directions.down) {
+    } else if (direction == Direction::Down) {
+        // 下方向に移動させたい
         if (mover_cur.x == target.x && mover_cur.y < target.y) {
-            if (turnside == TurnSide::DownerRight) {
+            // mover が target の真上にいる場合
+            if (turnside == TurnSide::UpperRight || turnside == TurnSide::DownerRight) {
+                // 右側を周る場合
                 std::get<0>(pass_points) = mover_cur + point_type{1, 0};
             } else {
+                // 左側を周る場合
                 std::get<0>(pass_points) = mover_cur + point_type{-1, 0};
             }
         } else {
@@ -309,12 +320,15 @@ void algorithm::move_target_direction(point_type const& target, int const& direc
         }
         std::get<1>(pass_points) = point_type{std::get<0>(pass_points).x, target.y + 1};
         std::get<2>(pass_points) = point_type{target.x, target.y + 1};
-    } else if (direction == directions.left) {
-        std::cout << "direction == left" << std::endl;
+    } else if (direction == Direction::Left) {
+        // 左方向に移動させたい
         if (mover_cur.y == target.y && mover_cur.x > target.x) {
-            if (turnside == TurnSide::DownerRight) {
+            // mover が target の右側にいる場合
+            if (turnside == TurnSide::DownerRight || turnside == TurnSide::DownerLeft) {
+                // 下側を周る場合
                 std::get<0>(pass_points) = mover_cur + point_type{0, 1};
             } else {
+                // 上側を周る場合
                 std::get<0>(pass_points) = mover_cur + point_type{0, -1};
             }
         } else {
@@ -322,16 +336,27 @@ void algorithm::move_target_direction(point_type const& target, int const& direc
         }
         std::get<1>(pass_points) = point_type{target.x - 1, std::get<0>(pass_points).y};
         std::get<2>(pass_points) = point_type{target.x - 1, target.y};
-    } else {
-        throw std::runtime_error("ギャア");
     }
-    std::cout << mover_cur << " -> " << std::get<0>(pass_points) << " -> " << std::get<1>(pass_points) << " -> " << std::get<1>(pass_points) << std::endl;
+
     move_from_to(mover_cur, std::get<0>(pass_points));
     move_from_to(std::get<0>(pass_points), std::get<1>(pass_points));
     move_from_to(std::get<1>(pass_points), std::get<2>(pass_points));
 
     // mover を移動
-    move_direction(current_point(mover), (direction + 2) % 4);
+    move_direction(current_point(mover), inverse_direction(direction));
+}
+
+Direction algorithm::inverse_direction(Direction const& direction) {
+    // 逆向きの方向を返す
+    if (direction == Direction::Up) {
+        return Direction::Down;
+    } else if (direction == Direction::Down) {
+        return Direction::Up;
+    } else if (direction == Direction::Right) {
+        return Direction::Left;
+    } else if (direction == Direction::Left) {
+        return Direction::Right;
+    }
 }
 
 uint16_t algorithm::point_to_num(point_type const& point)

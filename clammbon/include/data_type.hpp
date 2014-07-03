@@ -139,7 +139,8 @@ struct direction_type
     T left;
 };
 
-enum struct TurnSide { UpperLeft, DownerRight };
+enum struct TurnSide { UpperRight, DownerRight, DownerLeft, UpperLeft };
+enum struct Direction { Up, Right, Down, Left };
 
 // ostream に吐けると便利だよね
 template<typename CharT, typename Traits>
