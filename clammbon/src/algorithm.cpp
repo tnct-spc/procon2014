@@ -99,104 +99,139 @@ void algorithm::greedy()
     TurnSide turnside;
     // カウンタ
     int i;
-    for (point_type target : target_queue) {
+    // 仮のターゲット座標, これは原座標ではなく実際の座標で固定
+    point_type target;
+    for (point_type target_org : target_queue) {
+        // 端の部分の処理
+        if (target_org.x == width - 2 || target_org.y == height - 1) {
+            // ターゲットが右から2番目の断片画像のとき
+            // ターゲットが下から1番目の断片画像のとき
+            target = target_org + point_type{1, 0};
+        } else if (target_org.x == width - 1 || target_org.y == height - 2) {
+            // ターゲットが右から1番目の断片画像のとき
+            // ターゲットが下から2番目の断片画像のとき
+            target = target_org + point_type{0, 1};
+        } else {
+            target = target_org;
+        }
+
         // まず斜めに移動
-        point_diff = target - current_point(target);
+        point_diff = target - current_point(target_org);
 
         // TODO: 水平垂直のどちらを先に動かすかの判断も必要では
         i = 0;
         while (point_diff.x < 0 && point_diff.y < 0) {
             // 原座標に対して右下にあるので左上へ移動
             if (i % 2 == 0) {
-                move_target_direction(current_point(target), Direction::Up, TurnSide::DownerRight);
+                move_target_direction(current_point(target_org), Direction::Up, TurnSide::DownerRight);
             } else {
-                move_target_direction(current_point(target), Direction::Left, TurnSide::DownerRight);
+                move_target_direction(current_point(target_org), Direction::Left, TurnSide::DownerRight);
             }
             ++i;
-            point_diff = target - current_point(target);
+            point_diff = target - current_point(target_org);
         }
         i = 0;
         while (point_diff.x < 0 && point_diff.y > 0) {
             // 原座標に対して右上にあるので左下へ移動
             if (i % 2 == 0) {
-                move_target_direction(current_point(target), Direction::Down, TurnSide::UpperRight);
+                move_target_direction(current_point(target_org), Direction::Down, TurnSide::UpperRight);
             } else {
-                move_target_direction(current_point(target), Direction::Left, TurnSide::UpperRight);
+                move_target_direction(current_point(target_org), Direction::Left, TurnSide::UpperRight);
             }
             ++i;
-            point_diff = target - current_point(target);
+            point_diff = target - current_point(target_org);
         }
         i = 0;
         while (point_diff.x > 0 && point_diff.y < 0) {
             // 原座標に対して左下にあるので右上へ移動
             if (i % 2 == 0) {
-                move_target_direction(current_point(target), Direction::Up, TurnSide::DownerLeft);
+                move_target_direction(current_point(target_org), Direction::Up, TurnSide::DownerLeft);
             } else {
-                move_target_direction(current_point(target), Direction::Right, TurnSide::DownerLeft);
+                move_target_direction(current_point(target_org), Direction::Right, TurnSide::DownerLeft);
             }
             ++i;
-            point_diff = target - current_point(target);
+            point_diff = target - current_point(target_org);
         }
         i = 0;
         while (point_diff.x > 0 && point_diff.y > 0) {
             // 原座標に対して左上にあるので右下へ移動
             if (i % 2 == 0) {
-                move_target_direction(current_point(target), Direction::Down, TurnSide::UpperLeft);
+                move_target_direction(current_point(target_org), Direction::Down, TurnSide::UpperLeft);
             } else {
-                move_target_direction(current_point(target), Direction::Right, TurnSide::UpperLeft);
+                move_target_direction(current_point(target_org), Direction::Right, TurnSide::UpperLeft);
             }
             ++i;
-            point_diff = target - current_point(target);
+            point_diff = target - current_point(target_org);
         }
 
         // ここまでで x または y 座標が揃っていることになるので真横か真上への移動を行う
 
         // 周る方向を決める
-        if (target.x < width / 2) {
-            // ターゲットが上側なので下側を周る
-            if (target.y < width / 2) {
-                // ターゲットが左側なので右側を周る
-                turnside = TurnSide::DownerRight;
+        if (target.x == width - 1) {
+            // ターゲットが最右列なので左を周る
+            if (target.y == height - 1) {
+                // ターゲットが最下行なので上を周る
+                turnside = TurnSide::UpperLeft;
             } else {
-                // ターゲットが右側なので左側を周る
                 turnside = TurnSide::DownerLeft;
             }
         } else {
-            // ターゲットが下側なので上側を周る
-            if (target.y < width / 2) {
-                // ターゲットが左側なので右側を周る
+            if (target.y == height - 1) {
+                // ターゲットが最下行なので上を周る
                 turnside = TurnSide::UpperRight;
             } else {
-                // ターゲットが右側なので左側を周る
-                turnside = TurnSide::UpperLeft;
+                turnside = TurnSide::DownerRight;
             }
         }
 
-        point_diff = target - current_point(target);
+        point_diff = target - current_point(target_org);
         if (point_diff.x != 0) {
             // 横に移動する場合
             while (point_diff.x < 0) {
                 // 原座標より右にいるので左へ移動
-                move_target_direction(current_point(target), Direction::Left, turnside);
-                point_diff = target - current_point(target);
+                move_target_direction(current_point(target_org), Direction::Left, turnside);
+                point_diff = target - current_point(target_org);
             }
             while (point_diff.x > 0) {
                 // 原座標より左にいるので右へ移動
-                move_target_direction(current_point(target), Direction::Right, turnside);
-                point_diff = target - current_point(target);
+                move_target_direction(current_point(target_org), Direction::Right, turnside);
+                point_diff = target - current_point(target_org);
             }
         } else if (point_diff.y != 0) {
             // 縦に移動する場合
             while (point_diff.y > 0) {
                 // 原座標より上にいるので下へ移動
-                move_target_direction(current_point(target), Direction::Down, turnside);
-                point_diff = target - current_point(target);
+                move_target_direction(current_point(target_org), Direction::Down, turnside);
+                point_diff = target - current_point(target_org);
             }
             while (point_diff.y < 0) {
                 // 原座標より下にいるので上へ移動
-                move_target_direction(current_point(target), Direction::Up, turnside);
-                point_diff = target - current_point(target);
+                move_target_direction(current_point(target_org), Direction::Up, turnside);
+                point_diff = target - current_point(target_org);
             }
+        }
+
+        // 端の部分の処理
+        if (target_org.x == width - 1) {
+            // ターゲットの真の原座標が右端の場合
+            if (current_point(mover) == target + point_type{0, 1}) {
+                // mover が仮の原座標の直下にいる場合
+                move_direction(current_point(mover), Direction::Left);
+                move_direction(current_point(mover), Direction::Up);
+            }
+            move_direction(current_point(mover), Direction::Up);
+            move_direction(current_point(mover), Direction::Right);
+            move_direction(current_point(mover), Direction::Down);
+        } else if (target_org.y == height - 1) {
+            // ターゲットの真の原座標が下端の場合
+            if (current_point(mover) == target + point_type{1, 0}) {
+                // mover が仮の原座標の直右にいる場合
+                move_direction(current_point(mover), Direction::Up);
+                move_direction(current_point(mover), Direction::Left);
+            }
+            move_direction(current_point(mover), Direction::Left);
+            move_direction(current_point(mover), Direction::Down);
+            move_direction(current_point(mover), Direction::Right);
         }
     }
 }

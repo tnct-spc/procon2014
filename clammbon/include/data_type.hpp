@@ -12,7 +12,7 @@ struct point_type
 {
     int x;
     int y;
-    
+
     friend inline bool operator== (point_type const& lhs, point_type const& rhs)
     {
         return lhs.x == rhs.x && lhs.y == rhs.y;

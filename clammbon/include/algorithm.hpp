@@ -31,17 +31,4 @@ private:
     point_type mover;
 };
 
-Direction inverse_direction(Direction const& direction) {
-    // 逆向きの方向を返す
-    if (direction == Direction::Up) {
-        return Direction::Down;
-    } else if (direction == Direction::Down) {
-        return Direction::Up;
-    } else if (direction == Direction::Right) {
-        return Direction::Left;
-    } else if (direction == Direction::Left) {
-        return Direction::Right;
-    }
-}
-
 #endif
