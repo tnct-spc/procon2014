@@ -248,9 +248,9 @@ void algorithm::move_direction(point_type const& target, Direction const& direct
 {
     // target に存在する断片画像を指定された方向へ移動する
     print();
-    assert(0 <= target.x && target.x < width && 0 <= target.y && target.y < height);
+    assert(sorted_col <= target.x && target.x < width && sorted_row <= target.y && target.y < height);
     if (direction == Direction::Up) {
-        assert(target.y > 0);
+        assert(target.y > sorted_row);
         std::swap(matrix[target.y][target.x], matrix[target.y - 1][target.x]);
     } else if (direction == Direction::Right) {
         assert(target.x < width - 1);
@@ -259,7 +259,7 @@ void algorithm::move_direction(point_type const& target, Direction const& direct
         assert(target.y < height - 1);
         std::swap(matrix[target.y][target.x], matrix[target.y + 1][target.x]);
     } else if (direction == Direction::Left) {
-        assert(target.x > 0);
+        assert(target.x > sorted_col);
         std::swap(matrix[target.y][target.x], matrix[target.y][target.x - 1]);
     }
 }
@@ -403,7 +403,6 @@ uint16_t algorithm::point_to_num(point_type const& point)
 void algorithm::print()
 {
     // 具合をいい感じに表示
-    std::cout << boost::format("selecting %1$02x at (%2%)") % point_to_num(mover) % current_point(mover) << std::endl;
     for (std::vector<point_type> row : matrix) {
         for (point_type tile : row) {
             std::cout << std::setfill('0') << std::setw(2) << std::hex << point_to_num(tile) << std::dec << " ";
