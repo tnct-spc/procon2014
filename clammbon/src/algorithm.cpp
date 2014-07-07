@@ -106,11 +106,11 @@ void algorithm::greedy()
         if (target_org.x == width - 2 || target_org.y == height - 1) {
             // ターゲットが右から2番目の断片画像のとき
             // ターゲットが下から1番目の断片画像のとき
-            target = target_org + point_type{1, 0};
+            target = target_org.right();
         } else if (target_org.x == width - 1 || target_org.y == height - 2) {
             // ターゲットが右から1番目の断片画像のとき
             // ターゲットが下から2番目の断片画像のとき
-            target = target_org + point_type{0, 1};
+            target = target_org.down();
         } else {
             target = target_org;
         }
@@ -214,7 +214,7 @@ void algorithm::greedy()
         // 端の部分の処理
         if (target_org.x == width - 1) {
             // ターゲットの真の原座標が右端の場合
-            if (current_point(mover) == target + point_type{0, 1}) {
+            if (current_point(mover) == target.down()) {
                 // mover が仮の原座標の直下にいる場合
                 move_direction(current_point(mover), Direction::Left);
                 move_direction(current_point(mover), Direction::Up);
@@ -224,7 +224,7 @@ void algorithm::greedy()
             move_direction(current_point(mover), Direction::Down);
         } else if (target_org.y == height - 1) {
             // ターゲットの真の原座標が下端の場合
-            if (current_point(mover) == target + point_type{1, 0}) {
+            if (current_point(mover) == target.right()) {
                 // mover が仮の原座標の直右にいる場合
                 move_direction(current_point(mover), Direction::Up);
                 move_direction(current_point(mover), Direction::Left);
@@ -313,64 +313,64 @@ void algorithm::move_target_direction(point_type const& target, Direction const&
             // mover が target の真下にいる場合
             if (turnside == TurnSide::UpperRight || turnside == TurnSide::DownerRight) {
                 // 右側を周る場合
-                std::get<0>(pass_points) = mover_cur + point_type{1, 0};
+                std::get<0>(pass_points) = mover_cur.right();
             } else {
                 // 左側を周る場合
-                std::get<0>(pass_points) = mover_cur + point_type{-1, 0};
+                std::get<0>(pass_points) = mover_cur.left();
             }
         } else {
             std::get<0>(pass_points) = mover_cur;
         }
         std::get<1>(pass_points) = point_type{std::get<0>(pass_points).x, target.y - 1};
-        std::get<2>(pass_points) = point_type{target.x, target.y - 1};
+        std::get<2>(pass_points) = target.up();
     } else if (direction == Direction::Right) {
         // 右方向に移動させたい
         if (mover_cur.y == target.y && mover_cur.x < target.x) {
             // mover が target の真左にいる場合
             if (turnside == TurnSide::DownerRight || turnside == TurnSide::DownerLeft) {
                 // 下側を周る場合
-                std::get<0>(pass_points) = mover_cur + point_type{0, 1};
+                std::get<0>(pass_points) = mover_cur.down();
             } else {
                 // 上側を周る場合
-                std::get<0>(pass_points) = mover_cur + point_type{0, -1};
+                std::get<0>(pass_points) = mover_cur.up();
             }
         } else {
             std::get<0>(pass_points) = mover_cur;
         }
         std::get<1>(pass_points) = point_type{target.x + 1, std::get<0>(pass_points).y};
-        std::get<2>(pass_points) = point_type{target.x + 1, target.y};
+        std::get<2>(pass_points) = target.right();
     } else if (direction == Direction::Down) {
         // 下方向に移動させたい
         if (mover_cur.x == target.x && mover_cur.y < target.y) {
             // mover が target の真上にいる場合
             if (turnside == TurnSide::UpperRight || turnside == TurnSide::DownerRight) {
                 // 右側を周る場合
-                std::get<0>(pass_points) = mover_cur + point_type{1, 0};
+                std::get<0>(pass_points) = mover_cur.right();
             } else {
                 // 左側を周る場合
-                std::get<0>(pass_points) = mover_cur + point_type{-1, 0};
+                std::get<0>(pass_points) = mover_cur.left();
             }
         } else {
             std::get<0>(pass_points) = mover_cur;
         }
         std::get<1>(pass_points) = point_type{std::get<0>(pass_points).x, target.y + 1};
-        std::get<2>(pass_points) = point_type{target.x, target.y + 1};
+        std::get<2>(pass_points) = target.down();
     } else if (direction == Direction::Left) {
         // 左方向に移動させたい
         if (mover_cur.y == target.y && mover_cur.x > target.x) {
             // mover が target の右側にいる場合
             if (turnside == TurnSide::DownerRight || turnside == TurnSide::DownerLeft) {
                 // 下側を周る場合
-                std::get<0>(pass_points) = mover_cur + point_type{0, 1};
+                std::get<0>(pass_points) = mover_cur.down();
             } else {
                 // 上側を周る場合
-                std::get<0>(pass_points) = mover_cur + point_type{0, -1};
+                std::get<0>(pass_points) = mover_cur.up();
             }
         } else {
             std::get<0>(pass_points) = mover_cur;
         }
         std::get<1>(pass_points) = point_type{target.x - 1, std::get<0>(pass_points).y};
-        std::get<2>(pass_points) = point_type{target.x - 1, target.y};
+        std::get<2>(pass_points) = target.left();
     }
 
     move_from_to(mover_cur, std::get<0>(pass_points));

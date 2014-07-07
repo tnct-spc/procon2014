@@ -38,6 +38,23 @@ struct point_type
             std::pow<T>(this->y - other.y, 2)
             );
     }
+
+    inline point_type const up() const
+    {
+        return point_type{this->x, this->y - 1};
+    }
+    inline point_type const right() const
+    {
+        return point_type{this->x + 1, this->y};
+    }
+    inline point_type const down() const
+    {
+        return point_type{this->x, this->y + 1};
+    }
+    inline point_type const left() const
+    {
+        return point_type{this->x - 1, this->y};
+    }
 };
 struct pixel_type
 {
