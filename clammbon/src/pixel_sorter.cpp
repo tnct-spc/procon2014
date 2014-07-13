@@ -35,7 +35,7 @@ auto pixel_sorter::proposed_answer(question_raw_data const& raw) const -> std::v
 int pixel_sorter::pixel_comparison(pixel_type const& lhs, pixel_type const& rhs) const
 {
     int s = 0;
-    for(int i=0; i<3; ++i) s += std::pow(std::abs(lhs[i] - rhs[i]), 2);
+    for(int i=0; i<3; ++i) s += static_cast<int>(std::pow(std::abs(lhs[i] - rhs[i]), 2));
     return s;
 }
 
