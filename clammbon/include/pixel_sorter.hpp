@@ -30,6 +30,9 @@ private:
 
     //pixelを比較し，RGB距離の2乗を返す
     int pixel_comparison(pixel_type const& lhs, pixel_type const& rhs) const;
+    
+    //2つのピクセル列を比較した値を返す
+    int pixel_line_comparison(image_type const& lhs, image_type const& rhs) const;
 
     // 一致が多いほど低い値を返す(つまり画像の距離の2乗)
     // それぞれ，1枚目の右端と2枚目の左端，1枚目の左端と2枚目の右端，1枚目の上端と2枚目の下端，1枚目の下端と2枚目の上端を探索．

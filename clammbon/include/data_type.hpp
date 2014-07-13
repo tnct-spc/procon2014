@@ -36,22 +36,21 @@ struct point_type
             );
     }
 };
-struct pixel_type
+struct pixel_old_type
 {
     uint8_t r;
     uint8_t g;
     uint8_t b;
 
-    friend bool operator== (pixel_type const& lhs, pixel_type const& rhs)
+    friend bool operator== (pixel_old_type const& lhs, pixel_old_type const& rhs)
     {
         return lhs.r == rhs.r && lhs.g == rhs.g && lhs.b == rhs.b;
     }
 };
 
+typedef cv::Vec3b                            pixel_type;
 typedef std::vector<uint8_t>                 unfold_image_type;
-typedef std::vector<std::vector<pixel_type>> stl_image_type;
-typedef cv::Mat                              cv_image_type;
-typedef cv_image_type                        image_type;
+typedef cv::Mat_<cv::Vec3b>                  image_type;
 
 // 気持ち悪いが，[i][j]の位置に分割された画像が入っている．更に[j][k]へのアクセスによって画素にアクセス
 typedef std::vector<std::vector<image_type>> split_image_type;

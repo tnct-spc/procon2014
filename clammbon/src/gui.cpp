@@ -11,8 +11,8 @@ namespace gui
         splitter sp;
 
         auto const cloned_image = std::make_shared<unfold_image_type>(sp.unfold_image(image));
-        auto const height = image.size();
-        auto const width  = image.at(0).size();
+        auto const height = image.rows;
+        auto const width  = image.cols;
 
         return std::async(
             std::launch::async,

@@ -35,52 +35,46 @@ auto pixel_sorter::proposed_answer(question_raw_data const& raw) const -> std::v
 int pixel_sorter::pixel_comparison(pixel_type const& lhs, pixel_type const& rhs) const
 {
     int s = 0;
-    s += static_cast<int>(std::pow(std::abs(lhs.r - rhs.r), 2)); //r
-    s += static_cast<int>(std::pow(std::abs(lhs.g - rhs.g), 2)); //g
-    s += static_cast<int>(std::pow(std::abs(lhs.b - rhs.b), 2)); //b
+    for(int i=0; i<3; ++i) s += std::pow(std::abs(lhs[i] - rhs[i]), 2);
+    return s;
+}
+
+//2つのピクセル列を比較した値を返す
+int pixel_sorter::pixel_line_comparison(image_type const& lhs, image_type const& rhs) const
+{
+    auto lhs_it = lhs.begin(), lhs_end = lhs.end();
+    auto rhs_it = rhs.begin(), rhs_end = rhs.end();
+
+    int s = 0;
+    for(; lhs_it != lhs_end && rhs_it != rhs_end; ++lhs_it, ++rhs_it)
+    {
+        s += pixel_comparison(*lhs_it, *rhs_it);
+    }
     return s;
 }
 
 //一枚目の右端と二枚目の左端を見る関数, 一致が多いほど低いを返す
 uint64_t pixel_sorter::rl_comparison(image_type const& lhs, image_type const& rhs) const
 {
-    uint64_t s = 0;
-    for(int i=0; i<lhs.size(); ++i)
-        s += pixel_comparison(lhs[i].back(), rhs[i].front());
-    return s;
+    return pixel_line_comparison(lhs.col(lhs.cols - 1), rhs.col(0));
 }
 
 //一枚目の左端と二枚目の右端を見る関数, 一致が多いほど低いを返す
 uint64_t pixel_sorter::lr_comparison(image_type const& lhs, image_type const& rhs) const
 {
-    uint64_t s = 0;
-    for(int i=0; i<lhs.size(); ++i)
-        s += pixel_comparison(lhs[i].front(), rhs[i].back());
-    return s;
+    return pixel_line_comparison(lhs.col(0), rhs.col(rhs.cols - 1));
 }
 
 //一枚目の上端と二枚目の下端を見る関数, 一致が多いほど低いを返す
 uint64_t pixel_sorter::ud_comparison(image_type const& lhs, image_type const& rhs) const
 {
-    auto const& lhs_top    = lhs.front();
-    auto const& rhs_bottom = rhs.back();
-        
-    uint64_t s = 0;
-    for(int i=0; i<lhs.size(); ++i)
-        s += pixel_comparison(lhs_top[i], rhs_bottom[i]);
-    return s;
+    return pixel_line_comparison(lhs.row(0), rhs.row(rhs.rows - 1));
 }
 
 //一枚目の下端と二枚目の上端を見る関数, 一致が多いほど低いを返す
 uint64_t pixel_sorter::du_comparison(image_type const& lhs, image_type const& rhs) const
 {
-    auto const& lhs_bottom = lhs.back();
-    auto const& rhs_top    = rhs.front();
-        
-    uint64_t s = 0;
-    for(int i=0; i<lhs.size(); ++i)
-        s += pixel_comparison(lhs_bottom[i], rhs_top[i]);
-    return s;
+    return pixel_line_comparison(lhs.row(rhs.rows - 1), rhs.row(0));
 }
 
 point_type pixel_sorter::ur_choose(compared_type const& comp, point_type const ul, point_type const dl, point_type const dr) const

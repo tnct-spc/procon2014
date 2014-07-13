@@ -75,7 +75,7 @@
     <IncludePath>C:\boost\include\boost-1_55;$(SolutionDir)clammbon\include;$(IncludePath);C:\fltk-1.3.2;$(IncludePath);C:\opencv\build\include</IncludePath>
     <IntDir>obj\$(Configuration)\</IntDir>
     <OutDir>$(SolutionDir)bin\$(Configuration)\</OutDir>
-    <LibraryPath>C:\boost\lib;$(SolutionDir)lib;C:\fltk-1.3.2\lib;C:\opencv\build\$(PlatformTarget)\vc12\staticlib;$(LibraryPath)</LibraryPath>
+    <LibraryPath>C:\boost\lib;$(SolutionDir)lib;C:\fltk-1.3.2\lib;C:\opencv\build\$(PlatformTarget)\vc12\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>$(SolutionDir)bin\$(Configuration)\</OutDir>
@@ -85,7 +85,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IncludePath>C:\boost\include\boost-1_55;$(SolutionDir)clammbon\include;$(IncludePath);C:\fltk-1.3.2;$(IncludePath);C:\opencv\build\include</IncludePath>
-    <LibraryPath>C:\boost\lib;$(SolutionDir)lib;C:\fltk-1.3.2\lib;C:\opencv\build\$(PlatformTarget)\vc12\staticlib;$(LibraryPath)</LibraryPath>
+    <LibraryPath>C:\boost\lib;$(SolutionDir)lib;C:\fltk-1.3.2\lib;C:\opencv\build\$(PlatformTarget)\vc12\lib;$(LibraryPath)</LibraryPath>
     <IntDir>obj\$(Configuration)\</IntDir>
     <OutDir>$(SolutionDir)bin\$(Configuration)\</OutDir>
   </PropertyGroup>
@@ -110,7 +110,7 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>clammbond.lib;fltkd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>clammbond.lib;fltkd.lib;opencv_core249d.lib;opencv_highgui249d.lib;opencv_imgproc249d.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -142,7 +142,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>clammbon.lib;fltk.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>clammbon.lib;fltk.lib;opencv_core249.lib;opencv_highgui249.lib;opencv_imgproc249.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
