@@ -72,7 +72,7 @@
     <TargetName>$(ProjectName)d</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(ProjectDir)include;C:\boost\include\boost-1_55;$(IncludePath);C:\fltk-1.3.2;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)include;C:\boost\include\boost-1_55;$(IncludePath);C:\fltk-1.3.2;$(IncludePath);C:\opencv\build\include</IncludePath>
     <OutDir>$(SolutionDir)lib\</OutDir>
     <IntDir>obj\$(Configuration)\</IntDir>
     <TargetName>$(ProjectName)d</TargetName>
@@ -85,7 +85,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(SolutionDir)lib\</OutDir>
     <IntDir>obj\$(Configuration)\</IntDir>
-    <IncludePath>$(ProjectDir)include;C:\boost\include\boost-1_55;$(IncludePath);C:\fltk-1.3.2;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)include;C:\boost\include\boost-1_55;$(IncludePath);C:\fltk-1.3.2;$(IncludePath);C:\opencv\build\include</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

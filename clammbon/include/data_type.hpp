@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 #include <boost/noncopyable.hpp>
+#include <opencv2/core/core.hpp>
 
 struct point_type
 {
@@ -48,7 +49,9 @@ struct pixel_type
 };
 
 typedef std::vector<uint8_t>                 unfold_image_type;
-typedef std::vector<std::vector<pixel_type>> image_type;
+typedef std::vector<std::vector<pixel_type>> stl_image_type;
+typedef cv::Mat                              cv_image_type;
+typedef cv_image_type                        image_type;
 
 // 気持ち悪いが，[i][j]の位置に分割された画像が入っている．更に[j][k]へのアクセスによって画素にアクセス
 typedef std::vector<std::vector<image_type>> split_image_type;
