@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <limits>
 #include "pixel_sorter.hpp"
+#include "sort_algorithm/genetic.hpp"
 
 auto pixel_sorter::operator() (question_raw_data const& raw) const -> return_type
 {

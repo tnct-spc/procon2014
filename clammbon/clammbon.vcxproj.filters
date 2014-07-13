@@ -16,6 +16,9 @@
     <Filter Include="ソース ファイル\impl">
       <UniqueIdentifier>{a16b8b1f-cdf6-4628-a278-d099e32c1a80}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\sort_algorithm">
+      <UniqueIdentifier>{3a7c30cc-d9a5-4955-8d4d-117cd5971c91}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\algorithm.cpp">
@@ -52,6 +55,9 @@
     </ClInclude>
     <ClInclude Include="include\splitter.hpp">
       <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sort_algorithm\genetic.hpp">
+      <Filter>ソース ファイル\sort_algorithm</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
