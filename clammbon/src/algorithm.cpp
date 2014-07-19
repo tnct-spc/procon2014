@@ -23,13 +23,19 @@ void algorithm::operator() (question_data const& data)
 
     // 画像
     matrix = data.block;
+
     // 幅と高さ
     width = data.size.first;
     height = data.size.second;
+
     // ソート済み行及び列
     // この値の行及び列を含む内側部分を操作する
     sorted_row = 0;
     sorted_col = 0;
+
+    // ソート済みの断片画像リスト
+    sorted_points = std::vector<point_type>();
+
     // 移動に用いる断片画像の原座標
     // 右下を選んでおけば間違いない
     mover = point_type{width - 1, height - 1};
@@ -119,7 +125,13 @@ void algorithm::greedy()
         point_diff = target - current_point(target_org);
 
         // TODO: 水平垂直のどちらを先に動かすかの判断も必要では
+
+        // 特に理由がなければ縦方向に先に動くが、移動先がソート済みの場合は横に先に動く
+        // これ4回もコピペすんの
         i = 0;
+        if (std::find(sorted_points.begin(), sorted_points.end(), current_point(target_org).up()) != sorted_points.end()) {
+            ++i;
+        }
         while (point_diff.x < 0 && point_diff.y < 0) {
             // 原座標に対して右下にあるので左上へ移動
             if (i % 2 == 0) {
@@ -130,7 +142,11 @@ void algorithm::greedy()
             ++i;
             point_diff = target - current_point(target_org);
         }
+
         i = 0;
+        if (std::find(sorted_points.begin(), sorted_points.end(), current_point(target_org).down()) != sorted_points.end()) {
+            ++i;
+        }
         while (point_diff.x < 0 && point_diff.y > 0) {
             // 原座標に対して右上にあるので左下へ移動
             if (i % 2 == 0) {
@@ -141,7 +157,11 @@ void algorithm::greedy()
             ++i;
             point_diff = target - current_point(target_org);
         }
+
         i = 0;
+        if (std::find(sorted_points.begin(), sorted_points.end(), current_point(target_org).up()) != sorted_points.end()) {
+            ++i;
+        }
         while (point_diff.x > 0 && point_diff.y < 0) {
             // 原座標に対して左下にあるので右上へ移動
             if (i % 2 == 0) {
@@ -152,7 +172,11 @@ void algorithm::greedy()
             ++i;
             point_diff = target - current_point(target_org);
         }
+
         i = 0;
+        if (std::find(sorted_points.begin(), sorted_points.end(), current_point(target_org).down()) != sorted_points.end()) {
+            ++i;
+        }
         while (point_diff.x > 0 && point_diff.y > 0) {
             // 原座標に対して左上にあるので右下へ移動
             if (i % 2 == 0) {
@@ -222,6 +246,9 @@ void algorithm::greedy()
             move_direction(current_point(mover), Direction::Up);
             move_direction(current_point(mover), Direction::Right);
             move_direction(current_point(mover), Direction::Down);
+            // ソート済みマーク
+            sorted_points.push_back(target_org.left());
+            sorted_points.push_back(target_org);
         } else if (target_org.y == height - 1) {
             // ターゲットの真の原座標が下端の場合
             if (current_point(mover) == target.right()) {
@@ -232,6 +259,12 @@ void algorithm::greedy()
             move_direction(current_point(mover), Direction::Left);
             move_direction(current_point(mover), Direction::Down);
             move_direction(current_point(mover), Direction::Right);
+            // ソート済みマーク
+            sorted_points.push_back(target_org.up());
+            sorted_points.push_back(target_org);
+        } else if (target_org.x < width - 2 && target_org.y < width - 2) {
+            // ソート済みマーク
+            sorted_points.push_back(target_org);
         }
     }
 }
@@ -264,33 +297,25 @@ void algorithm::move_direction(point_type const& target, Direction const& direct
     }
 }
 
-void algorithm::move_from_to(point_type from, point_type const& to)
+void algorithm::move_from_to(point_type const& from, point_type const& to)
 {
     // from に存在する断片画像を to まで移動させる
 
-    // 斜め方向への移動はとりあえずダメってことで
     assert(from.x == to.x || from.y == to.y);
 
-    // Y座標が異なる場合に縦に移動する
-    while (from.y != to.y) {
-        if (from.y > to.y) {
-            move_direction(from, Direction::Up);
-            --from.y;
-        } else {
-            move_direction(from, Direction::Down);
-            ++from.y;
-        }
-    }
+    point_type new_from = matrix[from.y][from.x];
 
-    // X座標が異なる場合に横に移動する
-    while (from.x != to.x) {
-        if (from.x > to.x) {
-            move_direction(from, Direction::Left);
-            --from.x;
-        } else {
-            move_direction(from, Direction::Right);
-            ++from.x;
-        }
+    while (current_point(new_from).y > to.y) {
+        move_direction(current_point(new_from), Direction::Up);
+    }
+    while (current_point(new_from).y < to.y) {
+        move_direction(current_point(new_from), Direction::Down);
+    }
+    while (current_point(new_from).x > to.x) {
+        move_direction(current_point(new_from), Direction::Left);
+    }
+    while (current_point(new_from).x < to.x) {
+        move_direction(current_point(new_from), Direction::Right);
     }
 }
 
@@ -304,8 +329,8 @@ void algorithm::move_target_direction(point_type const& target, Direction const&
 
     // mover の現在の座標
     point_type mover_cur = current_point(mover);
-    // 通過点3箇所
-    std::tuple<point_type, point_type, point_type> pass_points;
+    // 通過点4箇所
+    std::tuple<point_type, point_type, point_type, point_type> pass_points;
 
     if (direction == Direction::Up) {
         // 上方向に移動させたい

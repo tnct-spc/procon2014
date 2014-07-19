@@ -19,11 +19,12 @@ public:
     point_type current_point(point_type const& point);
     Direction inverse_direction(Direction const& direction);
     void move_direction(point_type const& target, Direction const& direction);
-    void move_from_to(point_type from, point_type const& to);
+    void move_from_to(point_type const& from, point_type const& to);
     void move_target_direction(point_type const& target, Direction const& direction, TurnSide const& turnside);
 
 private:
     std::vector<std::vector<point_type>> matrix;
+    std::vector<point_type> sorted_points;
     int width;
     int height;
     int sorted_row;
