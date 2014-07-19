@@ -15,7 +15,6 @@ public:
     void greedy();
     void brute_force();
     inline void print() const;
-    inline uint16_t point_to_num(point_type const& point) const;
     const point_type current_point(point_type const& point) const;
     Direction inverse_direction(Direction const& direction) const;
     void move_direction(point_type const& target, Direction const& direction);

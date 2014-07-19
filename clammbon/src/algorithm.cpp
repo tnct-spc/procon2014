@@ -1,12 +1,7 @@
 #include <iostream>
-#include <iomanip>
-#include <string>
 #include <algorithm>
 #include <iterator>
 #include <cassert>
-#include <cstdint>
-#include <tuple>
-#include <boost/format.hpp>
 #include "algorithm.hpp"
 
 void algorithm::operator() (question_data const& data)
@@ -55,7 +50,7 @@ const point_type algorithm::current_point(point_type const& point) const
         }
         return point_type{static_cast<int>(std::distance(matrix[y].begin(), p)), y};
     }
-    throw std::runtime_error(std::string("No Tile ") + std::to_string(point.x) + std::string(", ") +  std::to_string(point.y));
+    throw std::runtime_error("No Tile " + point.str());
 }
 
 void algorithm::solve()
@@ -420,18 +415,12 @@ Direction algorithm::inverse_direction(Direction const& direction) const
     }
 }
 
-inline uint16_t algorithm::point_to_num(point_type const& point) const
-{
-    // point_type を座標番号に変換する
-    return point.x * 16 + point.y;
-}
-
 inline void algorithm::print() const
 {
     // 具合をいい感じに表示
     for (std::vector<point_type> row : matrix) {
         for (point_type tile : row) {
-            std::cout << std::setfill('0') << std::setw(2) << std::hex << point_to_num(tile) << std::dec << " ";
+            std::cout << boost::format("%1$02X ") % tile.num();
         }
         std::cout << std::endl;
     }
@@ -440,7 +429,7 @@ inline void algorithm::print() const
 
 // 検証用main
 // これどうやってテストすれば？
-// g++ -std=c++11 -I../include algorithm.cpp ; ./a.out
+// g++ -std=c++11 -I../include algorithm.cpp
 int main(int argc, char* argv[])
 {
     std::vector<std::vector<point_type>> matrix;

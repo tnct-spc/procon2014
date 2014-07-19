@@ -7,11 +7,21 @@
 #include <utility>
 #include <vector>
 #include <boost/noncopyable.hpp>
+#include <boost/format.hpp>
 
 struct point_type
 {
     int x;
     int y;
+
+    inline std::string const str() const
+    {
+        return ( boost::format("(%1%,%2%)") % this->x % this->y ).str();
+    }
+    inline uint16_t num() const
+    {
+        return this->x * 16 + this->y;
+    }
 
     friend inline bool operator== (point_type const& lhs, point_type const& rhs)
     {
@@ -164,7 +174,7 @@ template<typename CharT, typename Traits>
 std::basic_ostream<CharT, Traits>&
 operator<< (std::basic_ostream<CharT, Traits>& os, point_type const& point)
 {
-    os << "(" << point.x << "," << point.y << ")";
+    os << point.str();
     return os;
 }
 
