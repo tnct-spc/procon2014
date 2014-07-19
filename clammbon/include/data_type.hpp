@@ -162,9 +162,9 @@ enum struct Direction { Up, Right, Down, Left };
 // ostream に吐けると便利だよね
 template<typename CharT, typename Traits>
 std::basic_ostream<CharT, Traits>&
-operator<<(std::basic_ostream<CharT, Traits>& os, point_type const& point)
+operator<< (std::basic_ostream<CharT, Traits>& os, point_type const& point)
 {
-    os << point.x << "," << point.y;
+    os << "(" << point.x << "," << point.y << ")";
     return os;
 }
 
