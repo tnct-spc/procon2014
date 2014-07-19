@@ -1,7 +1,8 @@
 ﻿#ifndef CLAMMBON_SORT_GENETIC_HPP
 #define CLAMMBON_SORT_GENETIC_HPP
 
-#include <algorithm‎>
+#include <algorithm>
+#include <iomanip> // std::setwのみ
 
 int constexpr PARENT = 10;
 int constexpr CHILDREN = 100;
@@ -9,6 +10,8 @@ int constexpr CHILDREN = 100;
 class genetic
 {
 private:
+    typedef std::vector<std::vector<std::vector<std::vector<direction_type<uint64_t>>>>> compared_type;
+    
     std::vector<std::vector<int>> parent_gene_;
 	struct children_t { std::vector<int> children_gene; unsigned int assessment;};//子供の遺伝子と評価値
 	std::vector<children_t> children_;//子供の遺伝子と評価値の配列
@@ -25,7 +28,7 @@ private:
         }
     }
 
-    void shuffle_all() const
+    void shuffle_all()
     {
         for(auto it = children_.begin(); it != children_.end(); ++it)
         {
@@ -35,26 +38,27 @@ private:
 
     unsigned int assess(std::vector<int> const& arr) const
     {
-        auto const sepy = data_->split_num->second;
+        auto const sepx = data_->split_num.first;
+        auto const sepy = data_->split_num.second;
 
         unsigned int ass = 0;
         for(int i = 0; i < arr.size(); ++i)
         {
             if(i + 1 < arr.size())
             {
-                if(arr[j] == arr[j + 1])
+                if(arr[i] == arr[i + 1])
                 {
-                    std::cout << "!!!" << arr[j] << arr[j + 1] << std::endl;
+                    std::cout << "!!!" << arr[i] << arr[i + 1] << std::endl;
                 }
-                ass += *comp_[arr[j]][arr[j + 1]].right;
+                ass += (*comp_)[arr[i] / sepx][arr[i] % sepx][arr[i + 1] / sepx][arr[i + 1] % sepx].right;
             }
             if(i + sepy < arr.size())
             {
-                if(arr[j] == arr[j + sepy])
+                if(arr[i] == arr[i + sepy])
                 {
-                    std::cout << "???" << arr[j] << arr[j + sepy] << std::endl;
+                    std::cout << "???" << arr[i] << arr[i + sepy] << std::endl;
                 }
-                ass += *comp_[arr[j]][arr[j + sepy]].down;
+                ass += (*comp_)[arr[i] / sepx][arr[i] % sepx][arr[i + sepy] / sepx][arr[i + sepy] % sepx].right;
             }
         }
         return ass;
@@ -62,7 +66,7 @@ private:
 
     void assess_all()
     {
-        for(auto it = children_.cbegin(); it != childred_.cend(); ++it)
+        for(auto it = children_.begin(); it != children_.end(); ++it)
         {
             //for(int i = 0; i < split_total; ++i)
             //{
@@ -77,7 +81,7 @@ private:
 public:
     int sort()
     {
-        auto const split_total = data_->split_num->first * data_->split_num->second;
+        auto const split_total = data_->split_num.first * data_->split_num.second;
 
         // children_の初期化
         {
@@ -107,14 +111,17 @@ public:
 			    std::cout << "最上位遺伝子";
 			    for (int i = 0; i < split_total; i++)
                 {
-				    std::cout << std::setw(3) << parent_gene_[0][i];
+				    std::cout << std::setw(3) << parent_gene_[0][i]; //unspecified(std::setw)
 			    }
                 
                 std::cout << "番号" << top10[0] << std::endl;
+
+                int const base = top10[0]; // VCのための苦肉の策
                 if(
                     std::all_of(
                         top10.begin(), top10.end(),
-                        [base = top10[0]](int const elem){ return base == elem; }
+                        [base](int const elem){ return base == elem; }
+                        //[base = top10[0]](int const elem){ return base == elem; }
                     )
                 )
                 {
