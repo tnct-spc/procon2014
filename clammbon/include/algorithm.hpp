@@ -14,6 +14,7 @@ public:
     void solve();
     void greedy();
     void brute_force();
+    std::string const& answer_tostr() const;
     inline void print() const;
     const point_type current_point(point_type const& point) const;
     Direction inverse_direction(Direction const& direction) const;
@@ -24,11 +25,16 @@ public:
 private:
     std::vector<std::vector<point_type>> matrix;
     std::vector<point_type> sorted_points;
+    answer_list_t answer_list;
+    point_type mover;
     int width;
     int height;
+    int cost_select;
+    int cost_change;
+    int score_select;
+    int score_change;
     int sorted_row;
     int sorted_col;
-    point_type mover;
 };
 
 #endif

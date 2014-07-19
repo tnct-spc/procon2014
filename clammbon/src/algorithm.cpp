@@ -3,6 +3,9 @@
 #include <iterator>
 #include <cassert>
 #include "algorithm.hpp"
+#include "network.hpp"
+
+#define debug
 
 void algorithm::operator() (question_data const& data)
 {
@@ -23,6 +26,10 @@ void algorithm::operator() (question_data const& data)
     width = data.size.first;
     height = data.size.second;
 
+    // コストとレート
+    cost_select = data.cost_select;
+    cost_change = data.cost_change;
+
     // ソート済み行及び列
     // この値の行及び列を含む内側部分を操作する
     sorted_row = 0;
@@ -35,8 +42,12 @@ void algorithm::operator() (question_data const& data)
     // 右下を選んでおけば間違いない
     mover = point_type{width - 1, height - 1};
 
+    answer_list.push_back(answer_type{mover, change_list_t{}});
+
     // GO
+#ifdef debug
     print();
+#endif
     solve();
 }
 
@@ -278,18 +289,16 @@ void algorithm::move_direction(point_type const& target, Direction const& direct
     print();
     assert(sorted_col <= target.x && target.x < width && sorted_row <= target.y && target.y < height);
     if (direction == Direction::Up) {
-        assert(target.y > sorted_row);
         std::swap(matrix[target.y][target.x], matrix[target.y - 1][target.x]);
     } else if (direction == Direction::Right) {
-        assert(target.x < width - 1);
         std::swap(matrix[target.y][target.x], matrix[target.y][target.x + 1]);
     } else if (direction == Direction::Down) {
-        assert(target.y < height - 1);
         std::swap(matrix[target.y][target.x], matrix[target.y + 1][target.x]);
     } else if (direction == Direction::Left) {
-        assert(target.x > sorted_col);
         std::swap(matrix[target.y][target.x], matrix[target.y][target.x - 1]);
     }
+
+    answer_list.back().change_list.push_back(direction);
 }
 
 void algorithm::move_from_to(point_type const& from, point_type const& to)
@@ -415,15 +424,46 @@ Direction algorithm::inverse_direction(Direction const& direction) const
     }
 }
 
+std::string const& algorithm::answer_tostr() const
+{
+    // answer_list から解答文字列を作成する
+    static std::string answer_string;
+
+    answer_string.erase(answer_string.begin(), answer_string.end());
+    for (auto step : answer_list) {
+        answer_string += (boost::format("%1$02X") % step.select.num()).str();
+        answer_string.push_back('\n');
+        for (auto direction : step.change_list) {
+            answer_string.push_back(direction_char(direction));
+        }
+        answer_string.push_back('\n');
+    }
+
+    return answer_string;
+}
+
 inline void algorithm::print() const
 {
     // 具合をいい感じに表示
+    std::cout << std::endl;
+    std::cout << "--------------------------------------------------------------------------------" << std::endl;
+    std::cout << std::endl;
     for (std::vector<point_type> row : matrix) {
         for (point_type tile : row) {
             std::cout << boost::format("%1$02X ") % tile.num();
         }
         std::cout << std::endl;
     }
+    int score_select = answer_list.size() * cost_select;
+    int score_change = 0;
+    for (auto step : answer_list) {
+        score_change += step.change_list.size() * cost_change;
+    }
+    std::cout << std::endl;
+    std::cout << boost::format("score = %1% (select = %2%, change = %3%)") % (score_select + score_change) % score_select % score_change << std::endl;
+    std::cout << std::endl;
+    std::cout << "answer:" << std::endl;
+    std::cout << answer_tostr();
     std::cin.ignore();
 }
 
@@ -442,6 +482,5 @@ int main(int argc, char* argv[])
     matrix.push_back(std::vector<point_type>{point_type{3, 3}, point_type{6, 2}, point_type{7, 0}, point_type{4, 5}, point_type{5, 1}, point_type{0, 0}, point_type{1, 4}, point_type{3, 0}});
     matrix.push_back(std::vector<point_type>{point_type{7, 7}, point_type{6, 1}, point_type{0, 7}, point_type{1, 1}, point_type{6, 4}, point_type{5, 4}, point_type{6, 5}, point_type{6, 6}});
 
-    algorithm a = algorithm();
-    a(question_data(std::pair<int, int>(8, 8), 16, 1, 1, matrix));
+    algorithm()(question_data(std::pair<int, int>(8, 8), 16, 10, 10, matrix));
 }

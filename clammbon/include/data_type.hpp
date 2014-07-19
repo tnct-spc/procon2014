@@ -146,15 +146,20 @@ struct question_raw_data : private boost::noncopyable
     }
 };
 
+enum struct TurnSide { UpperRight, DownerRight, DownerLeft, UpperLeft };
+enum struct Direction { Up, Right, Down, Left };
+inline char const direction_char(Direction const& d)
+{
+    return "URDL"[static_cast<int>(d)];
+}
+
+typedef std::vector<Direction> change_list_t;
 struct answer_type
 {
-    enum class action_type{ change, select };
-
-    action_type type;
-    point_type possition;
-    char direction;
+    point_type select;
+    change_list_t change_list;
 };
-typedef std::vector<answer_type> answer_list;
+typedef std::vector<answer_type> answer_list_t;
 
 template<class T>
 struct direction_type
@@ -165,9 +170,6 @@ struct direction_type
     T down;
     T left;
 };
-
-enum struct TurnSide { UpperRight, DownerRight, DownerLeft, UpperLeft };
-enum struct Direction { Up, Right, Down, Left };
 
 // ostream に吐けると便利だよね
 template<typename CharT, typename Traits>
