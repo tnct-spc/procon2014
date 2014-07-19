@@ -45,7 +45,7 @@ void algorithm::operator() (question_data const& data)
     solve();
 }
 
-point_type algorithm::current_point(point_type const& point)
+const point_type algorithm::current_point(point_type const& point) const
 {
     // point を原座標として持つ断片画像の現在の座標を返す
     for (int y = 0; y < height; ++y) {
@@ -406,7 +406,8 @@ void algorithm::move_target_direction(point_type const& target, Direction const&
     move_direction(current_point(mover), inverse_direction(direction));
 }
 
-Direction algorithm::inverse_direction(Direction const& direction) {
+Direction algorithm::inverse_direction(Direction const& direction) const
+{
     // 逆向きの方向を返す
     if (direction == Direction::Up) {
         return Direction::Down;
@@ -419,13 +420,13 @@ Direction algorithm::inverse_direction(Direction const& direction) {
     }
 }
 
-uint16_t algorithm::point_to_num(point_type const& point)
+inline uint16_t algorithm::point_to_num(point_type const& point) const
 {
     // point_type を座標番号に変換する
     return point.x * 16 + point.y;
 }
 
-void algorithm::print()
+inline void algorithm::print() const
 {
     // 具合をいい感じに表示
     for (std::vector<point_type> row : matrix) {
