@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <iomanip> // std::setwのみ
+#include <boost/range/algorithm.hpp>
 
 int constexpr PARENT = 10;
 int constexpr CHILDREN = 100;
@@ -12,7 +13,6 @@ class genetic
 private:
     typedef std::vector<std::vector<std::vector<std::vector<direction_type<uint64_t>>>>> compared_type;
     
-    std::vector<std::vector<int>> parent_gene_;
 	struct children_t { std::vector<int> children_gene; unsigned int assessment;};//子供の遺伝子と評価値
 	std::vector<children_t> children_;//子供の遺伝子と評価値の配列
     
@@ -77,6 +77,52 @@ private:
         }
     }
 
+    std::vector<std::vector<int>> select_parent(std::vector<int>& top10)
+    {
+        top10.assign(PARENT, 0);
+
+        std::vector<int> childred_copy;
+        childred_copy.reserve(children_.size());
+
+        boost::transform(
+            children_, std::back_inserter(childred_copy),
+            [](children_t const& base){ return base.assessment; }
+            );
+        boost::sort(childred_copy);
+        //boost::for_each(childred_copy, [](int const base){ std::cout << base << std::endl; });
+
+        for(int i=0; i<top10.size(); ++i)
+        {
+            for(int j=0; j<CHILDREN; ++j)
+            {
+                if(childred_copy.at(i) == children_[j].assessment)
+                {
+                    top10[i] = j;
+                }
+            }
+        }
+
+        auto const split_total = data_->split_num.first * data_->split_num.second;
+        std::vector<std::vector<int>> parent_gene(PARENT, std::vector<int>(split_total, 0));
+
+        //親遺伝子配列にいいやつTop10を突っ込む
+        for(int i=0; i<top10.size(); ++i)
+        {
+            for(int j=0; j<split_total; ++j)
+            {
+                parent_gene[i][j] = children_[top10[i]].children_gene[j];
+            }
+        }
+
+        std::cout << "番号  " << "評価" << std::endl;
+        for(auto const& elem : top10)
+        {
+            std::cout << elem << "   " << children_[elem].assessment << std::endl;
+        }
+
+        return parent_gene;
+    }
+
 
 public:
     int sort()
@@ -98,20 +144,22 @@ public:
         assess_all();
         
         int top;
-        std::vector<int> top10(10);
+        std::vector<int> top10(PARENT);
         std::vector<int> toppers(1000);
         for(int i = 0; i < toppers.size(); ++i)
         {
             for(int j = 0; j < 10000; ++j)
             {
-                select_parent();
+                auto const parent_gene = select_parent(top10);
+                top = children_.at(top10[0]).assessment;
+
                 cross_over();
                 assess_all();
                 
 			    std::cout << "最上位遺伝子";
 			    for (int i = 0; i < split_total; i++)
                 {
-				    std::cout << std::setw(3) << parent_gene_[0][i]; //unspecified(std::setw)
+				    std::cout << std::setw(3) << parent_gene[0][i]; //unspecified(std::setw)
 			    }
                 
                 std::cout << "番号" << top10[0] << std::endl;
