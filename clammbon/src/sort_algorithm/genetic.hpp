@@ -1,7 +1,9 @@
 ﻿#ifndef CLAMMBON_SORT_GENETIC_HPP
 #define CLAMMBON_SORT_GENETIC_HPP
 
+#include <iostream>
 #include <algorithm>
+#include <functional>
 #include <iomanip> // std::setwのみ
 #include <random>
 #include <boost/range/algorithm.hpp>
@@ -222,7 +224,9 @@ public:
         std::random_device rd;
         std::vector<std::uint_least64_t> random_seed(10);
         boost::generate(random_seed, std::ref(rd));
-        mt_.seed(std::seed_seq(random_seed.cbegin(), random_seed.cend()));
+
+        std::seed_seq seed(random_seed.cbegin(), random_seed.cend());
+        mt_.seed(seed);
     }
     virtual ~genetic() = default;
 
