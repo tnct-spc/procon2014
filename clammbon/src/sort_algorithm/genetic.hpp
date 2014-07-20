@@ -3,10 +3,11 @@
 
 #include <algorithm>
 #include <iomanip> // std::setwのみ
+#include <random>
 #include <boost/range/algorithm.hpp>
 
-int constexpr PARENT = 10;
-int constexpr CHILDREN = 100;
+int constexpr PARENT_NUM = 10;
+int constexpr CHILDREN_NUM = 100;
 
 class genetic
 {
@@ -18,12 +19,17 @@ private:
     
     question_raw_data *data_;
     compared_type *comp_;
+
+    // std::mt19937_64ほど高級なもの要る？
+    mutable std::mt19937 mt_;
     
     void shuffle(std::vector<int>& arr) const
     {
+        std::uniform_int_distribution<int> distribution(0, arr.size()-1);
+
         for(int i = 0; i < arr.size(); ++i)
         {
-            int j = 0; //TODO: メルセンヌでarr.size()までの値を入れる
+            int j = distribution(mt_);
             std::swap(arr[i], arr[j]);
         }
     }
@@ -79,7 +85,7 @@ private:
 
     std::vector<std::vector<int>> select_parent(std::vector<int>& top10)
     {
-        top10.assign(PARENT, 0);
+        top10.assign(PARENT_NUM, 0);
 
         std::vector<int> childred_copy;
         childred_copy.reserve(children_.size());
@@ -93,7 +99,7 @@ private:
 
         for(int i=0; i<top10.size(); ++i)
         {
-            for(int j=0; j<CHILDREN; ++j)
+            for(int j=0; j<CHILDREN_NUM; ++j)
             {
                 if(childred_copy.at(i) == children_[j].assessment)
                 {
@@ -103,7 +109,7 @@ private:
         }
 
         auto const split_total = data_->split_num.first * data_->split_num.second;
-        std::vector<std::vector<int>> parent_gene(PARENT, std::vector<int>(split_total, 0));
+        std::vector<std::vector<int>> parent_gene(PARENT_NUM, std::vector<int>(split_total, 0));
 
         //親遺伝子配列にいいやつTop10を突っ込む
         for(int i=0; i<top10.size(); ++i)
@@ -123,8 +129,103 @@ private:
         return parent_gene;
     }
 
+    void cross_over(std::vector<std::vector<int>> const& parent_gene)
+    {
+        auto const split_width  = data_->split_num.first;
+        auto const split_height = data_->split_num.second;
+        auto const split_total  = split_width * split_height;
+
+        std::uniform_int_distribution<int> parent_dist(0, PARENT_NUM - 1);
+        std::uniform_int_distribution<int> mutate_dist(0, 4 - 1);
+        std::uniform_int_distribution<int> split_dist(0, split_total - 1);
+
+        for(int i=0; i<CHILDREN_NUM; i+=2)
+        {
+            auto const& pra1 = parent_gene[parent_dist(mt_)];
+            auto const& pra2 = parent_gene[parent_dist(mt_)];
+            auto      & child1 = children_[i  ].children_gene;
+            auto      & child2 = children_[i+1].children_gene;
+            
+            //std::cout << "par1 ";
+            //boost::for_each(pra1, [](int const elem){ std::cout << elem << "*"; });
+            //std::cout << std::endl;
+            //
+            //std::cout << "par2 ";
+            //boost::for_each(pra2, [](int const elem){ std::cout << elem << "*"; });
+            //std::cout << std::endl;
+
+            child1.assign(child1.size(), -1);
+            child2.assign(child2.size(), -1);
+
+            int select_gene = split_dist(mt_);
+            //std::cout << "  s" << select_gene;
+            while(child1[select_gene] != pra1[select_gene])
+            {
+			    child1[select_gene] = pra1[select_gene];
+			    child2[select_gene] = pra2[select_gene];
+
+                for(int i=0; i<split_total; ++i)
+                {
+                    if(child2[select_gene] == pra1[i])
+                    {
+                        select_gene = i;
+                    }
+                }
+                //std::cout << "  s" << select_gene;
+            }
+
+            for(int i=0; i<split_total; ++i)
+            {
+                if(child1[i] == -1)
+                {
+				    child1[i] = pra2[i];
+				    child2[i] = pra1[i];
+                }
+            }
+
+            for(int n = parent_dist(mt_); n < 10; ++n) //このループ数をいじらないと収束しなかったりすぐに収束してしまったり
+            {
+                if(mutate_dist(mt_) == 0) //ここの確率で突然変異率を変化させる
+                {
+                    int rand1 = split_dist(mt_);
+                    int rand2 = split_dist(mt_);
+                    std::swap(child1[rand1], child1[rand2]);
+                    //std::cout << "rand1" << std::endl;
+                }
+                if(mutate_dist(mt_) == 0) //ここの確率で突然変異率を変化させる
+                {
+                    int rand1 = split_dist(mt_);
+                    int rand2 = split_dist(mt_);
+                    std::swap(child2[rand1], child2[rand2]);
+				    //std::cout << "rand2" << std::endl;
+                }
+            }
+            
+            //std::cout << std::endl;
+            //std::cout << "chi1 ";
+            //boost::for_each(child1, [](int const elem){ std::cout << elem << "+"; });
+            //
+            //std::cout << std::endl;
+            //std::cout << "chi2 ";
+            //boost::for_each(child2, [](int const elem){ std::cout << elem << "+"; });
+            //
+            //std::cout << std::endl;
+        }
+    }
 
 public:
+    // 泣きのポインタ渡し
+    genetic(question_raw_data *data, compared_type *comp)
+        : data_(data), comp_(comp)
+    {
+        //メルセンヌ・ツイスタの初期化
+        std::random_device rd;
+        std::vector<std::uint_least64_t> random_seed(10);
+        boost::generate(random_seed, std::ref(rd));
+        mt_.seed(std::seed_seq(random_seed.cbegin(), random_seed.cend()));
+    }
+    virtual ~genetic() = default;
+
     int sort()
     {
         auto const split_total = data_->split_num.first * data_->split_num.second;
@@ -137,14 +238,14 @@ public:
             for(int i = 0; i < split_total; ++i) tmp_vector.push_back(i);
 
             //連番リストでchildren_を初期化
-            children_.assign(CHILDREN, {tmp_vector, 0});
+            children_.assign(CHILDREN_NUM, {tmp_vector, 0});
         }
 
         shuffle_all();
         assess_all();
         
         int top;
-        std::vector<int> top10(PARENT);
+        std::vector<int> top10(PARENT_NUM);
         std::vector<int> toppers(1000);
         for(int i = 0; i < toppers.size(); ++i)
         {
@@ -153,7 +254,7 @@ public:
                 auto const parent_gene = select_parent(top10);
                 top = children_.at(top10[0]).assessment;
 
-                cross_over();
+                cross_over(parent_gene);
                 assess_all();
                 
 			    std::cout << "最上位遺伝子";
