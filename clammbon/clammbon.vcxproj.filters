@@ -16,6 +16,12 @@
     <Filter Include="ソース ファイル\impl">
       <UniqueIdentifier>{a16b8b1f-cdf6-4628-a278-d099e32c1a80}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\sort_algorithm">
+      <UniqueIdentifier>{3a7c30cc-d9a5-4955-8d4d-117cd5971c91}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\sort_algorithm">
+      <UniqueIdentifier>{6c6a079a-82af-4a32-acb9-04d66535bf21}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\algorithm.cpp">
@@ -27,11 +33,20 @@
     <ClCompile Include="src\ppm_reader.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\pixel_sorter.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="src\gui.cpp">
       <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sort_algorithm\adjacent.cpp">
+      <Filter>ソース ファイル\sort_algorithm</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sort_algorithm\yrange2.cpp">
+      <Filter>ソース ファイル\sort_algorithm</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sort_algorithm\genetic.cpp">
+      <Filter>ソース ファイル\sort_algorithm</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sort_algorithm\compare.cpp">
+      <Filter>ソース ファイル\sort_algorithm</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -52,6 +67,18 @@
     </ClInclude>
     <ClInclude Include="include\splitter.hpp">
       <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="include\sort_algorithm\genetic.hpp">
+      <Filter>ヘッダー ファイル\sort_algorithm</Filter>
+    </ClInclude>
+    <ClInclude Include="include\sort_algorithm\yrange2.hpp">
+      <Filter>ヘッダー ファイル\sort_algorithm</Filter>
+    </ClInclude>
+    <ClInclude Include="include\sort_algorithm\adjacent.hpp">
+      <Filter>ヘッダー ファイル\sort_algorithm</Filter>
+    </ClInclude>
+    <ClInclude Include="include\sort_algorithm\compare.hpp">
+      <Filter>ヘッダー ファイル\sort_algorithm</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

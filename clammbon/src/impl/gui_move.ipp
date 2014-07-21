@@ -82,8 +82,8 @@ namespace impl
     MoveWindow::MoveWindow(split_image_type const& images, std::string const& window_name)
         : Fl_Window(/*temporary size*/10, 10), window_name_(window_name), sp_(), latest_button_(0),
           select_begin_({-1,-1}), select_end_({-1,-1}),
-          image_width_ (images[0][0][0].size()),
-          image_height_(images[0][0]   .size()),
+          image_width_ (images[0][0].cols),
+          image_height_(images[0][0].rows),
           split_x_     (images[0]      .size()),
           split_y_     (images         .size())
     {
