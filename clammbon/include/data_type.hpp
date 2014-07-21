@@ -126,4 +126,8 @@ struct direction_type
     T left;
 };
 
+//sort_algorithm
+typedef std::vector<std::vector<std::vector<std::vector<direction_type<uint64_t>>>>> compared_type;
+typedef std::vector<std::vector<direction_type<point_type>>> adjacent_type;
+
 #endif

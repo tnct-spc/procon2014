@@ -9,6 +9,7 @@
 #include <boost/spirit/include/qi.hpp>
 #include "ppm_reader.hpp"
 #include "pixel_sorter.hpp"
+#include "sort_algorithm/yrange2.hpp"
 
 namespace fs = boost::filesystem;
 namespace qi = boost::spirit::qi;
@@ -57,7 +58,7 @@ private:
     fs::ofstream ofs_;
 };
 
-boost::optional<typename pixel_sorter::return_type> read_answer(fs::path const& path, int const width, int const height)
+boost::optional<std::vector<std::vector<point_type>>> read_answer(fs::path const& path, int const width, int const height)
 {
     std::vector<std::vector<point_type>> ret;
     ret.reserve(height);
@@ -110,7 +111,7 @@ namespace clammbon{
 
 int main(int argc, char *argv[])
 {
-    pixel_sorter sorter;
+    pixel_sorter<yrange2> sorter;
     csv_manager csv("report.csv");
 
     if(argc != 2)
