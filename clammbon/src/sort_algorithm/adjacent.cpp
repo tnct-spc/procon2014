@@ -1,4 +1,7 @@
-﻿#include <data_type.hpp>
+﻿#include <limits>
+#include <vector>
+#include <data_type.hpp>
+#include <sort_algorithm/adjacent.hpp>
 
 auto select_minimum(compared_type const& compared_data) -> adjacent_type
 {

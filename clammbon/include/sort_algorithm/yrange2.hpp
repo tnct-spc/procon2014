@@ -1,11 +1,6 @@
 ﻿#ifndef CLAMMBON_SORT_YRANGE2_HPP
 #define CLAMMBON_SORT_YRANGE2_HPP
 
-#ifdef _DEBUG
-#include <iostream>
-#include <boost/format.hpp>
-#endif
-
 #include <vector>
 #include <data_type.hpp>
 

@@ -1,5 +1,7 @@
-﻿#include <boost/range/algorithm.hpp>
+﻿#include <limits>
+#include <vector>
 #include <data_type.hpp>
+#include <sort_algorithm/compare.hpp>
 
 point_type ur_choose(compared_type const& comp, point_type const ul, point_type const dl, point_type const dr)
 {

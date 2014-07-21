@@ -1,7 +1,6 @@
 ﻿#ifndef CLAMMBON_SORT_COMPARE_HPP
 #define CLAMMBON_SORT_COMPARE_HPP
 
-#include <boost/range/algorithm.hpp>
 #include <data_type.hpp>
 
 point_type ur_choose(compared_type const& comp, point_type const ul, point_type const dl, point_type const dr);

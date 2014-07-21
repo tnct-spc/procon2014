@@ -12,7 +12,6 @@ public:
     // compared_typeより，一番距離が近い断片画像をadjacent_typeに整理する
     typedef std::vector<std::vector<std::vector<std::vector<direction_type<uint64_t>>>>> compared_type;
     typedef std::vector<std::vector<direction_type<point_type>>> adjacent_type;
-    
     typedef std::vector<std::vector<point_type>> return_type;
 
     pixel_sorter<Algorithm>(){}

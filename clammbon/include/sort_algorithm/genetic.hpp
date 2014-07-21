@@ -1,8 +1,9 @@
 ﻿#ifndef CLAMMBON_SORT_GENETIC_HPP
 #define CLAMMBON_SORT_GENETIC_HPP
 
-#include <iomanip> // std::setwのみ
 #include <random>
+#include <vector>
+#include <data_type.hpp>
 
 int constexpr PARENT_NUM = 10;
 int constexpr CHILDREN_NUM = 100;
