@@ -6,7 +6,7 @@
 class algorithm
 {
 public:
-    explicit algorithm() = default;
+    algorithm() = default;
     virtual ~algorithm() = default;
 
     void operator() (question_data const& data);

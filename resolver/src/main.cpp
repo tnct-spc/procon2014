@@ -8,6 +8,9 @@
 #include "algorithm.hpp"
 #include "gui.hpp"
 
+#include <sort_algorithm/yrange2.hpp>
+#include <sort_algorithm/genetic.hpp>
+
 class analyzer : boost::noncopyable
 {
 public:
@@ -44,7 +47,7 @@ public:
     }
 
 private:
-    pixel_sorter sorter_;
+    pixel_sorter<yrange2> sorter_;
 };
 
 // 問題の並び替えパズル自体は，人間が行うほうがいいかもしれない．

@@ -8,6 +8,7 @@
 #include <vector>
 #include <boost/noncopyable.hpp>
 #include <boost/format.hpp>
+#include <opencv2/core/core.hpp>
 
 struct point_type
 {
@@ -66,22 +67,12 @@ struct point_type
         return point_type{this->x - 1, this->y};
     }
 };
-struct pixel_type
-{
-    uint8_t r;
-    uint8_t g;
-    uint8_t b;
 
-    friend bool operator== (pixel_type const& lhs, pixel_type const& rhs)
-    {
-        return lhs.r == rhs.r && lhs.g == rhs.g && lhs.b == rhs.b;
-    }
-};
-
+typedef cv::Vec3b                            pixel_type;
 typedef std::vector<uint8_t>                 unfold_image_type;
-typedef std::vector<std::vector<pixel_type>> image_type;
+typedef cv::Mat_<cv::Vec3b>                  image_type;
 
-// 気持ち悪いが，[i][j]の位置に分割された画像が入っている．更に[j][k]へのアクセスによって画素にアクセス
+// [i][j]の位置に分割された画像(cv::Mat_<cv::Vec3b>)が入っている．
 typedef std::vector<std::vector<image_type>> split_image_type;
 
 struct question_data : private boost::noncopyable
@@ -179,5 +170,9 @@ operator<< (std::basic_ostream<CharT, Traits>& os, point_type const& point)
     os << point.str();
     return os;
 }
+
+//sort_algorithm
+typedef std::vector<std::vector<std::vector<std::vector<direction_type<uint64_t>>>>> compared_type;
+typedef std::vector<std::vector<direction_type<point_type>>> adjacent_type;
 
 #endif
