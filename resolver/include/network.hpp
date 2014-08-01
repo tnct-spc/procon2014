@@ -3,7 +3,7 @@
 
 #include <future>
 #include <unordered_map>
-#include <boost/network.hpp>
+#include <boost/network/protocol/http/client.hpp>
 
 namespace network
 {
