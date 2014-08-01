@@ -1,18 +1,36 @@
-CXX = clang++
-CXXFLAGS = -O2 -W -Wall -std=c++11
-LDFLAGS = -lpthread -lboost_system -lboost_thread -lcppnetlib-uri -lcppnetlib-client-connections -lssl -lcrypto
-DEST = /usr/local/bin
-SRC = src/http.cpp
-PROGRAM = server
+include ../makefile.in
 
-all: $(PROGRAM)
+OUTDIR :=../bin/$(buildtype)
+TARGET := server
 
-$(PROGRAM):; $(CXX) $(SRC) $(CXXFLAGS) $(LDFLAGS) -o $(PROGRAM)
+SRCS := src/http.cpp
+PROG := $(OUTDIR)/$(TARGET)
+OBJS := $(SRCS:src/%.cpp=obj/$(buildtype)/%.o)
+DEPS := $(SRCS:src/%.cpp=obj/$(buildtype)/%.d)
 
-clean:; rm -f *.o *~ $(PROGRAM) $(OUTFILE)
+CXXFLAGS +=
+CPPFLAGS +=
+LDFLAGS  +=
+LIBS     += -lpthread -lboost_system -lboost_thread -lcppnetlib-uri -lcppnetlib-client-connections -lssl -lcrypto
 
-install: $(PROGRAM)
-	     install -s $(PROGRAM) $(DEST)
+.PHONY: all clean distclean
 
-uninstall:; rm -f $(DEST)/$(PROGRAM)
+all: $(PROG)
 
+-include $(DEPS)
+
+$(PROG) : $(OBJS)
+	@if [ ! -e `dirname $@` ]; then mkdir -p `dirname $@`; fi
+	$(CXX) -o $@ $(OBJS) $(LIBS) $(LDFLAGS)
+
+obj/$(buildtype)/%.o : src/%.cpp
+	@if [ ! -e `dirname $@` ]; then mkdir -p `dirname $@`; fi
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) $(DEFS) -o $@ -c -MMD -MP -MF $(@:%.o=%.d) $<
+
+clean:
+	rm -rf $(OUTDIR)
+
+distclean:
+	rm -rf ../bin
+
+# vim:set tabstop=4 noexpendtab
