@@ -17,7 +17,7 @@ public:
     explicit analyzer() = default;
     virtual ~analyzer() = default;
 
-    question_data operator() ()
+    question_data operator() (int const problem_id, std::string const& player_id)
     {
 #if 1
         std::string path("prob01.ppm");
@@ -31,6 +31,8 @@ public:
         auto future = gui::make_mansort_window(raw, "test");
 
         question_data formed = {
+            problem_id,
+            player_id,
             raw.split_num,
             raw.selectable_num,
             raw.cost.first,
@@ -55,7 +57,7 @@ private:
 int main()
 {
     analyzer analyze;
-    auto const data = analyze();
+    auto const data = analyze(1, "test token");
 
     algorithm algorithm;
     algorithm(data);

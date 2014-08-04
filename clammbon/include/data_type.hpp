@@ -46,6 +46,9 @@ typedef std::vector<std::vector<image_type>> split_image_type;
 
 struct question_data : private boost::noncopyable
 {
+    int problem_id;
+    std::string player_id;
+
     std::pair<int,int> size;
     int selecrtable;
     int cost_select;
@@ -53,13 +56,15 @@ struct question_data : private boost::noncopyable
     std::vector<std::vector<point_type>> block;
 
     question_data(
+        int const problem_id,
+        std::string const& player_id,
         std::pair<int,int> const& size,
         int const selecrtable,
         int const cost_select,
         int const cost_change,
         std::vector<std::vector<point_type>> const& block
         )
-        : size(size), selecrtable(selecrtable), cost_select(cost_select), cost_change(cost_change), block(block)
+        : problem_id(problem_id), player_id(player_id), size(size), selecrtable(selecrtable), cost_select(cost_select), cost_change(cost_change), block(block)
     {
     }
 
@@ -69,6 +74,8 @@ struct question_data : private boost::noncopyable
     }
     question_data& operator=(question_data&& other)
     {
+        this->problem_id  = other.problem_id;
+        this->player_id   = other.player_id;
         this->size        = std::move(other.size);
         this->selecrtable = other.selecrtable;
         this->cost_select = other.cost_select;
