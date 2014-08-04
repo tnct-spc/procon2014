@@ -48,7 +48,7 @@ int main(int argc, char * argv[])
         submit_form handler;
         /*<< Creates the server. >>*/
         server::options options(handler);
-        server server_(options.address("localhost").port("80"));
+        server server_(options.address("127.0.0.1").port("80"));
         /*<< Runs the server. >>*/
         server_.run();
     }
