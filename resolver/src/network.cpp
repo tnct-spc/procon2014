@@ -8,19 +8,21 @@
 
 namespace network
 {
+    // RFC2396 の非予約文字のみエンコード．
+    // .NET 4.0以前の EscapeDataString 相当のエンコードを行う．
     template<typename InputIterator, typename OutputIterator>
     OutputIterator client::urlencode(InputIterator first, InputIterator last, OutputIterator out) const
     {
         while(first != last)
         {
-            if(*first == 0x20)
-            {
-                *out++ = '+';
-            }
-            else if(
+            if(
                 (0x30<=*first && *first<=0x39) ||
                 (0x41<=*first && *first<=0x5a) ||
                 (0x61<=*first && *first<=0x7a) ||
+                *first==0x21 ||
+                *first==0x27 ||
+                *first==0x28 ||
+                *first==0x29 ||
                 *first==0x2a ||
                 *first==0x2d ||
                 *first==0x2e ||
