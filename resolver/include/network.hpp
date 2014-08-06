@@ -10,10 +10,12 @@ namespace network
     class client
     {
     private:
+        typedef boost::network::http::basic_client<boost::network::http::tags::http_async_8bit_udp_resolve, 1, 0> client_type;
+
         std::string const server_host_;
         std::string const problem_path_;
         std::string const submit_path_;
-        boost::network::http::client http_client_;
+        client_type http_client_;
 
         //
         // x-www-form-urlencoded用
@@ -31,7 +33,7 @@ namespace network
 
     public:
         client(
-            std::string const& server_host = "172.0.0.1",
+            std::string const& server_host = "127.0.0.1",
             std::string const& problem_path = "/problem/",
             std::string const& submit_path = "/SubmitAnswer"
             );

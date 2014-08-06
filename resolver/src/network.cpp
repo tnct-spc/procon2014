@@ -66,13 +66,14 @@ namespace network
 
     std::string client::http_request(std::string const url, std::string const request_body)
     {
-        boost::network::http::client::request request(url);
+        client_type::request request(url);
         request << boost::network::header("Connection", "close")
                 << boost::network::header("Content-Type", "application/x-www-form-urlencoded")
+                << boost::network::header("Content-Length", std::to_string(request_body.size()))
                 << boost::network::header("User-Agent", "Is the order a clammbon?")
                 << boost::network::body(request_body);
 
-        boost::network::http::client::response response = http_client_.post(request);
+        client_type::response response = http_client_.post(request);
         std::string response_body = body(response);
         return response_body;
     }
