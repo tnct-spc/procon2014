@@ -7,6 +7,7 @@
 #include "ppm_reader.hpp"
 #include "algorithm.hpp"
 #include "gui.hpp"
+#include "network.hpp"
 
 #include <sort_algorithm/yrange2.hpp>
 #include <sort_algorithm/genetic.hpp>
@@ -14,7 +15,10 @@
 class analyzer : boost::noncopyable
 {
 public:
-    explicit analyzer() = default;
+    explicit analyzer()
+        : netclient_()
+    {
+    }
     virtual ~analyzer() = default;
 
     question_data operator() (int const problem_id, std::string const& player_id)
@@ -22,7 +26,7 @@ public:
 #if 1
         std::string path("prob01.ppm");
 #else
-        std::string path = download();
+        std::string path = netclient_.get_problem(01).get();
 #endif
 
         ppm_reader reader(path);
@@ -49,6 +53,7 @@ public:
     }
 
 private:
+    network::client netclient_;
     pixel_sorter<yrange2> sorter_;
 };
 

@@ -43,6 +43,7 @@ svnとか使いたいなら，Windowsと大差無い方法でビルドできる�
 
 
 ####FLTK(GUI Tool Kit)
+-------------------
 `fltk-1.3.2-source.tar.gz`をDLしてきてREADMEを読めばなんとかなるけれど，一応書いておく．
 
 
@@ -76,6 +77,55 @@ $ sudo make install
 ```
 
 これで，/usr/localなbinとlibとincludeに導入される．
+
+
+####cpp-netlib (http://cpp-netlib.org/)
+-------------------
+これはWindowsでもLinuxでもビルドする必要がある．どちらもCMake必須．Boost.Buildを用いる方法は今回は使わない．
+
+
+#####Windows/Linux共通
+ちょっとわかりにくいけれど，今回はバージョンとしてリリースされているものを用いる．
+公式サイト( http://cpp-netlib.org/ )より，「0.11.0(zip)」をダウンロード．__tar.gzは多分壊れてる__．
+
+解凍したら，WindowsならC:\\cpp-netlib，Linuxなら好きな位置に置く．(Linuxは/usr/localにinstallすることになる)
+
+
+#####Windows
+Visual Studioでのコンパイル方法を説明する．  
+CMakeのソフトウェア自体は http://www.cmake.org/ から落としてインストールしておく．
+
+1. OpenSSLの導入をする．
+   http://slproweb.com/products/Win32OpenSSL.html から，
+   「Win64 OpenSSL v1.0.1h」か「Win32 OpenSSL v1.0.1h」の環境に合った方をインストールするのが簡単．
+   その際，インストール先をC:\openssl-1.0.1hにする．
+2. cmake-guiを起動．(すべてのプログラム→cmakeの中にあるはず)
+3. 「Where is the source code:」および「Where to build the binaries:」にC:/cpp-netlibを指定する．
+4. 下の方のConfigureをクリックし，任意のバージョンのVisual StudioのWin64もしくは無印を選択する．
+5. 赤いエラーが出なければ，そのままGenerateをクリックする．
+6. C:\\cpp-netlib\\CPP-NETLIB.slnを開く．
+7. DebugおよびReleaseにて，「ビルド→ソリューションのビルド」を行う．
+   bigobj関係のエラーが出た場合は，素直にエラーメッセージに従うとビルドできるし，無視しても構わない．
+
+
+ステップ4でエラーになる場合は，環境変数BOOST_ROOTにC:\\boost\\boost_1_55_0を指定したり，環境変数OPENSSL_ROOT_DIRにC:\\openssl-1.0.1hを指定したりすると良い．
+
+
+#####Linux
+cpp-netlibのディレクトリ内へ移動して，
+```bash
+$ cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++
+$ make
+$ make install
+```
+か
+```bash
+$ cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++
+$ make
+$ make install
+```
+の好きな方を実行．
+
 
 
 ####ディレクトリ構造
