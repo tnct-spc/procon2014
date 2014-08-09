@@ -2,34 +2,53 @@
 #define RESOLVER_DATA_TYPE_HPP
 
 #include <cstdint>
+#include <cmath>
 #include <tuple>
 #include <utility>
 #include <vector>
 #include <boost/noncopyable.hpp>
+#include <opencv2/core/core.hpp>
 
 struct point_type
 {
     int x;
     int y;
-    friend bool operator== (point_type const& lhs, point_type const& rhs)
+    
+    friend inline bool operator== (point_type const& lhs, point_type const& rhs)
     {
         return lhs.x == rhs.x && lhs.y == rhs.y;
     }
-};
-struct pixel_type
-{
-    uint8_t r;
-    uint8_t g;
-    uint8_t b;
+    friend inline point_type const operator- (point_type const& lhs, point_type const& rhs)
+    {
+        return point_type{lhs.x - rhs.x, lhs.y - rhs.y};
+    }
+
+    inline int manhattan(point_type const& other) const
+    {
+        return std::abs(this->x - other.x) + std::abs(this->y - other.y);
+    }
+    template<class T = double>
+    inline T euclid(point_type const& other) const
+    {
+        return std::sqrt<T>(
+            std::pow<T>(this->x - other.x, 2) + 
+            std::pow<T>(this->y - other.y, 2)
+            );
+    }
 };
 
-typedef std::vector<std::vector<pixel_type>> image_type;
+typedef cv::Vec3b                            pixel_type;
+typedef std::vector<uint8_t>                 unfold_image_type;
+typedef cv::Mat_<cv::Vec3b>                  image_type;
 
-// 気持ち悪いが，[i][j]の位置に分割された画像が入っている．更に[j][k]へのアクセスによって画素にアクセス
+// [i][j]の位置に分割された画像(cv::Mat_<cv::Vec3b>)が入っている．
 typedef std::vector<std::vector<image_type>> split_image_type;
 
 struct question_data : private boost::noncopyable
 {
+    int problem_id;
+    std::string player_id;
+
     std::pair<int,int> size;
     int selecrtable;
     int cost_select;
@@ -37,13 +56,15 @@ struct question_data : private boost::noncopyable
     std::vector<std::vector<point_type>> block;
 
     question_data(
+        int const problem_id,
+        std::string const& player_id,
         std::pair<int,int> const& size,
         int const selecrtable,
         int const cost_select,
         int const cost_change,
         std::vector<std::vector<point_type>> const& block
         )
-        : size(size), selecrtable(selecrtable), cost_select(cost_select), cost_change(cost_change), block(block)
+        : problem_id(problem_id), player_id(player_id), size(size), selecrtable(selecrtable), cost_select(cost_select), cost_change(cost_change), block(block)
     {
     }
 
@@ -53,6 +74,8 @@ struct question_data : private boost::noncopyable
     }
     question_data& operator=(question_data&& other)
     {
+        this->problem_id  = other.problem_id;
+        this->player_id   = other.player_id;
         this->size        = std::move(other.size);
         this->selecrtable = other.selecrtable;
         this->cost_select = other.cost_select;
@@ -109,5 +132,9 @@ struct direction_type
     T down;
     T left;
 };
+
+//sort_algorithm
+typedef std::vector<std::vector<std::vector<std::vector<direction_type<uint64_t>>>>> compared_type;
+typedef std::vector<std::vector<direction_type<point_type>>> adjacent_type;
 
 #endif

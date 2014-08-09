@@ -66,38 +66,39 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>C:\boost\include\boost-1_55;$(SolutionDir)clammbon\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\boost\lib;$(SolutionDir)lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\boost\include\boost-1_55;C:\cpp-netlib;$(SolutionDir)clammbon\include;C:\fltk-1.3.2;$(ProjectDir)include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\boost\lib;$(SolutionDir)lib;C:\fltk-1.3.2\lib;C:\cpp-netlib\libs\network\src\Debug;C:\openssl-1.0.1h\build\lib;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)bin\$(Configuration)\</OutDir>
     <IntDir>obj\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>C:\boost\include\boost-1_55;$(SolutionDir)clammbon\include;$(IncludePath)</IncludePath>
+    <IncludePath>C:\boost\include\boost-1_55;C:\cpp-netlib;$(SolutionDir)clammbon\include;C:\fltk-1.3.2;$(ProjectDir)include;C:\opencv\build\include;$(IncludePath)</IncludePath>
     <IntDir>obj\$(Configuration)\</IntDir>
     <OutDir>$(SolutionDir)bin\$(Configuration)\</OutDir>
-    <LibraryPath>C:\boost\lib;$(SolutionDir)lib;$(LibraryPath)</LibraryPath>
+    <LibraryPath>C:\boost\lib;$(SolutionDir)lib;C:\fltk-1.3.2\lib;C:\cpp-netlib\libs\network\src\Debug;C:\openssl-1.0.1h\lib\VC\static;C:\opencv\build\$(PlatformTarget)\vc12\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>$(SolutionDir)bin\$(Configuration)\</OutDir>
     <IntDir>obj\$(Configuration)\</IntDir>
-    <IncludePath>C:\boost\include\boost-1_55;$(SolutionDir)clammbon\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\boost\lib;$(SolutionDir)lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\boost\include\boost-1_55;C:\cpp-netlib;$(SolutionDir)clammbon\include;C:\fltk-1.3.2;$(ProjectDir)include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\boost\lib;$(SolutionDir)lib;C:\fltk-1.3.2\lib;C:\cpp-netlib\libs\network\src\Release;C:\openssl-1.0.1h\lib\VC\static;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(SolutionDir)bin\$(Configuration)\</OutDir>
     <IntDir>obj\$(Configuration)\</IntDir>
-    <IncludePath>C:\boost\include\boost-1_55;$(SolutionDir)clammbon\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\boost\lib;$(SolutionDir)lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\boost\include\boost-1_55;C:\cpp-netlib;$(SolutionDir)clammbon\include;C:\fltk-1.3.2;$(ProjectDir)include;C:\opencv\build\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\boost\lib;$(SolutionDir)lib;C:\fltk-1.3.2\lib;C:\cpp-netlib\libs\network\src\Release;C:\openssl-1.0.1h\lib\VC\static;C:\opencv\build\$(PlatformTarget)\vc12\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>clammbond.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>clammbond.lib;fltkd.lib;cppnetlib-client-connections.lib;cppnetlib-server-parsers.lib;cppnetlib-uri.lib;libeay32MDd.lib;ssleay32MDd.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -105,10 +106,11 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;WIN32;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>clammbond.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>clammbond.lib;fltkd.lib;cppnetlib-client-connections.lib;cppnetlib-server-parsers.lib;cppnetlib-uri.lib;libeay32MDd.lib;ssleay32MDd.lib;opencv_core249d.lib;opencv_highgui249d.lib;opencv_imgproc249d.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -118,12 +120,13 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>clammbon.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>clammbon.lib;fltk.lib;cppnetlib-client-connections.lib;cppnetlib-server-parsers.lib;cppnetlib-uri.lib;libeay32MD.lib;ssleay32MD.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -133,16 +136,21 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>clammbon.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>clammbon.lib;fltk.lib;cppnetlib-client-connections.lib;cppnetlib-server-parsers.lib;cppnetlib-uri.lib;libeay32MD.lib;ssleay32MD.lib;opencv_core249.lib;opencv_highgui249.lib;opencv_imgproc249.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\network.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\network.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
