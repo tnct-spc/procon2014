@@ -1,4 +1,7 @@
+// MS WARNINGS MACRO
+#define _SCL_SECURE_NO_WARNINGS
 #include <boost/network/protocol/http/server.hpp>
+
 #include <iostream>
 #include <string>
 #include <fstream>
