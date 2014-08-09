@@ -11,7 +11,7 @@ DEPS := $(SRCS:src/%.cpp=obj/$(buildtype)/%.d)
 CXXFLAGS +=
 CPPFLAGS +=
 LDFLAGS  +=
-LIBS     += -lpthread -lboost_system -lboost_thread -lcppnetlib-uri -lcppnetlib-client-connections -lssl -lcrypto
+LIBS      = -lpthread -lboost_system -lboost_thread -lcppnetlib-uri -lcppnetlib-client-connections -lssl -lcrypto
 
 .PHONY: all clean distclean
 
@@ -33,4 +33,4 @@ clean:
 distclean:
 	rm -rf ../bin
 
-# vim:set tabstop=4 noexpendtab
+# vim:set tabstop=4 noexpandtab
