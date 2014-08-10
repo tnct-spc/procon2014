@@ -11,7 +11,7 @@ DEPS := $(SRCS:src/%.cpp=obj/$(buildtype)/%.d)
 CXXFLAGS +=
 CPPFLAGS +=
 LDFLAGS  +=
-LIBS      = -lpthread -lboost_system -lboost_thread -lcppnetlib-uri -lcppnetlib-client-connections -lssl -lcrypto
+LIBS     += -lpthread -lboost_system -lboost_thread -lcppnetlib-uri -lcppnetlib-client-connections -lssl -lcrypto
 
 .PHONY: all clean distclean
 
@@ -19,7 +19,10 @@ all: $(PROG)
 
 -include $(DEPS)
 
-$(PROG) : $(OBJS)
+clammbon :
+	cd ../clammbon; buildtype=$(buildtype) make
+
+$(PROG) : $(OBJS) clammbon
 	@if [ ! -e `dirname $@` ]; then mkdir -p `dirname $@`; fi
 	$(CXX) -o $@ $(OBJS) $(LIBS) $(LDFLAGS)
 
