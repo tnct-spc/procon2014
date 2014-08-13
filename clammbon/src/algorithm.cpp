@@ -1,11 +1,10 @@
+//#define algorithm_debug
 #include <iostream>
 #include <algorithm>
 #include <iterator>
 #include <cassert>
 #include "algorithm.hpp"
-#include "network.hpp"
-
-#define debug
+//#include "network.hpp"
 
 void algorithm::operator() (question_data const& data)
 {
@@ -45,7 +44,7 @@ void algorithm::operator() (question_data const& data)
     answer_list.push_back(answer_type{mover, change_list_t{}});
 
     // GO
-#ifdef debug
+#ifdef algorithm_debug
     print();
 #endif
     solve();
@@ -286,7 +285,9 @@ void algorithm::brute_force()
 void algorithm::move_direction(point_type const& target, Direction const& direction)
 {
     // target に存在する断片画像を指定された方向へ移動する
+#ifdef algorithm_debug
     print();
+#endif
     assert(sorted_col <= target.x && target.x < width && sorted_row <= target.y && target.y < height);
     if (direction == Direction::Up) {
         std::swap(matrix[target.y][target.x], matrix[target.y - 1][target.x]);
@@ -467,20 +468,27 @@ inline void algorithm::print() const
     std::cin.ignore();
 }
 
+#ifdef algorithm_debug
 // 検証用main
 // これどうやってテストすれば？
 // g++ -std=c++11 -I../include algorithm.cpp
 int main(int argc, char* argv[])
 {
-    std::vector<std::vector<point_type>> matrix;
-    matrix.push_back(std::vector<point_type>{point_type{3, 1}, point_type{7, 3}, point_type{2, 4}, point_type{5, 7}, point_type{4, 7}, point_type{7, 2}, point_type{5, 5}, point_type{3, 5}});
-    matrix.push_back(std::vector<point_type>{point_type{0, 1}, point_type{6, 7}, point_type{4, 4}, point_type{3, 2}, point_type{4, 3}, point_type{1, 2}, point_type{2, 3}, point_type{1, 3}});
-    matrix.push_back(std::vector<point_type>{point_type{7, 1}, point_type{0, 6}, point_type{4, 0}, point_type{3, 7}, point_type{1, 6}, point_type{7, 6}, point_type{3, 4}, point_type{2, 5}});
-    matrix.push_back(std::vector<point_type>{point_type{2, 2}, point_type{4, 6}, point_type{0, 3}, point_type{2, 6}, point_type{2, 1}, point_type{1, 5}, point_type{5, 2}, point_type{3, 6}});
-    matrix.push_back(std::vector<point_type>{point_type{0, 2}, point_type{2, 0}, point_type{0, 4}, point_type{4, 1}, point_type{5, 0}, point_type{6, 0}, point_type{5, 6}, point_type{1, 0}});
-    matrix.push_back(std::vector<point_type>{point_type{6, 3}, point_type{5, 3}, point_type{0, 5}, point_type{7, 5}, point_type{2, 7}, point_type{7, 4}, point_type{4, 2}, point_type{1, 7}});
-    matrix.push_back(std::vector<point_type>{point_type{3, 3}, point_type{6, 2}, point_type{7, 0}, point_type{4, 5}, point_type{5, 1}, point_type{0, 0}, point_type{1, 4}, point_type{3, 0}});
-    matrix.push_back(std::vector<point_type>{point_type{7, 7}, point_type{6, 1}, point_type{0, 7}, point_type{1, 1}, point_type{6, 4}, point_type{5, 4}, point_type{6, 5}, point_type{6, 6}});
-
-    algorithm()(question_data(std::pair<int, int>(8, 8), 16, 10, 10, matrix));
+    const auto matrix = std::vector<std::vector<point_type>>{
+        std::vector<point_type>{point_type{3, 1}, point_type{7, 3}, point_type{2, 4}, point_type{5, 7}, point_type{4, 7}, point_type{7, 2}, point_type{5, 5}, point_type{3, 5}},
+        std::vector<point_type>{point_type{0, 1}, point_type{6, 7}, point_type{4, 4}, point_type{3, 2}, point_type{4, 3}, point_type{1, 2}, point_type{2, 3}, point_type{1, 3}},
+        std::vector<point_type>{point_type{7, 1}, point_type{0, 6}, point_type{4, 0}, point_type{3, 7}, point_type{1, 6}, point_type{7, 6}, point_type{3, 4}, point_type{2, 5}},
+        std::vector<point_type>{point_type{2, 2}, point_type{4, 6}, point_type{0, 3}, point_type{2, 6}, point_type{2, 1}, point_type{1, 5}, point_type{5, 2}, point_type{3, 6}},
+        std::vector<point_type>{point_type{0, 2}, point_type{2, 0}, point_type{0, 4}, point_type{4, 1}, point_type{5, 0}, point_type{6, 0}, point_type{5, 6}, point_type{1, 0}},
+        std::vector<point_type>{point_type{6, 3}, point_type{5, 3}, point_type{0, 5}, point_type{7, 5}, point_type{2, 7}, point_type{7, 4}, point_type{4, 2}, point_type{1, 7}},
+        std::vector<point_type>{point_type{3, 3}, point_type{6, 2}, point_type{7, 0}, point_type{4, 5}, point_type{5, 1}, point_type{0, 0}, point_type{1, 4}, point_type{3, 0}},
+        std::vector<point_type>{point_type{7, 7}, point_type{6, 1}, point_type{0, 7}, point_type{1, 1}, point_type{6, 4}, point_type{5, 4}, point_type{6, 5}, point_type{6, 6}}
+    };
+    const auto size = std::pair<int, int>(matrix[0].size(), matrix.size());
+    constexpr int selectable = 16;
+    constexpr int cost_select = 10;
+    constexpr int cost_change = 10;
+    const auto qdata = question_data(size, selectable, cost_select, cost_change, matrix);
+    algorithm()(qdata);
 }
+#endif
