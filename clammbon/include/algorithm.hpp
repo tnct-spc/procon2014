@@ -16,17 +16,16 @@ public:
     void brute_force();
     inline void print() const;
     const point_type current_point(point_type const& point) const;
-    HVDirection inverse_direction(HVDirection const& direction) const;
-    AllDirection get_direction_by_points(point_type const& p1, point_type const& p2) const;
-    void move_direction(point_type const& target, HVDirection const& direction);
-    void move_from_to(point_type const& from, point_type const& to);
-    void move_target_direction(point_type const& target, HVDirection const& direction, DiagonalDirection const& turnside);
+    void sequential_move(point_type const& target, std::vector<HVDirection> const& directions);
+    void move_selecting(HVDirection const& direction);
+    void move_target(point_type const& target, HVDirection const& direction);
+    void move_to(point_type const& to);
 
 private:
     std::vector<std::vector<point_type>> matrix;
     std::vector<point_type> sorted_points;
     answer_type answer;
-    point_type mover;
+    point_type selecting;
     int width;
     int height;
     int cost_select;

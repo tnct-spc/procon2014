@@ -3,12 +3,13 @@
 
 #include <cstdint>
 #include <cmath>
-#include <tuple>
 #include <utility>
 #include <vector>
 #include <boost/noncopyable.hpp>
 #include <boost/format.hpp>
 #include <opencv2/core/core.hpp>
+
+enum struct AllDirection { Same, Up, UpperRight, Right, DownerRight, Down, DownerLeft, Left, UpperLeft };
 
 struct point_type
 {
@@ -67,9 +68,34 @@ struct point_type
         return point_type{this->x - 1, this->y};
     }
 
-    inline point_type const abs() const
+    inline AllDirection const direction(point_type const& point) const
     {
-        return point_type{std::abs(this->x), std::abs(this->y)};
+        point_type diff = *this - point;
+        if (diff.x < 0) {
+            if (diff.y < 0) {
+                return AllDirection::DownerRight;
+            } else if (diff.y > 0) {
+                return AllDirection::UpperRight;
+            } else {
+                return AllDirection::Right;
+            }
+        } else if (diff.x > 0) {
+            if (diff.y < 0) {
+                return AllDirection::DownerLeft;
+            } else if (diff.y > 0) {
+                return AllDirection::UpperLeft;
+            } else {
+                return AllDirection::Left;
+            }
+        } else {
+            if (diff.y < 0) {
+                return AllDirection::Down;
+            } else if (diff.y > 0) {
+                return AllDirection::Up;
+            } else {
+                return AllDirection::Same;
+            }
+        }
     }
 };
 
@@ -149,7 +175,7 @@ enum struct DiagonalDirection { UpperRight, DownerRight, DownerLeft, UpperLeft }
 enum struct HVDirection { Up, Right, Down, Left };
 
 // 八方を表す列挙型
-enum struct AllDirection { Same, Up, UpperRight, Right, DownerRight, Down, DownerLeft, Left, UpperLeft };
+//enum struct AllDirection { Same, Up, UpperRight, Right, DownerRight, Down, DownerLeft, Left, UpperLeft };
 
 inline char const direction_char(HVDirection const& d)
 {

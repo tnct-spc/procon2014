@@ -1,4 +1,4 @@
-#define algorithm_debug
+//#define algorithm_debug
 #include <iostream>
 #include <algorithm>
 #include <iterator>
@@ -34,18 +34,18 @@ void algorithm::operator() (question_data const& data)
     sorted_row = 0;
     sorted_col = 0;
 
-    // ソート済みの断片画像リスト
-    sorted_points = std::vector<point_type>();
+    // ソート済み断片画像
+    std::vector<point_type> sorted_points;
 
     // 移動に用いる断片画像の原座標
     // 右下を選んでおけば間違いない
-    mover = point_type{width - 1, height - 1};
+    selecting = point_type{width - 1, height - 1};
 
-    answer.list.push_back(answer_line{mover, std::vector<HVDirection>{}});
+    answer.list.push_back(answer_line{selecting, std::vector<HVDirection>()});
 
     // GO
 #ifdef algorithm_debug
-    print();
+    //print();
 #endif
     solve();
 }
@@ -94,8 +94,7 @@ void algorithm::greedy()
     // 貪欲法で解く 一番要の部分
 
     // ターゲットをキューに入れる
-    // ここで target の中身は原座標である
-    // queue なのに vector とはこれいかに
+    // 中身は原座標
     std::vector<point_type> target_queue;
     for (int i = sorted_col; i < width; i++) {
         target_queue.push_back(point_type{i, sorted_row});
@@ -104,173 +103,117 @@ void algorithm::greedy()
         target_queue.push_back(point_type{sorted_col, i});
     }
 
-    // 原座標と現在の座標との差
-    point_type point_diff;
-    // どっちを周るか
-    DiagonalDirection turnside;
     // カウンタ
     int i;
-    // 仮のターゲット座標, これは原座標ではなく実際の座標で固定
-    point_type target;
-    for (point_type target_org : target_queue) {
+
+    // 仮のターゲット座標, これは原座標ではなく実際の座標
+    point_type waypoint;
+
+    // ターゲットの現在の座標
+    point_type target_cur;
+
+    for (point_type target : target_queue) {
         // 端の部分の処理
-        if (target_org.x == width - 2 || target_org.y == height - 1) {
+        if (target.x == width - 2 || target.y == height - 1) {
             // ターゲットが右から2番目の断片画像のとき
             // ターゲットが下から1番目の断片画像のとき
-            target = target_org.right();
-        } else if (target_org.x == width - 1 || target_org.y == height - 2) {
+            waypoint = target.right();
+        } else if (target.x == width - 1 || target.y == height - 2) {
             // ターゲットが右から1番目の断片画像のとき
             // ターゲットが下から2番目の断片画像のとき
-            target = target_org.down();
+            waypoint = target.down();
         } else {
-            target = target_org;
+            waypoint = target;
         }
 
-        // まず斜めに移動
-        point_diff = target - current_point(target_org);
-
-        // TODO: 水平垂直のどちらを先に動かすかの判断も必要では
-
-        // 特に理由がなければ縦方向に先に動くが、移動先がソート済みの場合は横に先に動く
-        // これ4回もコピペすんの
-        i = 0;
-        if (std::find(sorted_points.begin(), sorted_points.end(), current_point(target_org).up()) != sorted_points.end()) {
-            ++i;
-        }
-        while (point_diff.x < 0 && point_diff.y < 0) {
-            // 原座標に対して右下にあるので左上へ移動
-            if (i % 2 == 0) {
-                move_target_direction(current_point(target_org), HVDirection::Up, DiagonalDirection::DownerRight);
-            } else {
-                move_target_direction(current_point(target_org), HVDirection::Left, DiagonalDirection::DownerRight);
-            }
-            ++i;
-            point_diff = target - current_point(target_org);
-        }
-
-        i = 0;
-        if (std::find(sorted_points.begin(), sorted_points.end(), current_point(target_org).down()) != sorted_points.end()) {
-            ++i;
-        }
-        while (point_diff.x < 0 && point_diff.y > 0) {
-            // 原座標に対して右上にあるので左下へ移動
-            if (i % 2 == 0) {
-                move_target_direction(current_point(target_org), HVDirection::Down, DiagonalDirection::UpperRight);
-            } else {
-                move_target_direction(current_point(target_org), HVDirection::Left, DiagonalDirection::UpperRight);
-            }
-            ++i;
-            point_diff = target - current_point(target_org);
-        }
-
-        i = 0;
-        if (std::find(sorted_points.begin(), sorted_points.end(), current_point(target_org).up()) != sorted_points.end()) {
-            ++i;
-        }
-        while (point_diff.x > 0 && point_diff.y < 0) {
-            // 原座標に対して左下にあるので右上へ移動
-            if (i % 2 == 0) {
-                move_target_direction(current_point(target_org), HVDirection::Up, DiagonalDirection::DownerLeft);
-            } else {
-                move_target_direction(current_point(target_org), HVDirection::Right, DiagonalDirection::DownerLeft);
-            }
-            ++i;
-            point_diff = target - current_point(target_org);
+        // 斜めに移動
+        if (current_point(target).direction(waypoint) == AllDirection::UpperRight) {
+            i = (std::find(sorted_points.begin(), sorted_points.end(), current_point(target).up()) != sorted_points.end()) ? 1 : 0;
+            do {
+                if (i % 2 == 0) {
+                    move_target(target, HVDirection::Up);
+                } else {
+                    move_target(target, HVDirection::Right);
+                }
+                ++i;
+            } while (current_point(target).direction(waypoint) == AllDirection::UpperRight);
+        } else if (current_point(target).direction(waypoint) == AllDirection::DownerRight) {
+            i = (std::find(sorted_points.begin(), sorted_points.end(), current_point(target).up()) != sorted_points.end()) ? 1 : 0;
+            do {
+                if (i % 2 == 0) {
+                    move_target(target, HVDirection::Down);
+                } else {
+                    move_target(target, HVDirection::Right);
+                }
+                ++i;
+            } while (current_point(target).direction(waypoint) == AllDirection::DownerRight);
+        } else if (current_point(target).direction(waypoint) == AllDirection::DownerLeft) {
+            i = (std::find(sorted_points.begin(), sorted_points.end(), current_point(target).up()) != sorted_points.end()) ? 1 : 0;
+            do {
+                if (i % 2 == 0) {
+                    move_target(target, HVDirection::Down);
+                } else {
+                    move_target(target, HVDirection::Left);
+                }
+                ++i;
+            } while (current_point(target).direction(waypoint) == AllDirection::DownerLeft);
+        } else if (current_point(target).direction(waypoint) == AllDirection::UpperLeft) {
+            i = (std::find(sorted_points.begin(), sorted_points.end(), current_point(target).up()) != sorted_points.end()) ? 1 : 0;
+            do {
+                if (i % 2 == 0) {
+                    move_target(target, HVDirection::Up);
+                } else {
+                    move_target(target, HVDirection::Left);
+                }
+                ++i;
+            } while (current_point(target).direction(waypoint) == AllDirection::UpperLeft);
         }
 
-        i = 0;
-        if (std::find(sorted_points.begin(), sorted_points.end(), current_point(target_org).down()) != sorted_points.end()) {
-            ++i;
-        }
-        while (point_diff.x > 0 && point_diff.y > 0) {
-            // 原座標に対して左上にあるので右下へ移動
-            if (i % 2 == 0) {
-                move_target_direction(current_point(target_org), HVDirection::Down, DiagonalDirection::UpperLeft);
-            } else {
-                move_target_direction(current_point(target_org), HVDirection::Right, DiagonalDirection::UpperLeft);
-            }
-            ++i;
-            point_diff = target - current_point(target_org);
-        }
+        // ここまでで x または y 座標が揃っていることになるので, 真横か真上への移動を行う
 
-        // ここまでで x または y 座標が揃っていることになるので真横か真上への移動を行う
-
-        // 周る方向を決める
-        if (target.x == width - 1) {
-            // ターゲットが最右列なので左を周る
-            if (target.y == height - 1) {
-                // ターゲットが最下行なので上を周る
-                turnside = DiagonalDirection::UpperLeft;
-            } else {
-                turnside = DiagonalDirection::DownerLeft;
-            }
-        } else {
-            if (target.y == height - 1) {
-                // ターゲットが最下行なので上を周る
-                turnside = DiagonalDirection::UpperRight;
-            } else {
-                turnside = DiagonalDirection::DownerRight;
-            }
-        }
-
-        point_diff = target - current_point(target_org);
-        if (point_diff.x != 0) {
-            // 横に移動する場合
-            while (point_diff.x < 0) {
-                // 原座標より右にいるので左へ移動
-                move_target_direction(current_point(target_org), HVDirection::Left, turnside);
-                point_diff = target - current_point(target_org);
-            }
-            while (point_diff.x > 0) {
-                // 原座標より左にいるので右へ移動
-                move_target_direction(current_point(target_org), HVDirection::Right, turnside);
-                point_diff = target - current_point(target_org);
-            }
-        } else if (point_diff.y != 0) {
-            // 縦に移動する場合
-            while (point_diff.y > 0) {
-                // 原座標より上にいるので下へ移動
-                move_target_direction(current_point(target_org), HVDirection::Down, turnside);
-                point_diff = target - current_point(target_org);
-            }
-            while (point_diff.y < 0) {
-                // 原座標より下にいるので上へ移動
-                move_target_direction(current_point(target_org), HVDirection::Up, turnside);
-                point_diff = target - current_point(target_org);
-            }
+        if (current_point(target).direction(waypoint) == AllDirection::Up) {
+            do {
+                move_target(target, HVDirection::Up);
+            } while (current_point(target).direction(waypoint) == AllDirection::Up);
+        } else if (current_point(target).direction(waypoint) == AllDirection::Right) {
+            do {
+                move_target(target, HVDirection::Right);
+            } while (current_point(target).direction(waypoint) == AllDirection::Right);
+        } else if (current_point(target).direction(waypoint) == AllDirection::Down) {
+            do {
+                move_target(target, HVDirection::Down);
+            } while (current_point(target).direction(waypoint) == AllDirection::Down);
+        } else if (current_point(target).direction(waypoint) == AllDirection::Left) {
+            do {
+                move_target(target, HVDirection::Left);
+            } while (current_point(target).direction(waypoint) == AllDirection::Left);
         }
 
         // 端の部分の処理
-        if (target_org.x == width - 1) {
+        if (target.x == width - 1) {
             // ターゲットの真の原座標が右端の場合
-            if (current_point(mover) == target.down()) {
-                // mover が仮の原座標の直下にいる場合
-                move_direction(current_point(mover), HVDirection::Left);
-                move_direction(current_point(mover), HVDirection::Up);
+            if (current_point(selecting) == waypoint.down()) {
+                // selecting が仮の原座標の直下にいる場合
+                move_selecting(HVDirection::Left);
+                move_selecting(HVDirection::Up);
             }
-            move_direction(current_point(mover), HVDirection::Up);
-            move_direction(current_point(mover), HVDirection::Right);
-            move_direction(current_point(mover), HVDirection::Down);
-            // ソート済みマーク
-            sorted_points.push_back(target_org.left());
-            sorted_points.push_back(target_org);
-        } else if (target_org.y == height - 1) {
+            move_selecting(HVDirection::Up);
+            move_selecting(HVDirection::Right);
+            move_selecting(HVDirection::Down);
+        } else if (target.y == height - 1) {
             // ターゲットの真の原座標が下端の場合
-            if (current_point(mover) == target.right()) {
-                // mover が仮の原座標の直右にいる場合
-                move_direction(current_point(mover), HVDirection::Up);
-                move_direction(current_point(mover), HVDirection::Left);
+            if (current_point(selecting) == waypoint.right()) {
+                // selecting が仮の原座標の直右にいる場合
+                move_selecting(HVDirection::Up);
+                move_selecting(HVDirection::Left);
             }
-            move_direction(current_point(mover), HVDirection::Left);
-            move_direction(current_point(mover), HVDirection::Down);
-            move_direction(current_point(mover), HVDirection::Right);
-            // ソート済みマーク
-            sorted_points.push_back(target_org.up());
-            sorted_points.push_back(target_org);
-        } else if (target_org.x < width - 2 && target_org.y < width - 2) {
-            // ソート済みマーク
-            sorted_points.push_back(target_org);
+            move_selecting(HVDirection::Left);
+            move_selecting(HVDirection::Down);
+            move_selecting(HVDirection::Right);
         }
+
+        // ソート済みとする
+        sorted_points.push_back(target);
     }
 }
 
@@ -282,153 +225,250 @@ void algorithm::brute_force()
     // TODO: これからやる
 }
 
-void algorithm::move_direction(point_type const& target, HVDirection const& direction)
+void algorithm::move_selecting(HVDirection const& direction)
 {
-    // target に存在する断片画像を指定された方向へ移動する
+    // selecting を指定された方向へ移動する
 #ifdef algorithm_debug
-    print();
+    std::cout << "move_selecting direction = " << "URDL"[static_cast<int>(direction)] << std::endl;
 #endif
-    assert(sorted_col <= target.x && target.x < width && sorted_row <= target.y && target.y < height);
+
+    point_type selecting_cur = current_point(selecting);
     if (direction == HVDirection::Up) {
-        assert(target.y > sorted_row);
-        std::swap(matrix[target.y][target.x], matrix[target.y - 1][target.x]);
+        assert(selecting_cur.y > sorted_row);
+        std::swap(matrix[selecting_cur.y][selecting_cur.x], matrix[selecting_cur.y - 1][selecting_cur.x]);
     } else if (direction == HVDirection::Right) {
-        assert(target.x < width - 1);
-        std::swap(matrix[target.y][target.x], matrix[target.y][target.x + 1]);
+        assert(selecting_cur.x < width - 1);
+        std::swap(matrix[selecting_cur.y][selecting_cur.x], matrix[selecting_cur.y][selecting_cur.x + 1]);
     } else if (direction == HVDirection::Down) {
-        assert(target.y < height - 1);
-        std::swap(matrix[target.y][target.x], matrix[target.y + 1][target.x]);
+        assert(selecting_cur.y < height - 1);
+        std::swap(matrix[selecting_cur.y][selecting_cur.x], matrix[selecting_cur.y + 1][selecting_cur.x]);
     } else if (direction == HVDirection::Left) {
-        assert(target.x > sorted_col);
-        std::swap(matrix[target.y][target.x], matrix[target.y][target.x - 1]);
+        assert(selecting_cur.x > sorted_col);
+        std::swap(matrix[selecting_cur.y][selecting_cur.x], matrix[selecting_cur.y][selecting_cur.x - 1]);
     }
 
     answer.list.back().change_list.push_back(direction);
+#ifdef algorithm_debug
+    print();
+#endif
 }
 
-void algorithm::move_from_to(point_type const& from, point_type const& to)
+void algorithm::move_target(point_type const& target, HVDirection const& direction)
 {
-    // from に存在する断片画像を to まで移動させる
+    // selecting の操作によって原座標が target である断片画像を指定の方向へ移動させる.
+#ifdef algorithm_debug
+    std::cout << "move_target target = " << target << " direction = " << "URDL"[static_cast<int>(direction)] << std::endl;
+#endif
 
-    assert(from.x == to.x || from.y == to.y);
+    // selecting の現在の座標
+    point_type selecting_cur = current_point(selecting);
 
-    point_type new_from = matrix[from.y][from.x];
+    // target の現在の座標
+    point_type target_cur = current_point(target);
 
-    while (current_point(new_from).y > to.y) {
-        move_direction(current_point(new_from), HVDirection::Up);
+    // 移動手順リスト
+    std::vector<HVDirection> moving_process;
+
+    // selecting が target に隣接していない場合
+    if (selecting_cur.manhattan(target_cur) > 1) {
+        if (target_cur.direction(selecting_cur) == AllDirection::UpperRight) {
+            if (direction == HVDirection::Up) {
+                move_to(target_cur.up());
+            } else if (direction == HVDirection::Right) {
+                move_to(target_cur.right());
+            } else if (direction == HVDirection::Down) {
+                move_to(target_cur.right());
+            } else {
+                move_to(target_cur.up());
+            }
+        } else if (target_cur.direction(selecting_cur) == AllDirection::DownerRight) {
+            if (direction == HVDirection::Up) {
+                move_to(target_cur.right());
+            } else if (direction == HVDirection::Right) {
+                move_to(target_cur.right());
+            } else if (direction == HVDirection::Down) {
+                move_to(target_cur.down());
+            } else {
+                move_to(target_cur.down());
+            }
+        } else if (target_cur.direction(selecting_cur) == AllDirection::DownerLeft) {
+            if (direction == HVDirection::Up) {
+                move_to(target_cur.left());
+            } else if (direction == HVDirection::Right) {
+                move_to(target_cur.down());
+            } else if (direction == HVDirection::Down) {
+                move_to(target_cur.down());
+            } else {
+                move_to(target_cur.left());
+            }
+        } else if (target_cur.direction(selecting_cur) == AllDirection::UpperLeft) {
+            if (direction == HVDirection::Up) {
+                move_to(target_cur.up());
+            } else if (direction == HVDirection::Right) {
+                move_to(target_cur.up());
+            } else if (direction == HVDirection::Down) {
+                move_to(target_cur.left());
+            } else {
+                move_to(target_cur.left());
+            }
+        } else if (target_cur.direction(selecting_cur) == AllDirection::Up) {
+            move_to(target_cur.up());
+        } else if (target_cur.direction(selecting_cur) == AllDirection::Right) {
+            move_to(target_cur.right());
+        } else if (target_cur.direction(selecting_cur) == AllDirection::Down) {
+            move_to(target_cur.down());
+        } else if (target_cur.direction(selecting_cur) == AllDirection::Left) {
+            move_to(target_cur.left());
+        }
     }
-    while (current_point(new_from).y < to.y) {
-        move_direction(current_point(new_from), HVDirection::Down);
-    }
-    while (current_point(new_from).x > to.x) {
-        move_direction(current_point(new_from), HVDirection::Left);
-    }
-    while (current_point(new_from).x < to.x) {
-        move_direction(current_point(new_from), HVDirection::Right);
-    }
-}
-
-void algorithm::move_target_direction(point_type const& target, HVDirection const& direction, DiagonalDirection const& turnside)
-{
-    // mover の操作によって target に存在する断片画像を指定の方向へ移動させる.
-    // NOTE: 無条件に縦に先に移動する仕様だがこれでいいのか？
-
-    // mover を操作のための初期位置に移動させる.
-    // 例えば, target を上へ移動させる場合, mover は target の1つ上にいる必要がある.
-
-    // mover の現在の座標
-    point_type mover_cur = current_point(mover);
-    // 通過点4箇所
-    std::tuple<point_type, point_type, point_type, point_type> pass_points;
 
     if (direction == HVDirection::Up) {
-        // 上方向に移動させたい
-        if (mover_cur.x == target.x && mover_cur.y > target.y) {
-            // mover が target の真下にいる場合
-            if (turnside == DiagonalDirection::UpperRight || turnside == DiagonalDirection::DownerRight) {
-                // 右側を周る場合
-                std::get<0>(pass_points) = mover_cur.right();
+        if (target_cur.up() == selecting_cur) {
+            moving_process = {HVDirection::Down};
+        } else if (target_cur.right() == selecting_cur) {
+            if (std::find(sorted_points.begin(), sorted_points.end(), selecting_cur.up()) != sorted_points.end()) {
+                moving_process = {HVDirection::Down, HVDirection::Left, HVDirection::Left, HVDirection::Up, HVDirection::Up, HVDirection::Right, HVDirection::Down};
             } else {
-                // 左側を周る場合
-                std::get<0>(pass_points) = mover_cur.left();
+                moving_process = {HVDirection::Up, HVDirection::Left, HVDirection::Down};
             }
-        } else {
-            std::get<0>(pass_points) = mover_cur;
+        } else if (target_cur.down() == selecting_cur) {
+            if (target_cur.x == width - 1) {
+                moving_process = {HVDirection::Left, HVDirection::Up, HVDirection::Up, HVDirection::Right, HVDirection::Down};
+            } else {
+                moving_process = {HVDirection::Right, HVDirection::Up, HVDirection::Up, HVDirection::Left, HVDirection::Down};
+            }
+        } else if (target_cur.left() == selecting_cur) {
+            if (std::find(sorted_points.begin(), sorted_points.end(), selecting_cur.up()) != sorted_points.end()) {
+                moving_process = {HVDirection::Down, HVDirection::Right, HVDirection::Right, HVDirection::Up, HVDirection::Up, HVDirection::Left, HVDirection::Down};
+            } else {
+                moving_process = {HVDirection::Up, HVDirection::Right, HVDirection::Down};
+            }
         }
-        std::get<1>(pass_points) = point_type{std::get<0>(pass_points).x, target.y - 1};
-        std::get<2>(pass_points) = target.up();
     } else if (direction == HVDirection::Right) {
-        // 右方向に移動させたい
-        if (mover_cur.y == target.y && mover_cur.x < target.x) {
-            // mover が target の真左にいる場合
-            if (turnside == DiagonalDirection::DownerRight || turnside == DiagonalDirection::DownerLeft) {
-                // 下側を周る場合
-                std::get<0>(pass_points) = mover_cur.down();
+        if (target_cur.up() == selecting_cur) {
+            if (std::find(sorted_points.begin(), sorted_points.end(), selecting_cur.right()) != sorted_points.end()) {
+                moving_process = {HVDirection::Left, HVDirection::Down, HVDirection::Down, HVDirection::Right, HVDirection::Right, HVDirection::Up, HVDirection::Left};
             } else {
-                // 上側を周る場合
-                std::get<0>(pass_points) = mover_cur.up();
+                moving_process = {HVDirection::Right, HVDirection::Down, HVDirection::Left};
             }
-        } else {
-            std::get<0>(pass_points) = mover_cur;
+        } else if (target_cur.right() == selecting_cur) {
+            moving_process = {HVDirection::Left};
+        } else if (target_cur.down() == selecting_cur) {
+            if (std::find(sorted_points.begin(), sorted_points.end(), selecting_cur.right()) != sorted_points.end()) {
+                moving_process = {HVDirection::Left, HVDirection::Up, HVDirection::Up, HVDirection::Right, HVDirection::Right, HVDirection::Down, HVDirection::Left};
+            } else {
+                moving_process = {HVDirection::Right, HVDirection::Up, HVDirection::Left};
+            }
+        } else if (target_cur.left() == selecting_cur) {
+            if (target_cur.y == height - 1) {
+                moving_process = {HVDirection::Up, HVDirection::Right, HVDirection::Right, HVDirection::Down, HVDirection::Left};
+            } else {
+                moving_process = {HVDirection::Down, HVDirection::Right, HVDirection::Right, HVDirection::Up, HVDirection::Left};
+            }
         }
-        std::get<1>(pass_points) = point_type{target.x + 1, std::get<0>(pass_points).y};
-        std::get<2>(pass_points) = target.right();
     } else if (direction == HVDirection::Down) {
-        // 下方向に移動させたい
-        if (mover_cur.x == target.x && mover_cur.y < target.y) {
-            // mover が target の真上にいる場合
-            if (turnside == DiagonalDirection::UpperRight || turnside == DiagonalDirection::DownerRight) {
-                // 右側を周る場合
-                std::get<0>(pass_points) = mover_cur.right();
+        if (target_cur.up() == selecting_cur) {
+            if (target_cur.x == width - 1) {
+                moving_process = {HVDirection::Left, HVDirection::Down, HVDirection::Down, HVDirection::Right, HVDirection::Up};
             } else {
-                // 左側を周る場合
-                std::get<0>(pass_points) = mover_cur.left();
+                moving_process = {HVDirection::Right, HVDirection::Down, HVDirection::Down, HVDirection::Left, HVDirection::Up};
             }
-        } else {
-            std::get<0>(pass_points) = mover_cur;
+        } else if (target_cur.right() == selecting_cur) {
+            if (std::find(sorted_points.begin(), sorted_points.end(), selecting_cur.down()) != sorted_points.end()) {
+                moving_process = {HVDirection::Up, HVDirection::Left, HVDirection::Left, HVDirection::Down, HVDirection::Down, HVDirection::Right, HVDirection::Up};
+            } else {
+                moving_process = {HVDirection::Down, HVDirection::Left, HVDirection::Up};
+            }
+        } else if (target_cur.down() == selecting_cur) {
+            moving_process = {HVDirection::Up};
+        } else if (target_cur.left() == selecting_cur) {
+            if (std::find(sorted_points.begin(), sorted_points.end(), selecting_cur.down()) != sorted_points.end()) {
+                moving_process = {HVDirection::Up, HVDirection::Right, HVDirection::Right, HVDirection::Down, HVDirection::Down, HVDirection::Left, HVDirection::Up};
+            } else {
+                moving_process = {HVDirection::Down, HVDirection::Right, HVDirection::Up};
+            }
         }
-        std::get<1>(pass_points) = point_type{std::get<0>(pass_points).x, target.y + 1};
-        std::get<2>(pass_points) = target.down();
     } else if (direction == HVDirection::Left) {
-        // 左方向に移動させたい
-        if (mover_cur.y == target.y && mover_cur.x > target.x) {
-            // mover が target の右側にいる場合
-            if (turnside == DiagonalDirection::DownerRight || turnside == DiagonalDirection::DownerLeft) {
-                // 下側を周る場合
-                std::get<0>(pass_points) = mover_cur.down();
+        if (target_cur.up() == selecting_cur) {
+            if (std::find(sorted_points.begin(), sorted_points.end(), selecting_cur.left()) != sorted_points.end()) {
+                moving_process = {HVDirection::Right, HVDirection::Down, HVDirection::Down, HVDirection::Left, HVDirection::Left, HVDirection::Up, HVDirection::Right};
             } else {
-                // 上側を周る場合
-                std::get<0>(pass_points) = mover_cur.up();
+                moving_process = {HVDirection::Left, HVDirection::Down, HVDirection::Right};
             }
-        } else {
-            std::get<0>(pass_points) = mover_cur;
+        } else if (target_cur.right() == selecting_cur) {
+            if (target_cur.y == height - 1) {
+                moving_process = {HVDirection::Up, HVDirection::Left, HVDirection::Left, HVDirection::Down, HVDirection::Right};
+            } else {
+                moving_process = {HVDirection::Down, HVDirection::Left, HVDirection::Left, HVDirection::Up, HVDirection::Right};
+            }
+        } else if (target_cur.down() == selecting_cur) {
+            if (std::find(sorted_points.begin(), sorted_points.end(), selecting_cur.left()) != sorted_points.end()) {
+                moving_process = {HVDirection::Right, HVDirection::Up, HVDirection::Up, HVDirection::Left, HVDirection::Left, HVDirection::Down, HVDirection::Right};
+            } else {
+                moving_process = {HVDirection::Left, HVDirection::Up, HVDirection::Right};
+            }
+        } else if (target_cur.left() == selecting_cur) {
+            moving_process = {HVDirection::Right};
         }
-        std::get<1>(pass_points) = point_type{target.x - 1, std::get<0>(pass_points).y};
-        std::get<2>(pass_points) = target.left();
     }
 
-    move_from_to(mover_cur, std::get<0>(pass_points));
-    move_from_to(std::get<0>(pass_points), std::get<1>(pass_points));
-    move_from_to(std::get<1>(pass_points), std::get<2>(pass_points));
-
-    // mover を移動
-    move_direction(current_point(mover), inverse_direction(direction));
+    sequential_move(selecting_cur, moving_process);
 }
 
-HVDirection algorithm::inverse_direction(HVDirection const& direction) const
+void algorithm::sequential_move(point_type const& target, std::vector<HVDirection> const& directions)
 {
-    // 逆向きの方向を返す
-    if (direction == HVDirection::Up) {
-        return HVDirection::Down;
-    } else if (direction == HVDirection::Down) {
-        return HVDirection::Up;
-    } else if (direction == HVDirection::Right) {
-        return HVDirection::Left;
-    } else if (direction == HVDirection::Left) {
-        return HVDirection::Right;
+    // move_selecting を連続して行う
+
+    // target の現在の座標
+    point_type target_cur = current_point(target);
+
+    for (auto direction : directions) {
+        move_selecting(direction);
+        if (direction == HVDirection::Up) {
+            target_cur = point_type{target_cur.x, target_cur.y - 1};
+        } else if (direction == HVDirection::Right) {
+            target_cur = point_type{target_cur.x + 1, target_cur.y};
+        } else if (direction == HVDirection::Down) {
+            target_cur = point_type{target_cur.x, target_cur.y + 1};
+        } else if (direction == HVDirection::Left) {
+            target_cur = point_type{target_cur.x - 1, target_cur.y};
+        }
     }
 }
 
+void algorithm::move_to(point_type const& to)
+{
+    // selecting を to まで移動させる
+    point_type selecting_cur = current_point(selecting);
+    point_type diff = to - selecting_cur;
+
+    while (diff.x < 0) {
+        // move left
+        move_selecting(HVDirection::Left);
+        selecting_cur = point_type{selecting_cur.x - 1, selecting_cur.y};
+        diff = to - selecting_cur;
+    }
+    while (diff.x > 0) {
+        // move right
+        move_selecting(HVDirection::Right);
+        selecting_cur = point_type{selecting_cur.x + 1, selecting_cur.y};
+        diff = to - selecting_cur;
+    }
+    while (diff.y < 0) {
+        // move up
+        move_selecting(HVDirection::Up);
+        selecting_cur = point_type{selecting_cur.x, selecting_cur.y - 1};
+        diff = to - selecting_cur;
+    }
+    while (diff.y > 0) {
+        // move down
+        move_selecting(HVDirection::Down);
+        selecting_cur = point_type{selecting_cur.x, selecting_cur.y + 1};
+        diff = to - selecting_cur;
+    }
+}
+
+#ifdef algorithm_debug
 inline void algorithm::print() const
 {
     // 具合をいい感じに表示
@@ -448,11 +488,17 @@ inline void algorithm::print() const
     }
     std::cout << std::endl;
     std::cout << boost::format("score = %1% (select = %2%, change = %3%)") % (score_select + score_change) % score_select % score_change << std::endl;
+    std::cout << "sorted : [ ";
+    for (auto point : sorted_points) {
+        std::cout << point << " ";
+    }
+    std::cout << "]" << std::endl;
     std::cout << std::endl;
     std::cout << "answer:" << std::endl;
     std::cout << answer.str();
     std::cin.ignore();
 }
+#endif
 
 #ifdef algorithm_debug
 // 検証用main
