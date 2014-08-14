@@ -66,6 +66,11 @@ struct point_type
     {
         return point_type{this->x - 1, this->y};
     }
+
+    inline point_type const abs() const
+    {
+        return point_type{std::abs(this->x), std::abs(this->y)};
+    }
 };
 
 typedef cv::Vec3b                            pixel_type;
@@ -137,20 +142,46 @@ struct question_raw_data : private boost::noncopyable
     }
 };
 
-enum struct TurnSide { UpperRight, DownerRight, DownerLeft, UpperLeft };
-enum struct Direction { Up, Right, Down, Left };
-inline char const direction_char(Direction const& d)
+// 斜め方向を表す列挙型
+enum struct DiagonalDirection { UpperRight, DownerRight, DownerLeft, UpperLeft };
+
+// 水平垂直方向を表す列挙型
+enum struct HVDirection { Up, Right, Down, Left };
+
+// 八方を表す列挙型
+enum struct AllDirection { Same, Up, UpperRight, Right, DownerRight, Down, DownerLeft, Left, UpperLeft };
+
+inline char const direction_char(HVDirection const& d)
 {
     return "URDL"[static_cast<int>(d)];
 }
 
-typedef std::vector<Direction> change_list_t;
-struct answer_type
+struct answer_line
 {
     point_type select;
-    change_list_t change_list;
+    std::vector<HVDirection> change_list;
 };
-typedef std::vector<answer_type> answer_list_t;
+struct answer_type
+{
+    std::vector<answer_line> list;
+
+    std::string const& str() const
+    {
+        static std::string answer_string;
+
+        answer_string.erase(answer_string.begin(), answer_string.end());
+        for (auto step : list) {
+            answer_string += (boost::format("%1$02X") % step.select.num()).str();
+            answer_string.push_back('\n');
+            for (auto direction : step.change_list) {
+                answer_string.push_back(direction_char(direction));
+            }
+            answer_string.push_back('\n');
+        }
+
+        return answer_string;
+    }
+};
 
 template<class T>
 struct direction_type

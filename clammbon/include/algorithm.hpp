@@ -14,18 +14,18 @@ public:
     void solve();
     void greedy();
     void brute_force();
-    std::string const& answer_tostr() const;
     inline void print() const;
     const point_type current_point(point_type const& point) const;
-    Direction inverse_direction(Direction const& direction) const;
-    void move_direction(point_type const& target, Direction const& direction);
+    HVDirection inverse_direction(HVDirection const& direction) const;
+    AllDirection get_direction_by_points(point_type const& p1, point_type const& p2) const;
+    void move_direction(point_type const& target, HVDirection const& direction);
     void move_from_to(point_type const& from, point_type const& to);
-    void move_target_direction(point_type const& target, Direction const& direction, TurnSide const& turnside);
+    void move_target_direction(point_type const& target, HVDirection const& direction, DiagonalDirection const& turnside);
 
 private:
     std::vector<std::vector<point_type>> matrix;
     std::vector<point_type> sorted_points;
-    answer_list_t answer_list;
+    answer_type answer;
     point_type mover;
     int width;
     int height;
