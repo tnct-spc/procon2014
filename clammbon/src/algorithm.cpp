@@ -1,8 +1,9 @@
-//#define algorithm_debug
+#define algorithm_debug
 #include <iostream>
 #include <algorithm>
 #include <iterator>
 #include <cassert>
+#include <string>
 #include "algorithm.hpp"
 //#include "network.hpp"
 
@@ -45,7 +46,7 @@ void algorithm::operator() (question_data const& data)
 
     // GO
 #ifdef algorithm_debug
-    //print();
+    print();
 #endif
     solve();
 }
@@ -125,7 +126,7 @@ void algorithm::greedy()
 
         // 斜めに移動
         if (current_point(target).direction(waypoint) == AllDirection::UpperRight) {
-            i = (std::find(sorted_points.begin(), sorted_points.end(), current_point(target).up()) != sorted_points.end()) ? 1 : 0;
+            i = is_sorted(current_point(target).up()) ? 1 : 0;
             do {
                 if (i % 2 == 0) {
                     move_target(target, HVDirection::Up);
@@ -135,7 +136,7 @@ void algorithm::greedy()
                 ++i;
             } while (current_point(target).direction(waypoint) == AllDirection::UpperRight);
         } else if (current_point(target).direction(waypoint) == AllDirection::DownerRight) {
-            i = (std::find(sorted_points.begin(), sorted_points.end(), current_point(target).up()) != sorted_points.end()) ? 1 : 0;
+            i = is_sorted(current_point(target).up()) ? 1 : 0;
             do {
                 if (i % 2 == 0) {
                     move_target(target, HVDirection::Down);
@@ -145,7 +146,7 @@ void algorithm::greedy()
                 ++i;
             } while (current_point(target).direction(waypoint) == AllDirection::DownerRight);
         } else if (current_point(target).direction(waypoint) == AllDirection::DownerLeft) {
-            i = (std::find(sorted_points.begin(), sorted_points.end(), current_point(target).up()) != sorted_points.end()) ? 1 : 0;
+            i = is_sorted(current_point(target).up()) ? 1 : 0;
             do {
                 if (i % 2 == 0) {
                     move_target(target, HVDirection::Down);
@@ -155,7 +156,7 @@ void algorithm::greedy()
                 ++i;
             } while (current_point(target).direction(waypoint) == AllDirection::DownerLeft);
         } else if (current_point(target).direction(waypoint) == AllDirection::UpperLeft) {
-            i = (std::find(sorted_points.begin(), sorted_points.end(), current_point(target).up()) != sorted_points.end()) ? 1 : 0;
+            i = is_sorted(current_point(target).up()) ? 1 : 0;
             do {
                 if (i % 2 == 0) {
                     move_target(target, HVDirection::Up);
@@ -164,6 +165,8 @@ void algorithm::greedy()
                 }
                 ++i;
             } while (current_point(target).direction(waypoint) == AllDirection::UpperLeft);
+        } else {
+            //throw
         }
 
         // ここまでで x または y 座標が揃っていることになるので, 真横か真上への移動を行う
@@ -184,6 +187,8 @@ void algorithm::greedy()
             do {
                 move_target(target, HVDirection::Left);
             } while (current_point(target).direction(waypoint) == AllDirection::Left);
+        } else {
+            //throw
         }
 
         // 端の部分の処理
@@ -242,6 +247,8 @@ void algorithm::move_selecting(HVDirection const& direction)
     } else if (direction == HVDirection::Left) {
         assert(selecting_cur.x > sorted_col);
         std::swap(matrix[selecting_cur.y][selecting_cur.x], matrix[selecting_cur.y][selecting_cur.x - 1]);
+    } else {
+        //throw
     }
 
     answer.list.back().change_list.push_back(direction);
@@ -316,6 +323,8 @@ void algorithm::move_target(point_type const& target, HVDirection const& directi
             move_to(target_cur.up());
         } else if (selecting_cur.direction(target_cur) == AllDirection::Left) {
             move_to(target_cur.right());
+        } else {
+            //throw
         }
     }
 
@@ -328,7 +337,7 @@ void algorithm::move_target(point_type const& target, HVDirection const& directi
                 moving_process = {HVDirection::Right, HVDirection::Up, HVDirection::Up, HVDirection::Left, HVDirection::Down};
             }
         } else if (selecting_cur.right() == target_cur) {
-            if (std::find(sorted_points.begin(), sorted_points.end(), selecting_cur.up()) != sorted_points.end()) {
+            if (is_sorted(selecting_cur.up())) {
                 moving_process = {HVDirection::Down, HVDirection::Right, HVDirection::Right, HVDirection::Up, HVDirection::Up, HVDirection::Left, HVDirection::Down};
             } else {
                 moving_process = {HVDirection::Up, HVDirection::Right, HVDirection::Down};
@@ -336,15 +345,17 @@ void algorithm::move_target(point_type const& target, HVDirection const& directi
         } else if (selecting_cur.down() == target_cur) {
             moving_process = {HVDirection::Down};
         } else if (selecting_cur.left() == target_cur) {
-            if (std::find(sorted_points.begin(), sorted_points.end(), selecting_cur.up()) != sorted_points.end()) {
+            if (is_sorted(selecting_cur.up())) {
                 moving_process = {HVDirection::Down, HVDirection::Left, HVDirection::Left, HVDirection::Up, HVDirection::Up, HVDirection::Right, HVDirection::Down};
             } else {
                 moving_process = {HVDirection::Up, HVDirection::Left, HVDirection::Down};
             }
+        } else {
+            //throw
         }
     } else if (direction == HVDirection::Right) {
         if (selecting_cur.up() == target_cur) {
-            if (std::find(sorted_points.begin(), sorted_points.end(), selecting_cur.right()) != sorted_points.end()) {
+            if (is_sorted(selecting_cur.right())) {
                 moving_process = {HVDirection::Left, HVDirection::Up, HVDirection::Up, HVDirection::Right, HVDirection::Right, HVDirection::Down, HVDirection::Left};
             } else {
                 moving_process = {HVDirection::Right, HVDirection::Up, HVDirection::Left};
@@ -356,19 +367,21 @@ void algorithm::move_target(point_type const& target, HVDirection const& directi
                 moving_process = {HVDirection::Down, HVDirection::Right, HVDirection::Right, HVDirection::Up, HVDirection::Left};
             }
         } else if (selecting_cur.down() == target_cur) {
-            if (std::find(sorted_points.begin(), sorted_points.end(), selecting_cur.right()) != sorted_points.end()) {
+            if (is_sorted(selecting_cur.right())) {
                 moving_process = {HVDirection::Left, HVDirection::Down, HVDirection::Down, HVDirection::Right, HVDirection::Right, HVDirection::Up, HVDirection::Left};
             } else {
                 moving_process = {HVDirection::Right, HVDirection::Down, HVDirection::Left};
             }
         } else if (selecting_cur.left() == target_cur) {
             moving_process = {HVDirection::Left};
+        } else {
+            //throw
         }
     } else if (direction == HVDirection::Down) {
         if (selecting_cur.up() == target_cur) {
             moving_process = {HVDirection::Up};
         } else if (selecting_cur.right() == target_cur) {
-            if (std::find(sorted_points.begin(), sorted_points.end(), selecting_cur.down()) != sorted_points.end()) {
+            if (is_sorted(selecting_cur.down())) {
                 moving_process = {HVDirection::Up, HVDirection::Right, HVDirection::Right, HVDirection::Down, HVDirection::Down, HVDirection::Left, HVDirection::Up};
             } else {
                 moving_process = {HVDirection::Down, HVDirection::Right, HVDirection::Up};
@@ -380,15 +393,17 @@ void algorithm::move_target(point_type const& target, HVDirection const& directi
                 moving_process = {HVDirection::Right, HVDirection::Down, HVDirection::Down, HVDirection::Left, HVDirection::Up};
             }
         } else if (selecting_cur.left() == target_cur) {
-            if (std::find(sorted_points.begin(), sorted_points.end(), selecting_cur.down()) != sorted_points.end()) {
+            if (is_sorted(selecting_cur.down())) {
                 moving_process = {HVDirection::Up, HVDirection::Left, HVDirection::Left, HVDirection::Down, HVDirection::Down, HVDirection::Right, HVDirection::Up};
             } else {
                 moving_process = {HVDirection::Down, HVDirection::Left, HVDirection::Up};
             }
+        } else {
+            //throw
         }
     } else if (direction == HVDirection::Left) {
         if (selecting_cur.up() == target_cur) {
-            if (std::find(sorted_points.begin(), sorted_points.end(), selecting_cur.left()) != sorted_points.end()) {
+            if (is_sorted(selecting_cur.left())) {
                 moving_process = {HVDirection::Right, HVDirection::Up, HVDirection::Up, HVDirection::Left, HVDirection::Left, HVDirection::Down, HVDirection::Right};
             } else {
                 moving_process = {HVDirection::Left, HVDirection::Up, HVDirection::Right};
@@ -396,7 +411,7 @@ void algorithm::move_target(point_type const& target, HVDirection const& directi
         } else if (selecting_cur.right() == target_cur) {
             moving_process = {HVDirection::Right};
         } else if (selecting_cur.down() == target_cur) {
-            if (std::find(sorted_points.begin(), sorted_points.end(), selecting_cur.left()) != sorted_points.end()) {
+            if (is_sorted(selecting_cur.left())) {
                 moving_process = {HVDirection::Right, HVDirection::Down, HVDirection::Down, HVDirection::Left, HVDirection::Left, HVDirection::Up, HVDirection::Right};
             } else {
                 moving_process = {HVDirection::Left, HVDirection::Down, HVDirection::Right};
@@ -407,7 +422,11 @@ void algorithm::move_target(point_type const& target, HVDirection const& directi
             } else {
                 moving_process = {HVDirection::Down, HVDirection::Left, HVDirection::Left, HVDirection::Up, HVDirection::Right};
             }
+        } else {
+            //throw
         }
+    } else {
+        //throw
     }
 
     sequential_move(selecting_cur, moving_process);
@@ -430,6 +449,8 @@ void algorithm::sequential_move(point_type const& target, std::vector<HVDirectio
             target_cur = point_type{target_cur.x, target_cur.y + 1};
         } else if (direction == HVDirection::Left) {
             target_cur = point_type{target_cur.x - 1, target_cur.y};
+        } else {
+            //throw
         }
     }
 }
@@ -439,31 +460,99 @@ void algorithm::move_to(point_type const& to)
     // selecting を to まで移動させる
     point_type selecting_cur = current_point(selecting);
     point_type diff = to - selecting_cur;
+    AllDirection direction = selecting_cur.direction(to);
+    std::cout << "move_to to = " << to << " direction = " << std::vector<std::string>{"S", "U", "UR", "R", "DR", "D", "DL", "L", "UL"}[static_cast<int>(direction)] << std::endl;
 
-    while (diff.x < 0) {
-        // move left
-        move_selecting(HVDirection::Left);
-        selecting_cur = point_type{selecting_cur.x - 1, selecting_cur.y};
-        diff = to - selecting_cur;
+    // NOTE: 斜め方向の移動の際は近傍のソート済みの断片画像の存在の有無で縦横の移動の先後を決めているが,
+    //       近傍にソート済み断片画像が存在しない場合に何か判断基準はあるだろうか？
+    if (direction == AllDirection::Up) {
+        for (int i = diff.y; i < 0; ++i) {
+            move_selecting(HVDirection::Up);
+        }
+    } else if (direction == AllDirection::UpperRight) {
+        if (is_sorted(selecting_cur.up())) {
+            for (int i = diff.x; i > 0; --i) {
+                move_selecting(HVDirection::Right);
+            }
+            for (int i = diff.y; i < 0; ++i) {
+                move_selecting(HVDirection::Up);
+            }
+        } else {
+            for (int i = diff.y; i < 0; ++i) {
+                move_selecting(HVDirection::Up);
+            }
+            for (int i = diff.x; i > 0; --i) {
+                move_selecting(HVDirection::Right);
+            }
+        }
+    } else if (direction == AllDirection::Right) {
+        for (int i = diff.x; i > 0; --i) {
+            move_selecting(HVDirection::Right);
+        }
+    } else if (direction == AllDirection::DownerRight) {
+        if (is_sorted(selecting_cur.down())) {
+            for (int i = diff.x; i > 0; --i) {
+                move_selecting(HVDirection::Right);
+            }
+            for (int i = diff.y; i > 0; --i) {
+                move_selecting(HVDirection::Down);
+            }
+        } else {
+            for (int i = diff.y; i > 0; --i) {
+                move_selecting(HVDirection::Down);
+            }
+            for (int i = diff.x; i > 0; --i) {
+                move_selecting(HVDirection::Right);
+            }
+        }
+    } else if (direction == AllDirection::Down) {
+        for (int i = diff.y; i > 0; --i) {
+            move_selecting(HVDirection::Down);
+        }
+    } else if (direction == AllDirection::DownerLeft) {
+        if (is_sorted(selecting_cur.down())) {
+            for (int i = diff.x; i < 0; ++i) {
+                move_selecting(HVDirection::Left);
+            }
+            for (int i = diff.y; i > 0; --i) {
+                move_selecting(HVDirection::Down);
+            }
+        } else {
+            for (int i = diff.y; i > 0; --i) {
+                move_selecting(HVDirection::Down);
+            }
+            for (int i = diff.x; i < 0; ++i) {
+                move_selecting(HVDirection::Left);
+            }
+        }
+    } else if (direction == AllDirection::Left) {
+        for (int i = diff.x; i < 0; ++i) {
+            move_selecting(HVDirection::Left);
+        }
+    } else if (direction == AllDirection::UpperLeft) {
+        if (is_sorted(selecting_cur.up())) {
+            for (int i = diff.x; i < 0; ++i) {
+                move_selecting(HVDirection::Left);
+            }
+            for (int i = diff.y; i < 0; ++i) {
+                move_selecting(HVDirection::Up);
+            }
+        } else {
+            for (int i = diff.y; i < 0; ++i) {
+                move_selecting(HVDirection::Up);
+            }
+            for (int i = diff.x; i < 0; ++i) {
+                move_selecting(HVDirection::Left);
+            }
+        }
+    } else {
+        //throw
     }
-    while (diff.x > 0) {
-        // move right
-        move_selecting(HVDirection::Right);
-        selecting_cur = point_type{selecting_cur.x + 1, selecting_cur.y};
-        diff = to - selecting_cur;
-    }
-    while (diff.y < 0) {
-        // move up
-        move_selecting(HVDirection::Up);
-        selecting_cur = point_type{selecting_cur.x, selecting_cur.y - 1};
-        diff = to - selecting_cur;
-    }
-    while (diff.y > 0) {
-        // move down
-        move_selecting(HVDirection::Down);
-        selecting_cur = point_type{selecting_cur.x, selecting_cur.y + 1};
-        diff = to - selecting_cur;
-    }
+}
+
+inline const bool algorithm::is_sorted(point_type const& point) const
+{
+    return std::find(sorted_points.begin(), sorted_points.end(), point) != sorted_points.end();
 }
 
 #ifdef algorithm_debug

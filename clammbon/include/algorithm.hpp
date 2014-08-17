@@ -16,6 +16,7 @@ public:
     void brute_force();
     inline void print() const;
     const point_type current_point(point_type const& point) const;
+    inline const bool is_sorted(point_type const& point) const;
     void sequential_move(point_type const& target, std::vector<HVDirection> const& directions);
     void move_selecting(HVDirection const& direction);
     void move_target(point_type const& target, HVDirection const& direction);
