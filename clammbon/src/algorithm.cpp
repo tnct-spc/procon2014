@@ -109,9 +109,6 @@ void algorithm::greedy()
     // 仮のターゲット座標, これは原座標ではなく実際の座標
     point_type waypoint;
 
-    // ターゲットの現在の座標
-    point_type target_cur;
-
     for (point_type target : target_queue) {
         // 端の部分の処理
         if (target.x == width - 2 || target.y == height - 1) {
@@ -271,27 +268,7 @@ void algorithm::move_target(point_type const& target, HVDirection const& directi
 
     // selecting が target に隣接していない場合
     if (selecting_cur.manhattan(target_cur) > 1) {
-        if (target_cur.direction(selecting_cur) == AllDirection::UpperRight) {
-            if (direction == HVDirection::Up) {
-                move_to(target_cur.up());
-            } else if (direction == HVDirection::Right) {
-                move_to(target_cur.right());
-            } else if (direction == HVDirection::Down) {
-                move_to(target_cur.right());
-            } else {
-                move_to(target_cur.up());
-            }
-        } else if (target_cur.direction(selecting_cur) == AllDirection::DownerRight) {
-            if (direction == HVDirection::Up) {
-                move_to(target_cur.right());
-            } else if (direction == HVDirection::Right) {
-                move_to(target_cur.right());
-            } else if (direction == HVDirection::Down) {
-                move_to(target_cur.down());
-            } else {
-                move_to(target_cur.down());
-            }
-        } else if (target_cur.direction(selecting_cur) == AllDirection::DownerLeft) {
+        if (selecting_cur.direction(target_cur) == AllDirection::UpperRight) {
             if (direction == HVDirection::Up) {
                 move_to(target_cur.left());
             } else if (direction == HVDirection::Right) {
@@ -301,7 +278,7 @@ void algorithm::move_target(point_type const& target, HVDirection const& directi
             } else {
                 move_to(target_cur.left());
             }
-        } else if (target_cur.direction(selecting_cur) == AllDirection::UpperLeft) {
+        } else if (selecting_cur.direction(target_cur) == AllDirection::DownerRight) {
             if (direction == HVDirection::Up) {
                 move_to(target_cur.up());
             } else if (direction == HVDirection::Right) {
@@ -311,104 +288,125 @@ void algorithm::move_target(point_type const& target, HVDirection const& directi
             } else {
                 move_to(target_cur.left());
             }
-        } else if (target_cur.direction(selecting_cur) == AllDirection::Up) {
-            move_to(target_cur.up());
-        } else if (target_cur.direction(selecting_cur) == AllDirection::Right) {
-            move_to(target_cur.right());
-        } else if (target_cur.direction(selecting_cur) == AllDirection::Down) {
+        } else if (selecting_cur.direction(target_cur) == AllDirection::DownerLeft) {
+            if (direction == HVDirection::Up) {
+                move_to(target_cur.up());
+            } else if (direction == HVDirection::Right) {
+                move_to(target_cur.right());
+            } else if (direction == HVDirection::Down) {
+                move_to(target_cur.right());
+            } else {
+                move_to(target_cur.up());
+            }
+        } else if (selecting_cur.direction(target_cur) == AllDirection::UpperLeft) {
+            if (direction == HVDirection::Up) {
+                move_to(target_cur.right());
+            } else if (direction == HVDirection::Right) {
+                move_to(target_cur.right());
+            } else if (direction == HVDirection::Down) {
+                move_to(target_cur.down());
+            } else {
+                move_to(target_cur.down());
+            }
+        } else if (selecting_cur.direction(target_cur) == AllDirection::Up) {
             move_to(target_cur.down());
-        } else if (target_cur.direction(selecting_cur) == AllDirection::Left) {
+        } else if (selecting_cur.direction(target_cur) == AllDirection::Right) {
             move_to(target_cur.left());
+        } else if (selecting_cur.direction(target_cur) == AllDirection::Down) {
+            move_to(target_cur.up());
+        } else if (selecting_cur.direction(target_cur) == AllDirection::Left) {
+            move_to(target_cur.right());
         }
     }
 
+    selecting_cur = current_point(selecting);
     if (direction == HVDirection::Up) {
-        if (target_cur.up() == selecting_cur) {
-            moving_process = {HVDirection::Down};
-        } else if (target_cur.right() == selecting_cur) {
-            if (std::find(sorted_points.begin(), sorted_points.end(), selecting_cur.up()) != sorted_points.end()) {
-                moving_process = {HVDirection::Down, HVDirection::Left, HVDirection::Left, HVDirection::Up, HVDirection::Up, HVDirection::Right, HVDirection::Down};
-            } else {
-                moving_process = {HVDirection::Up, HVDirection::Left, HVDirection::Down};
-            }
-        } else if (target_cur.down() == selecting_cur) {
+        if (selecting_cur.up() == target_cur) {
             if (target_cur.x == width - 1) {
                 moving_process = {HVDirection::Left, HVDirection::Up, HVDirection::Up, HVDirection::Right, HVDirection::Down};
             } else {
                 moving_process = {HVDirection::Right, HVDirection::Up, HVDirection::Up, HVDirection::Left, HVDirection::Down};
             }
-        } else if (target_cur.left() == selecting_cur) {
+        } else if (selecting_cur.right() == target_cur) {
             if (std::find(sorted_points.begin(), sorted_points.end(), selecting_cur.up()) != sorted_points.end()) {
                 moving_process = {HVDirection::Down, HVDirection::Right, HVDirection::Right, HVDirection::Up, HVDirection::Up, HVDirection::Left, HVDirection::Down};
             } else {
                 moving_process = {HVDirection::Up, HVDirection::Right, HVDirection::Down};
             }
+        } else if (selecting_cur.down() == target_cur) {
+            moving_process = {HVDirection::Down};
+        } else if (selecting_cur.left() == target_cur) {
+            if (std::find(sorted_points.begin(), sorted_points.end(), selecting_cur.up()) != sorted_points.end()) {
+                moving_process = {HVDirection::Down, HVDirection::Left, HVDirection::Left, HVDirection::Up, HVDirection::Up, HVDirection::Right, HVDirection::Down};
+            } else {
+                moving_process = {HVDirection::Up, HVDirection::Left, HVDirection::Down};
+            }
         }
     } else if (direction == HVDirection::Right) {
-        if (target_cur.up() == selecting_cur) {
-            if (std::find(sorted_points.begin(), sorted_points.end(), selecting_cur.right()) != sorted_points.end()) {
-                moving_process = {HVDirection::Left, HVDirection::Down, HVDirection::Down, HVDirection::Right, HVDirection::Right, HVDirection::Up, HVDirection::Left};
-            } else {
-                moving_process = {HVDirection::Right, HVDirection::Down, HVDirection::Left};
-            }
-        } else if (target_cur.right() == selecting_cur) {
-            moving_process = {HVDirection::Left};
-        } else if (target_cur.down() == selecting_cur) {
+        if (selecting_cur.up() == target_cur) {
             if (std::find(sorted_points.begin(), sorted_points.end(), selecting_cur.right()) != sorted_points.end()) {
                 moving_process = {HVDirection::Left, HVDirection::Up, HVDirection::Up, HVDirection::Right, HVDirection::Right, HVDirection::Down, HVDirection::Left};
             } else {
                 moving_process = {HVDirection::Right, HVDirection::Up, HVDirection::Left};
             }
-        } else if (target_cur.left() == selecting_cur) {
+        } else if (selecting_cur.right() == target_cur) {
             if (target_cur.y == height - 1) {
                 moving_process = {HVDirection::Up, HVDirection::Right, HVDirection::Right, HVDirection::Down, HVDirection::Left};
             } else {
                 moving_process = {HVDirection::Down, HVDirection::Right, HVDirection::Right, HVDirection::Up, HVDirection::Left};
             }
+        } else if (selecting_cur.down() == target_cur) {
+            if (std::find(sorted_points.begin(), sorted_points.end(), selecting_cur.right()) != sorted_points.end()) {
+                moving_process = {HVDirection::Left, HVDirection::Down, HVDirection::Down, HVDirection::Right, HVDirection::Right, HVDirection::Up, HVDirection::Left};
+            } else {
+                moving_process = {HVDirection::Right, HVDirection::Down, HVDirection::Left};
+            }
+        } else if (selecting_cur.left() == target_cur) {
+            moving_process = {HVDirection::Left};
         }
     } else if (direction == HVDirection::Down) {
-        if (target_cur.up() == selecting_cur) {
-            if (target_cur.x == width - 1) {
-                moving_process = {HVDirection::Left, HVDirection::Down, HVDirection::Down, HVDirection::Right, HVDirection::Up};
-            } else {
-                moving_process = {HVDirection::Right, HVDirection::Down, HVDirection::Down, HVDirection::Left, HVDirection::Up};
-            }
-        } else if (target_cur.right() == selecting_cur) {
-            if (std::find(sorted_points.begin(), sorted_points.end(), selecting_cur.down()) != sorted_points.end()) {
-                moving_process = {HVDirection::Up, HVDirection::Left, HVDirection::Left, HVDirection::Down, HVDirection::Down, HVDirection::Right, HVDirection::Up};
-            } else {
-                moving_process = {HVDirection::Down, HVDirection::Left, HVDirection::Up};
-            }
-        } else if (target_cur.down() == selecting_cur) {
+        if (selecting_cur.up() == target_cur) {
             moving_process = {HVDirection::Up};
-        } else if (target_cur.left() == selecting_cur) {
+        } else if (selecting_cur.right() == target_cur) {
             if (std::find(sorted_points.begin(), sorted_points.end(), selecting_cur.down()) != sorted_points.end()) {
                 moving_process = {HVDirection::Up, HVDirection::Right, HVDirection::Right, HVDirection::Down, HVDirection::Down, HVDirection::Left, HVDirection::Up};
             } else {
                 moving_process = {HVDirection::Down, HVDirection::Right, HVDirection::Up};
             }
+        } else if (selecting_cur.down() == target_cur) {
+            if (target_cur.x == width - 1) {
+                moving_process = {HVDirection::Left, HVDirection::Down, HVDirection::Down, HVDirection::Right, HVDirection::Up};
+            } else {
+                moving_process = {HVDirection::Right, HVDirection::Down, HVDirection::Down, HVDirection::Left, HVDirection::Up};
+            }
+        } else if (selecting_cur.left() == target_cur) {
+            if (std::find(sorted_points.begin(), sorted_points.end(), selecting_cur.down()) != sorted_points.end()) {
+                moving_process = {HVDirection::Up, HVDirection::Left, HVDirection::Left, HVDirection::Down, HVDirection::Down, HVDirection::Right, HVDirection::Up};
+            } else {
+                moving_process = {HVDirection::Down, HVDirection::Left, HVDirection::Up};
+            }
         }
     } else if (direction == HVDirection::Left) {
-        if (target_cur.up() == selecting_cur) {
-            if (std::find(sorted_points.begin(), sorted_points.end(), selecting_cur.left()) != sorted_points.end()) {
-                moving_process = {HVDirection::Right, HVDirection::Down, HVDirection::Down, HVDirection::Left, HVDirection::Left, HVDirection::Up, HVDirection::Right};
-            } else {
-                moving_process = {HVDirection::Left, HVDirection::Down, HVDirection::Right};
-            }
-        } else if (target_cur.right() == selecting_cur) {
-            if (target_cur.y == height - 1) {
-                moving_process = {HVDirection::Up, HVDirection::Left, HVDirection::Left, HVDirection::Down, HVDirection::Right};
-            } else {
-                moving_process = {HVDirection::Down, HVDirection::Left, HVDirection::Left, HVDirection::Up, HVDirection::Right};
-            }
-        } else if (target_cur.down() == selecting_cur) {
+        if (selecting_cur.up() == target_cur) {
             if (std::find(sorted_points.begin(), sorted_points.end(), selecting_cur.left()) != sorted_points.end()) {
                 moving_process = {HVDirection::Right, HVDirection::Up, HVDirection::Up, HVDirection::Left, HVDirection::Left, HVDirection::Down, HVDirection::Right};
             } else {
                 moving_process = {HVDirection::Left, HVDirection::Up, HVDirection::Right};
             }
-        } else if (target_cur.left() == selecting_cur) {
+        } else if (selecting_cur.right() == target_cur) {
             moving_process = {HVDirection::Right};
+        } else if (selecting_cur.down() == target_cur) {
+            if (std::find(sorted_points.begin(), sorted_points.end(), selecting_cur.left()) != sorted_points.end()) {
+                moving_process = {HVDirection::Right, HVDirection::Down, HVDirection::Down, HVDirection::Left, HVDirection::Left, HVDirection::Up, HVDirection::Right};
+            } else {
+                moving_process = {HVDirection::Left, HVDirection::Down, HVDirection::Right};
+            }
+        } else if (selecting_cur.left() == target_cur) {
+            if (target_cur.y == height - 1) {
+                moving_process = {HVDirection::Up, HVDirection::Left, HVDirection::Left, HVDirection::Down, HVDirection::Right};
+            } else {
+                moving_process = {HVDirection::Down, HVDirection::Left, HVDirection::Left, HVDirection::Up, HVDirection::Right};
+            }
         }
     }
 
@@ -502,7 +500,6 @@ inline void algorithm::print() const
 
 #ifdef algorithm_debug
 // 検証用main
-// これどうやってテストすれば？
 // g++ -std=c++11 -I../include algorithm.cpp
 int main(int argc, char* argv[])
 {
