@@ -136,7 +136,7 @@ void algorithm::greedy()
                 ++i;
             } while (current_point(target).direction(waypoint) == AllDirection::UpperRight);
         } else if (current_point(target).direction(waypoint) == AllDirection::DownerRight) {
-            i = is_sorted(current_point(target).up()) ? 1 : 0;
+            i = is_sorted(current_point(target).down()) ? 1 : 0;
             do {
                 if (i % 2 == 0) {
                     move_target(target, HVDirection::Down);
@@ -146,7 +146,7 @@ void algorithm::greedy()
                 ++i;
             } while (current_point(target).direction(waypoint) == AllDirection::DownerRight);
         } else if (current_point(target).direction(waypoint) == AllDirection::DownerLeft) {
-            i = is_sorted(current_point(target).up()) ? 1 : 0;
+            i = is_sorted(current_point(target).down()) ? 1 : 0;
             do {
                 if (i % 2 == 0) {
                     move_target(target, HVDirection::Down);
@@ -464,6 +464,7 @@ void algorithm::move_to(point_type const& to)
 
     // NOTE: 斜め方向の移動の際は近傍のソート済みの断片画像の存在の有無で縦横の移動の先後を決めているが,
     //       近傍にソート済み断片画像が存在しない場合に何か判断基準はあるだろうか？
+    // TODO: 同じコード使い回しだしどうにからないか
     if (direction == AllDirection::Up) {
         for (int i = diff.y; i < 0; ++i) {
             move_selecting(HVDirection::Up);
