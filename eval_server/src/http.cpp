@@ -6,6 +6,7 @@
 #include <string>
 #include <fstream>
 
+#include "server.hpp"
 namespace http = boost::network::http;
 
 /*<< Defines the server. >>*/
@@ -16,13 +17,22 @@ struct submit_form {
     void operator() (server::request const &request, server::response &response)
     {
         std::string p = (std::string)destination(request);
+        std::string b = (std::string)body(request);
+        pcserver pcs;
         if(p == "/SubmitForm") {
             std::ifstream ifs("res/SubmitForm.html");
             std::stringstream buf;
             buf << ifs.rdbuf();
             response = server::response::stock_reply(server::response::ok, buf.str());
         } else if(p == "/SubmitAnswer") {
-            response = server::response::stock_reply(server::response::ok, "Not implemented yet");
+            auto req = pcs.post_req_to_map(b);
+            std::string s_res;
+            pcs.parse(pcs.load_problem(req["problemid"]), pcs.string_to_answer(req["answer"]));
+            if(req["options"].find("quiet") != std::string::npos) // 見つかった場合
+                s_res = pcs.output.str();
+            else 
+                s_res = pcs.outerr.str() + pcs.output.str();
+            response = server::response::stock_reply(server::response::ok, s_res);
         } else if(p.substr(0, 9) == "/problem/") {
             std::ifstream ifs("problem/" + p.substr(9)); // insecure
             if(ifs.fail()) {
@@ -39,13 +49,8 @@ struct submit_form {
     void log(...){}
 };
 
-int main(int argc, char * argv[])
+void http_run()
 {
-    if (argc != 1) {
-        std::cerr << "Usage: " << argv[0] << "" << std::endl;
-        return 1;
-    }
-
     try {
         /*<< Creates the request handler. >>*/
         submit_form handler;
@@ -57,9 +62,12 @@ int main(int argc, char * argv[])
     }
     catch (std::exception &e) {
         std::cerr << e.what() << std::endl;
-        return 1;
     }
-    
+}
+
+int main()
+{
+    http_run();
     return 0;
 }
 

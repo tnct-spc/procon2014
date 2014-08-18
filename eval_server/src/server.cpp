@@ -1,64 +1,80 @@
 #include "server.hpp"
 
-std::string pcserver::parse(std::vector< std::vector<int> > const &problem) // いずれ変わる
+// 🍣🍣🍣  解答変換  🍣🍣🍣
+answer_list const pcserver::string_to_answer(std::string const s)
 {
-    // 解答を受け取って結果を吐く
+    answer_list al;
+    answer_type a;
+    std::istringstream ss;
+    ss.str(s);
 
-    std::stringstream output;
-    bool acceptable = true;
-    int nl; // num of line
-    std::cin >> nl;
-
+    int nl; // 選択回数
+    ss >> nl;
     for(int i = 0; i < nl; i++) {
-        std::string pos; // 選択画像位置
-        std::vector<int> ipos; // 選択画像位置をアレしたもの(2D)
-        std::cin >> pos;
-        for(int j = 0; j < pos.size(); j++) { // x, y
-            auto pos2int = [j, pos, &acceptable](std::string pos) -> int {
-                if('0' <= pos[j] && pos[j] <= '9')
-                    return pos[j] - '0';
-                else if('A' <= pos[j] && pos[j] <= 'F')
-                    return pos[j] - 'A' + 10;
-                else e
-                    output << "ERROR: 選択画像位置が理解出来ません(\"" + pos + "\")\n";
-                    acceptable = false;
-                    return -1;
-                }
-            };
-            if(acceptable)
-                ipos.push_back(pos2int(pos));
+        std::string pos;
+        ss >> pos;
+        point_type ipos = pos2int(pos);
+        if(ipos.x == -1 || ipos.y == -1) {
+            outerr << "ERROR: illegal position: \"" + pos + "\"\n";
+        } else {
+            a.type = answer_type::action_type::select;
+            a.position = ipos;
+            a.direction = '\0';
+            al.push_back(a);
         }
-
-        int nx; // num of exchange
-        std::string xchg;
-        std::cin >> nx >> xchg;
-        if(nx != xchg.size()) {
-            output << "ERROR: 移動回数の指定が間違っています\n";
-            acceptable = false;
-        }
-
+        int nx; // 交換回数
+        ss >> nx;
+        std::string move;
+        ss >> move;
         for(int j = 0; j < nx; j++) {
-            auto move = [&problem,](char x) -> bool { 
-            switch(x) {
-                case 'R':
-                    break;
-                case 'L':
-                    break;
-                case 'U':
-                    break;
-                case 'D':
-                    break;
-                default:
-                    output << "ERROR: 移動" + xchg.substr(j, 1) + "\n";
-                    acceptable = false;
-                    break;
+            a.type = answer_type::action_type::change;
+            a.position = ipos;
+            a.direction = move[j];
+            ipos = ipos.move_to(move[j]);
+            if(ipos.x == -1 || ipos.y == -1) {
+                outerr << "ERROR: illegal move: \'" << move[j] << "\'\n";
+            } else {
+                al.push_back(a);
             }
-            move(xchg[j]);
         }
     }
-    if(acceptable)
-        output << "ACCEPTED " << "XX" << std::endl;
+    return al;
+}
+//  🍣🍣🍣  問題ローダ 🍣🍣🍣
+question_data const pcserver::load_problem(std::string const& problemid, std::string const& playerid)
+{
+    std::istringstream pos("../eval_server/position/prob" + problemid + ".pos"), ppm("../eval_server/problem/prob" + problemid + ".ppm");
+    std::string ppm_header, hash;
+    std::pair<int, int> size;
+    int problem_id, selectable, cost_select, cost_change;
+    
+    problem_id = std::stoi(problemid);
 
-    return output.str();
+    ppm >> ppm_header;
+    if(ppm_header != "P6")
+        outerr << "ERROR: file format not recognized\n";
+    ppm >> hash >> size.first >> size.second;
+    ppm >> hash >> selectable;
+    ppm >> hash >> cost_select >> cost_change;
+
+    std::vector<std::vector<point_type>> block;
+    for(int i = 0; i < size.second; i++) {
+        std::vector<point_type> row;
+        for(int j = 0; j < size.first; j++) {
+            std::string s;
+            pos >> s;
+            row.push_back(pos2int(s));
+        }
+        block.push_back(row);
+        row.clear(); // いるのか？
+    }
+    question_data problem(problem_id, playerid, size, selectable, cost_select, cost_change, block);
+    return problem;
+}
+// 🍣🍣🍣  パーサ  🍣🍣🍣
+void pcserver::parse(question_data const& problem, answer_list const& answer)
+{
+    // outputに本番サーバと同じ情報、outerrにそれ以外を吐く
+    output << "under construction!!\n";
 }
 

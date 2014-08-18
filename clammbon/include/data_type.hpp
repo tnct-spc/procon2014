@@ -35,6 +35,33 @@ struct point_type
             std::pow<T>(this->y - other.y, 2)
             );
     }
+
+    inline point_type above() const
+    {
+        return point_type{this->x, this->y - 1};
+    }
+    inline point_type below() const
+    {
+        return point_type{this->x, this->y + 1};
+    }
+    inline point_type left() const
+    {
+        return point_type{this->x - 1, this->y};
+    }
+    inline point_type right() const
+    {
+        return point_type{this->x + 1, this->y};
+    }
+    inline point_type move_to(char const c) const
+    {
+        switch(c) {
+            case 'U': return above(); break;
+            case 'D': return below(); break;
+            case 'L': return left();  break;
+            case 'R': return right(); break;
+            default:  return point_type{-1, -1}; break;
+        }
+    }
 };
 
 typedef cv::Vec3b                            pixel_type;
