@@ -1,4 +1,4 @@
-#define algorithm_debug
+//#define algorithm_debug
 #include <iostream>
 #include <algorithm>
 #include <iterator>
@@ -126,42 +126,50 @@ void algorithm::greedy()
 
         // 斜めに移動
         if (current_point(target).direction(waypoint) == AllDirection::UpperRight) {
-            i = is_sorted(current_point(target).up()) ? 1 : 0;
+            i = 0;
             do {
-                if (i % 2 == 0) {
+                if (i % 2 == 0 && !is_sorted(current_point(target).up())) {
                     move_target(target, HVDirection::Up);
-                } else {
+                } else if (i % 2 == 1 && !is_sorted(current_point(target).right())) {
                     move_target(target, HVDirection::Right);
+                } else {
+                    //throw
                 }
                 ++i;
             } while (current_point(target).direction(waypoint) == AllDirection::UpperRight);
         } else if (current_point(target).direction(waypoint) == AllDirection::DownerRight) {
-            i = is_sorted(current_point(target).down()) ? 1 : 0;
+            i = 0;
             do {
-                if (i % 2 == 0) {
+                if (i % 2 == 0 && !is_sorted(current_point(target).down())) {
                     move_target(target, HVDirection::Down);
-                } else {
+                } else if (i % 2 == 1 && !is_sorted(current_point(target).right())) {
                     move_target(target, HVDirection::Right);
+                } else {
+                    //throw
                 }
                 ++i;
             } while (current_point(target).direction(waypoint) == AllDirection::DownerRight);
         } else if (current_point(target).direction(waypoint) == AllDirection::DownerLeft) {
-            i = is_sorted(current_point(target).down()) ? 1 : 0;
+            i = 0;
             do {
-                if (i % 2 == 0) {
+                if (i % 2 == 0 && !is_sorted(current_point(target).down())) {
                     move_target(target, HVDirection::Down);
-                } else {
+                } else if (i % 2 == 1 && !is_sorted(current_point(target).left())) {
                     move_target(target, HVDirection::Left);
+                } else {
+                    //throw
                 }
                 ++i;
             } while (current_point(target).direction(waypoint) == AllDirection::DownerLeft);
         } else if (current_point(target).direction(waypoint) == AllDirection::UpperLeft) {
-            i = is_sorted(current_point(target).up()) ? 1 : 0;
+            i = 0;
             do {
-                if (i % 2 == 0) {
+                if (i % 2 == 0 && !is_sorted(current_point(target).up())) {
                     move_target(target, HVDirection::Up);
-                } else {
+                } else if (i % 2 == 1 && !is_sorted(current_point(target).left())) {
                     move_target(target, HVDirection::Left);
+                } else {
+                    //throw
                 }
                 ++i;
             } while (current_point(target).direction(waypoint) == AllDirection::UpperLeft);
@@ -193,25 +201,38 @@ void algorithm::greedy()
 
         // 端の部分の処理
         if (target.x == width - 1) {
+            std::cout << "端の部分の処理" << std::endl;
             // ターゲットの真の原座標が右端の場合
-            if (current_point(selecting) == waypoint.down()) {
-                // selecting が仮の原座標の直下にいる場合
-                move_selecting(HVDirection::Left);
+            if (current_point(selecting) == waypoint.up().left()) {
+                // selecting が仮の原座標の左上にいる場合
+                move_selecting(HVDirection::Right);
+                move_selecting(HVDirection::Down);
+            } else {
+                if (current_point(selecting) == waypoint.down()) {
+                    // selecting が仮の原座標の直下にいる場合
+                    move_selecting(HVDirection::Left);
+                    move_selecting(HVDirection::Up);
+                }
                 move_selecting(HVDirection::Up);
+                move_selecting(HVDirection::Right);
+                move_selecting(HVDirection::Down);
             }
-            move_selecting(HVDirection::Up);
-            move_selecting(HVDirection::Right);
-            move_selecting(HVDirection::Down);
         } else if (target.y == height - 1) {
             // ターゲットの真の原座標が下端の場合
-            if (current_point(selecting) == waypoint.right()) {
-                // selecting が仮の原座標の直右にいる場合
-                move_selecting(HVDirection::Up);
+            if (current_point(selecting) == waypoint.left().up()) {
+                // selecting が仮の原座標の左上にいる場合
+                move_selecting(HVDirection::Down);
+                move_selecting(HVDirection::Right);
+            } else {
+                if (current_point(selecting) == waypoint.right()) {
+                    // selecting が仮の原座標の直右にいる場合
+                    move_selecting(HVDirection::Up);
+                    move_selecting(HVDirection::Left);
+                }
                 move_selecting(HVDirection::Left);
+                move_selecting(HVDirection::Down);
+                move_selecting(HVDirection::Right);
             }
-            move_selecting(HVDirection::Left);
-            move_selecting(HVDirection::Down);
-            move_selecting(HVDirection::Right);
         }
 
         // ソート済みとする
@@ -449,8 +470,6 @@ void algorithm::sequential_move(point_type const& target, std::vector<HVDirectio
             target_cur = point_type{target_cur.x, target_cur.y + 1};
         } else if (direction == HVDirection::Left) {
             target_cur = point_type{target_cur.x - 1, target_cur.y};
-        } else {
-            //throw
         }
     }
 }
