@@ -72,7 +72,7 @@
     <TargetName>$(ProjectName)d</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(ProjectDir)include;C:\boost\include\boost-1_55;$(IncludePath);C:\fltk-1.3.2;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)include;C:\boost\include\boost-1_55;$(IncludePath);C:\fltk-1.3.2;$(IncludePath);C:\opencv\build\include</IncludePath>
     <OutDir>$(SolutionDir)lib\</OutDir>
     <IntDir>obj\$(Configuration)\</IntDir>
     <TargetName>$(ProjectName)d</TargetName>
@@ -85,7 +85,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(SolutionDir)lib\</OutDir>
     <IntDir>obj\$(Configuration)\</IntDir>
-    <IncludePath>$(ProjectDir)include;C:\boost\include\boost-1_55;$(IncludePath);C:\fltk-1.3.2;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)include;C:\boost\include\boost-1_55;$(IncludePath);C:\fltk-1.3.2;$(IncludePath);C:\opencv\build\include</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -142,8 +142,11 @@
   <ItemGroup>
     <ClCompile Include="src\algorithm.cpp" />
     <ClCompile Include="src\gui.cpp" />
-    <ClCompile Include="src\pixel_sorter.cpp" />
     <ClCompile Include="src\ppm_reader.cpp" />
+    <ClCompile Include="src\sort_algorithm\adjacent.cpp" />
+    <ClCompile Include="src\sort_algorithm\compare.cpp" />
+    <ClCompile Include="src\sort_algorithm\genetic.cpp" />
+    <ClCompile Include="src\sort_algorithm\yrange2.cpp" />
     <ClCompile Include="src\splitter.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -152,7 +155,14 @@
     <ClInclude Include="include\data_type.hpp" />
     <ClInclude Include="include\pixel_sorter.hpp" />
     <ClInclude Include="include\ppm_reader.hpp" />
+    <ClInclude Include="include\sort_algorithm\adjacent.hpp" />
+    <ClInclude Include="include\sort_algorithm\compare.hpp" />
+    <ClInclude Include="include\sort_algorithm\genetic.hpp" />
+    <ClInclude Include="include\sort_algorithm\yrange2.hpp" />
     <ClInclude Include="include\splitter.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="src\impl\gui_move.ipp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

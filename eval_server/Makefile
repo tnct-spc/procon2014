@@ -19,7 +19,10 @@ all: $(PROG)
 
 -include $(DEPS)
 
-$(PROG) : $(OBJS)
+clammbon :
+	cd ../clammbon; buildtype=$(buildtype) make
+
+$(PROG) : $(OBJS) clammbon
 	@if [ ! -e `dirname $@` ]; then mkdir -p `dirname $@`; fi
 	$(CXX) -o $@ $(OBJS) $(LIBS) $(LDFLAGS)
 
@@ -33,4 +36,4 @@ clean:
 distclean:
 	rm -rf ../bin
 
-# vim:set tabstop=4 noexpendtab
+# vim:set tabstop=4 noexpandtab
