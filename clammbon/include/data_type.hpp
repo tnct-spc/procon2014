@@ -255,23 +255,6 @@ typedef std::vector<std::vector<direction_type<point_type>>> adjacent_type;
 namespace std
 {
     template <>
-    struct hash<std::vector<std::vector<point_type>>>
-    {
-        typedef std::vector<std::vector<point_type>> argument_type;
-        typedef std::size_t result_type;
-        result_type operator() (argument_type const& matrix) const
-        {
-            result_type result;
-            for (auto row : matrix) {
-                for (auto point : row) {
-                    boost::hash_combine(result, point);
-                }
-            }
-            return result;
-        }
-    };
-
-    template <>
     struct hash<step_type>
     {
         typedef step_type argument_type;
