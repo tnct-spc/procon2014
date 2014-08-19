@@ -3,9 +3,14 @@
 #include <algorithm>
 #include <iterator>
 #include <cassert>
-#include <string>
+#include <queue>
+#include <unordered_set>
 #include "algorithm.hpp"
 //#include "network.hpp"
+
+// 幅優先探索に切り換えるタイミング
+// 2 にすると速い
+#define BFS_NUM 3
 
 void algorithm::operator() (question_data const& data)
 {
@@ -70,8 +75,8 @@ void algorithm::solve()
     // とりあえず1回選択のみ
 
     for (;;) {
-        // 3x3 の場合は Brute-Force
-        if (height - sorted_row <= 3 && width - sorted_col <= 3) {
+        // 残りが BFS_NUM x BFS_NUM の場合は Brute-Force
+        if (height - sorted_row <= BFS_NUM && width - sorted_col <= BFS_NUM) {
             brute_force();
             break;
         }
@@ -81,13 +86,17 @@ void algorithm::solve()
 
         // ソート済みマーク
         // ここで同時に縮めなければ長方形でも動くはず
-        if (height - sorted_row > 3) {
+        if (height - sorted_row > BFS_NUM) {
             ++sorted_row;
         }
-        if (width - sorted_col > 3) {
+        if (width - sorted_col > BFS_NUM) {
             ++sorted_col;
         }
     }
+
+    // TODO: 送信するなり返すなりする
+    std::cout << answer.str() << std::endl;
+    return;
 }
 
 void algorithm::greedy()
@@ -201,7 +210,6 @@ void algorithm::greedy()
 
         // 端の部分の処理
         if (target.x == width - 1) {
-            std::cout << "端の部分の処理" << std::endl;
             // ターゲットの真の原座標が右端の場合
             if (current_point(selecting) == waypoint.up().left()) {
                 // selecting が仮の原座標の左上にいる場合
@@ -243,9 +251,107 @@ void algorithm::greedy()
 void algorithm::brute_force()
 {
     // Brute-Force Algorithm
-    // とりあえず選択画像を変更しない幅優先探索で
+    // 選択画像を変更しない幅優先探索
 
-    // TODO: これからやる
+    // メモリの超無駄遣い！
+    std::queue<step_type> open;
+    std::unordered_set<step_type> closed;
+
+    // 毎度ポップするやつ
+    step_type current;
+
+    // 根ノードをキューに追加
+    open.push(step_type{answer, current_point(selecting), matrix});
+
+    // 解答発見フラグ
+    bool finished = false;
+
+    while (open.size() > 0) {
+        if (is_finished(open.back().matrix)) {
+            // 終了
+            answer = open.back().answer;
+            finished = true;
+            break;
+        } else {
+            current = open.front();
+            open.pop();
+            if (closed.find(current) != closed.end()) {
+                continue;
+            }
+
+            if (current.selecting_cur.y == height - BFS_NUM) {
+                if (current.selecting_cur.x == width - BFS_NUM) {
+                    // 右と下
+                    open.push(move_bf(current, HVDirection::Right));
+                    open.push(move_bf(current, HVDirection::Down));
+                } else if (current.selecting_cur.x == width - 1) {
+                    // 左と下
+                    open.push(move_bf(current, HVDirection::Left));
+                    open.push(move_bf(current, HVDirection::Down));
+                } else {
+                    // 左右下
+                    open.push(move_bf(current, HVDirection::Left));
+                    open.push(move_bf(current, HVDirection::Right));
+                    open.push(move_bf(current, HVDirection::Down));
+                }
+            } else if (current.selecting_cur.y == height - 1) {
+                if (current.selecting_cur.x == width - BFS_NUM) {
+                    // 右と上
+                    open.push(move_bf(current, HVDirection::Right));
+                    open.push(move_bf(current, HVDirection::Up));
+                } else if (current.selecting_cur.x == width - 1) {
+                    // 左と上
+                    open.push(move_bf(current, HVDirection::Left));
+                    open.push(move_bf(current, HVDirection::Up));
+                } else {
+                    // 左右上
+                    open.push(move_bf(current, HVDirection::Left));
+                    open.push(move_bf(current, HVDirection::Right));
+                    open.push(move_bf(current, HVDirection::Up));
+                }
+            } else {
+                if (current.selecting_cur.x == width - BFS_NUM) {
+                    // 右上下
+                    open.push(move_bf(current, HVDirection::Right));
+                    open.push(move_bf(current, HVDirection::Up));
+                    open.push(move_bf(current, HVDirection::Down));
+                } else if (current.selecting_cur.x == width - 1) {
+                    // 左上下
+                    open.push(move_bf(current, HVDirection::Left));
+                    open.push(move_bf(current, HVDirection::Up));
+                    open.push(move_bf(current, HVDirection::Down));
+                } else {
+                    // 四方
+                    open.push(move_bf(current, HVDirection::Up));
+                    open.push(move_bf(current, HVDirection::Right));
+                    open.push(move_bf(current, HVDirection::Down));
+                    open.push(move_bf(current, HVDirection::Left));
+                }
+            }
+            closed.insert(current);
+        }
+    }
+
+    return;
+}
+
+const step_type algorithm::move_bf(step_type step, HVDirection const& direction) const
+{
+    if (direction == HVDirection::Up) {
+        std::swap(step.matrix[step.selecting_cur.y][step.selecting_cur.x], step.matrix[step.selecting_cur.y - 1][step.selecting_cur.x]);
+        step.selecting_cur.y -= 1;
+    } else if (direction == HVDirection::Right) {
+        std::swap(step.matrix[step.selecting_cur.y][step.selecting_cur.x], step.matrix[step.selecting_cur.y][step.selecting_cur.x + 1]);
+        step.selecting_cur.x += 1;
+    } else if (direction == HVDirection::Down) {
+        std::swap(step.matrix[step.selecting_cur.y][step.selecting_cur.x], step.matrix[step.selecting_cur.y + 1][step.selecting_cur.x]);
+        step.selecting_cur.y += 1;
+    } else {
+        std::swap(step.matrix[step.selecting_cur.y][step.selecting_cur.x], step.matrix[step.selecting_cur.y][step.selecting_cur.x - 1]);
+        step.selecting_cur.x -= 1;
+    }
+    step.answer.list.back().change_list.push_back(direction);
+    return step;
 }
 
 void algorithm::move_selecting(HVDirection const& direction)
@@ -574,6 +680,18 @@ inline const bool algorithm::is_sorted(point_type const& point) const
     return std::find(sorted_points.begin(), sorted_points.end(), point) != sorted_points.end();
 }
 
+const bool algorithm::is_finished(std::vector<std::vector<point_type>> const& mat) const
+{
+    for (int y = 0; y < height; ++y) {
+        for (int x = 0; x < width; ++x) {
+            if (!(mat[y][x] == point_type{x, y})) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
 #ifdef algorithm_debug
 inline void algorithm::print() const
 {
@@ -627,5 +745,6 @@ int main(int argc, char* argv[])
     constexpr int cost_change = 10;
     const auto qdata = question_data(size, selectable, cost_select, cost_change, matrix);
     algorithm()(qdata);
+    return 0;
 }
 #endif

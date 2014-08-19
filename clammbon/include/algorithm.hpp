@@ -17,10 +17,12 @@ public:
     inline void print() const;
     const point_type current_point(point_type const& point) const;
     inline const bool is_sorted(point_type const& point) const;
+    const bool is_finished(std::vector<std::vector<point_type>> const& mat) const;
     void sequential_move(point_type const& target, std::vector<HVDirection> const& directions);
     void move_selecting(HVDirection const& direction);
     void move_target(point_type const& target, HVDirection const& direction);
     void move_to(point_type const& to);
+    const step_type move_bf(step_type step, HVDirection const& direction) const;
 
 private:
     std::vector<std::vector<point_type>> matrix;

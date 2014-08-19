@@ -7,6 +7,7 @@
 #include <vector>
 #include <boost/noncopyable.hpp>
 #include <boost/format.hpp>
+#include <boost/functional/hash/extensions.hpp>
 #include <opencv2/core/core.hpp>
 
 enum struct AllDirection { Same, Up, UpperRight, Right, DownerRight, Down, DownerLeft, Left, UpperLeft };
@@ -96,6 +97,14 @@ struct point_type
                 return AllDirection::Same;
             }
         }
+    }
+
+    friend std::size_t hash_value(point_type const& point)
+    {
+        std::size_t seed = 0;
+        boost::hash_combine(seed, point.x);
+        boost::hash_combine(seed, point.y);
+        return seed;
     }
 };
 
@@ -209,6 +218,17 @@ struct answer_type
     }
 };
 
+struct step_type {
+    answer_type answer;
+    point_type selecting_cur;
+    std::vector<std::vector<point_type>> matrix;
+
+    friend const bool operator== (step_type const& lhs, step_type const& rhs)
+    {
+        return lhs.matrix == rhs.matrix;
+    }
+};
+
 template<class T>
 struct direction_type
 {
@@ -231,5 +251,42 @@ operator<< (std::basic_ostream<CharT, Traits>& os, point_type const& point)
 //sort_algorithm
 typedef std::vector<std::vector<std::vector<std::vector<direction_type<uint64_t>>>>> compared_type;
 typedef std::vector<std::vector<direction_type<point_type>>> adjacent_type;
+
+namespace std
+{
+    template <>
+    struct hash<std::vector<std::vector<point_type>>>
+    {
+        typedef std::vector<std::vector<point_type>> argument_type;
+        typedef std::size_t result_type;
+        result_type operator() (argument_type const& matrix) const
+        {
+            result_type result;
+            for (auto row : matrix) {
+                for (auto point : row) {
+                    boost::hash_combine(result, point);
+                }
+            }
+            return result;
+        }
+    };
+
+    template <>
+    struct hash<step_type>
+    {
+        typedef step_type argument_type;
+        typedef std::size_t result_type;
+        result_type operator() (argument_type const& step) const
+        {
+            result_type result;
+            for (auto row : step.matrix) {
+                for (auto point : row) {
+                    boost::hash_combine(result, point);
+                }
+            }
+            return result;
+        }
+    };
+}
 
 #endif
