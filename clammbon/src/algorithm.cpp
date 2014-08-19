@@ -587,6 +587,8 @@ void algorithm::move_to(point_type const& to)
     point_type diff = to - selecting_cur;
     AllDirection direction = selecting_cur.direction(to);
 
+    point_type tmp;
+
     // NOTE: 斜め方向の移動の際は近傍のソート済みの断片画像の存在の有無で縦横の移動の先後を決めているが,
     //       近傍にソート済み断片画像が存在しない場合に何か判断基準はあるだろうか？
     // TODO: 同じコード使い回しだしどうにからないか
@@ -595,7 +597,8 @@ void algorithm::move_to(point_type const& to)
             move_selecting(HVDirection::Up);
         }
     } else if (direction == AllDirection::UpperRight) {
-        if (is_sorted(selecting_cur.up())) {
+        tmp = selecting_cur.up();
+        if (is_sorted(matrix[tmp.y][tmp.x])) {
             for (int i = diff.x; i > 0; --i) {
                 move_selecting(HVDirection::Right);
             }
@@ -615,7 +618,8 @@ void algorithm::move_to(point_type const& to)
             move_selecting(HVDirection::Right);
         }
     } else if (direction == AllDirection::DownerRight) {
-        if (is_sorted(selecting_cur.down())) {
+        tmp = selecting_cur.down();
+        if (is_sorted(matrix[tmp.y][tmp.x])) {
             for (int i = diff.x; i > 0; --i) {
                 move_selecting(HVDirection::Right);
             }
@@ -635,7 +639,8 @@ void algorithm::move_to(point_type const& to)
             move_selecting(HVDirection::Down);
         }
     } else if (direction == AllDirection::DownerLeft) {
-        if (is_sorted(selecting_cur.down())) {
+        tmp = selecting_cur.down();
+        if (is_sorted(matrix[tmp.y][tmp.x])) {
             for (int i = diff.x; i < 0; ++i) {
                 move_selecting(HVDirection::Left);
             }
@@ -655,7 +660,8 @@ void algorithm::move_to(point_type const& to)
             move_selecting(HVDirection::Left);
         }
     } else if (direction == AllDirection::UpperLeft) {
-        if (is_sorted(selecting_cur.up())) {
+        tmp = selecting_cur.up();
+        if (is_sorted(matrix[tmp.y][tmp.x])) {
             for (int i = diff.x; i < 0; ++i) {
                 move_selecting(HVDirection::Left);
             }
@@ -730,14 +736,7 @@ inline void algorithm::print() const
 int main(int argc, char* argv[])
 {
     const auto matrix = std::vector<std::vector<point_type>>{
-        std::vector<point_type>{point_type{3, 1}, point_type{7, 3}, point_type{2, 4}, point_type{5, 7}, point_type{4, 7}, point_type{7, 2}, point_type{5, 5}, point_type{3, 5}},
-        std::vector<point_type>{point_type{0, 1}, point_type{6, 7}, point_type{4, 4}, point_type{3, 2}, point_type{4, 3}, point_type{1, 2}, point_type{2, 3}, point_type{1, 3}},
-        std::vector<point_type>{point_type{7, 1}, point_type{0, 6}, point_type{4, 0}, point_type{3, 7}, point_type{1, 6}, point_type{7, 6}, point_type{3, 4}, point_type{2, 5}},
-        std::vector<point_type>{point_type{2, 2}, point_type{4, 6}, point_type{0, 3}, point_type{2, 6}, point_type{2, 1}, point_type{1, 5}, point_type{5, 2}, point_type{3, 6}},
-        std::vector<point_type>{point_type{0, 2}, point_type{2, 0}, point_type{0, 4}, point_type{4, 1}, point_type{5, 0}, point_type{6, 0}, point_type{5, 6}, point_type{1, 0}},
-        std::vector<point_type>{point_type{6, 3}, point_type{5, 3}, point_type{0, 5}, point_type{7, 5}, point_type{2, 7}, point_type{7, 4}, point_type{4, 2}, point_type{1, 7}},
-        std::vector<point_type>{point_type{3, 3}, point_type{6, 2}, point_type{7, 0}, point_type{4, 5}, point_type{5, 1}, point_type{0, 0}, point_type{1, 4}, point_type{3, 0}},
-        std::vector<point_type>{point_type{7, 7}, point_type{6, 1}, point_type{0, 7}, point_type{1, 1}, point_type{6, 4}, point_type{5, 4}, point_type{6, 5}, point_type{6, 6}}
+        std::vector<point_type>{point_type{6,3},point_type{3,1},point_type{11,4},point_type{13,8},point_type{10,7},point_type{10,2},point_type{2,12},point_type{6,6},point_type{3,14},point_type{4,7},point_type{1,9},point_type{11,6},point_type{15,10},point_type{15,9},point_type{12,9},point_type{7,2}},std::vector<point_type>{point_type{11,8},point_type{8,12},point_type{7,9},point_type{13,5},point_type{3,13},point_type{5,12},point_type{10,8},point_type{3,2},point_type{5,4},point_type{15,14},point_type{12,4},point_type{9,11},point_type{6,8},point_type{14,6},point_type{1,2},point_type{11,2}},std::vector<point_type>{point_type{10,12},point_type{14,15},point_type{9,10},point_type{4,10},point_type{2,4},point_type{8,0},point_type{13,2},point_type{10,6},point_type{3,9},point_type{15,7},point_type{9,13},point_type{11,14},point_type{6,13},point_type{12,11},point_type{9,1},point_type{13,4}},std::vector<point_type>{point_type{3,15},point_type{13,12},point_type{13,6},point_type{11,10},point_type{4,14},point_type{2,9},point_type{14,5},point_type{5,8},point_type{7,14},point_type{3,12},point_type{9,14},point_type{12,0},point_type{3,11},point_type{13,10},point_type{12,15},point_type{0,12}},std::vector<point_type>{point_type{14,13},point_type{10,0},point_type{2,2},point_type{5,10},point_type{8,6},point_type{3,3},point_type{15,8},point_type{10,15},point_type{12,5},point_type{6,2},point_type{12,10},point_type{14,0},point_type{11,1},point_type{4,5},point_type{2,11},point_type{9,3}},std::vector<point_type>{point_type{6,10},point_type{0,9},point_type{13,9},point_type{2,13},point_type{6,11},point_type{5,7},point_type{0,5},point_type{7,13},point_type{15,12},point_type{9,6},point_type{10,4},point_type{8,3},point_type{3,0},point_type{2,14},point_type{12,7},point_type{1,13}},std::vector<point_type>{point_type{14,8},point_type{15,11},point_type{5,5},point_type{3,4},point_type{14,9},point_type{6,12},point_type{0,0},point_type{12,3},point_type{0,6},point_type{10,5},point_type{12,8},point_type{11,5},point_type{15,1},point_type{1,15},point_type{1,3},point_type{4,11}},std::vector<point_type>{point_type{15,3},point_type{10,11},point_type{0,7},point_type{11,7},point_type{4,8},point_type{9,8},point_type{3,7},point_type{2,1},point_type{14,3},point_type{0,10},point_type{4,9},point_type{14,12},point_type{2,6},point_type{7,8},point_type{4,2},point_type{0,2}},std::vector<point_type>{point_type{14,7},point_type{9,12},point_type{9,4},point_type{14,11},point_type{1,11},point_type{4,6},point_type{12,12},point_type{6,4},point_type{8,10},point_type{4,4},point_type{10,14},point_type{10,9},point_type{7,0},point_type{5,6},point_type{8,8},point_type{14,2}},std::vector<point_type>{point_type{2,7},point_type{12,6},point_type{8,5},point_type{2,3},point_type{7,4},point_type{11,12},point_type{15,4},point_type{9,2},point_type{2,8},point_type{15,6},point_type{13,15},point_type{6,15},point_type{11,3},point_type{15,15},point_type{14,4},point_type{2,0}},std::vector<point_type>{point_type{12,13},point_type{6,0},point_type{7,3},point_type{9,9},point_type{0,14},point_type{15,5},point_type{9,7},point_type{10,1},point_type{0,1},point_type{11,11},point_type{13,14},point_type{12,1},point_type{1,5},point_type{3,8},point_type{1,14},point_type{6,14}},std::vector<point_type>{point_type{14,14},point_type{1,1},point_type{13,7},point_type{5,14},point_type{11,9},point_type{15,13},point_type{6,5},point_type{15,0},point_type{8,13},point_type{1,6},point_type{7,12},point_type{8,14},point_type{5,15},point_type{5,0},point_type{8,4},point_type{8,15}},std::vector<point_type>{point_type{3,5},point_type{0,15},point_type{12,14},point_type{8,2},point_type{5,3},point_type{7,11},point_type{7,1},point_type{1,10},point_type{11,15},point_type{4,12},point_type{10,13},point_type{8,11},point_type{2,15},point_type{4,1},point_type{5,2},point_type{4,13}},std::vector<point_type>{point_type{3,6},point_type{5,9},point_type{2,10},point_type{11,0},point_type{6,9},point_type{13,1},point_type{8,1},point_type{5,1},point_type{4,0},point_type{1,4},point_type{1,7},point_type{1,0},point_type{8,9},point_type{0,11},point_type{1,8},point_type{7,6}},std::vector<point_type>{point_type{6,7},point_type{15,2},point_type{11,13},point_type{2,5},point_type{9,15},point_type{8,7},point_type{5,11},point_type{4,3},point_type{14,10},point_type{10,10},point_type{7,5},point_type{4,15},point_type{9,5},point_type{13,11},point_type{0,13},point_type{6,1}},std::vector<point_type>{point_type{0,3},point_type{0,4},point_type{7,10},point_type{9,0},point_type{1,12},point_type{3,10},point_type{0,8},point_type{13,0},point_type{13,3},point_type{12,2},point_type{14,1},point_type{7,15},point_type{7,7},point_type{13,13},point_type{5,13},point_type{10,3}}
     };
     const auto size = std::pair<int, int>(matrix[0].size(), matrix.size());
     constexpr int selectable = 16;
