@@ -11,7 +11,16 @@
 class pcserver
 {
 private:
+    std::string problem_set;
 public:
+    pcserver()
+    {
+        problem_set = "default";
+    }
+    pcserver(std::string s)
+    {
+        problem_set = s;
+    }
     std::ostringstream outerr, output;
     answer_list const string_to_answer(std::string const s);
     inline point_type const pos2int(std::string const pos)

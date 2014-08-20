@@ -43,7 +43,7 @@ answer_list const pcserver::string_to_answer(std::string const s)
 //  🍣🍣🍣  問題ローダ 🍣🍣🍣
 question_data const pcserver::load_problem(std::string const& problemid, std::string const& playerid)
 {
-    std::istringstream pos("../eval_server/position/prob" + problemid + ".pos"), ppm("../eval_server/problem/prob" + problemid + ".ppm");
+    std::istringstream pos("../eval_server/problem_set/" + problem_set + "/position/prob" + problemid + ".pos"), ppm("../eval_server/problem_set/" + problem_set + "/problem/prob" + problemid + ".ppm");
     std::string ppm_header, hash;
     std::pair<int, int> size;
     int problem_id, selectable, cost_select, cost_change;

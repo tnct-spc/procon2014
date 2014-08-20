@@ -34,7 +34,7 @@ struct submit_form {
                 s_res = pcs.outerr.str() + pcs.output.str();
             response = server::response::stock_reply(server::response::ok, s_res);
         } else if(p.substr(0, 9) == "/problem/") {
-            std::ifstream ifs("problem/" + p.substr(9)); // insecure
+            std::ifstream ifs("problem_set/" + problem_set + "/problem/" + p.substr(9)); // insecure
             if(ifs.fail()) {
                 response = server::response::stock_reply(server::response::not_found, "Not found");
             } else {
