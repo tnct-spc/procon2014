@@ -90,7 +90,7 @@ struct question_data : private boost::noncopyable
             problem_id,
             player_id,
             size,
-            selecrtable,
+            selectable,
             cost_select,
             cost_change,
             block
