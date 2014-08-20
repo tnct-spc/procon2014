@@ -63,28 +63,21 @@ int main(int argc, char* argv[])
             block
             };
 
-        // 実行
+        // 実行から評価まで
         algorithm algo;
-        algo(question); // TODO: なんか返してもらう
+        algo.reset(question);     // テストデータのセット
 
-        // 評価
-        // TODO:
+        int counter = 0;
+        while(auto first_result = algo.get())  // 解答が受け取れる間ループ
+        {
+            // TODO: 評価
 
-        // 書き出し
+            // TODO: 書出
 
-
-        //// 「実行」以降のコードはこんなふうにしたい予定
-        //algorithm algo(question); // 内部でcontext作って
-        //algo.context().start();   // そのcontextを実行
-        //
-        //auto first_result = algo.result();   // suspendされたら1つ目の解答を受け取って
-        //// ここでfirst_resultを評価して書き出す
-        //while(algo.context().is_completed()) // まだ終わっていないというなら
-        //{
-        //    algo.context().resume();         //2つ目以降の解答はresumeで復帰させる
-        //    auto result = algo.result();     //んで，評価
-        //    //resultの評価
-        //}
+            ++counter; // テストなので解答回数をカウントする必要あるかなと
+        }
     }
+
+    return 0;
 }
 
