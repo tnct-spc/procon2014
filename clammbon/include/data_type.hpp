@@ -83,6 +83,19 @@ struct question_data : private boost::noncopyable
         this->block       = std::move(other.block);
         return *this;
     }
+
+    question_data clone() const
+    {
+        return question_data{
+            problem_id,
+            player_id,
+            size,
+            selecrtable,
+            cost_select,
+            cost_change,
+            block
+        };
+    }
 };
 
 struct question_raw_data : private boost::noncopyable
