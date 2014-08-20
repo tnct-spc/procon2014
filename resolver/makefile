@@ -11,7 +11,7 @@ DEPS := $(SRCS:src/%.cpp=obj/$(buildtype)/%.d)
 CXXFLAGS +=
 CPPFLAGS += -Iinclude
 LDFLAGS  +=
-LIBS     += -lboost_system -lboost_thread -lpthread -lcppnetlib-server-parsers -lcppnetlib-client-connections -lcppnetlib-uri -lcrypto -lssl
+LIBS     += -lboost_system -lboost_thread -lboost_coroutine -lpthread -lcppnetlib-server-parsers -lcppnetlib-client-connections -lcppnetlib-uri -lcrypto -lssl
 
 .PHONY: all clean distclean
 
