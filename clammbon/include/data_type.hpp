@@ -71,7 +71,7 @@ struct point_type
         return point_type{this->x - 1, this->y};
     }
 
-    inline AllDirection const direction(point_type const& point) const
+    inline AllDirection direction(point_type const& point)
     {
         point_type diff = *this - point;
         if (diff.x < 0) {
@@ -208,7 +208,7 @@ enum struct HVDirection { Up, Right, Down, Left };
 // 八方を表す列挙型
 //enum struct AllDirection { Same, Up, UpperRight, Right, DownerRight, Down, DownerLeft, Left, UpperLeft };
 
-inline char const direction_char(HVDirection const& d)
+inline char direction_char(HVDirection const& d)
 {
     return "URDL"[static_cast<int>(d)];
 }
@@ -245,7 +245,7 @@ struct step_type {
     point_type selecting_cur;
     std::vector<std::vector<point_type>> matrix;
 
-    friend const bool operator== (step_type const& lhs, step_type const& rhs)
+    friend bool operator== (step_type const& lhs, step_type const& rhs)
     {
         return lhs.matrix == rhs.matrix;
     }
