@@ -4,23 +4,47 @@
 #include <iterator>
 #include <cassert>
 #include "algorithm.hpp"
-//#include "network.hpp"
+#include <boost/bind.hpp>
+#include <boost/coroutine/all.hpp>
 
 // 幅優先探索に切り換えるタイミング
 // 2 にすると速い
 #define BFS_NUM 3
 
-void algorithm::operator() (question_data const& data)
+auto algorithm::get() -> boost::optional<return_type>
+{
+    if(co_ && data_)
+    {
+        auto&& result = co_.get();
+        co_();
+        return result;
+    }
+    return boost::none;
+}
+
+void algorithm::reset(question_data const& data)
+{
+    data_ = data.clone();
+    co_   = boost::coroutines::coroutine<return_type>::pull_type(
+                boost::bind(&algorithm::process, this, _1)
+                );
+}
+
+void algorithm::operator() (boost::coroutines::coroutine<return_type>::push_type& yield)
 {
     //
     // Main Algorithm
     //
+
     // Ian Parberry
     // A Real-Time Algorithm for the (n^2-1)-Puzzle
     // http://local.cdn.cs50.net/2010/fall/psets/3/saml.pdf
     //
     // point_type を使って指しているものが座標なのか断片画像なのかわかりにくい (型の意味としては座標だが)
     //
+
+    // TODO: "yield(return_type型の解答)"とすれば，呼び出し元に制御が戻り，送信処理を行える．
+    //       呼び出し元が再度algorithm::getを呼びだせば，中断されたところから実行される(ハズ)．
 
     // 画像
     matrix = data.block;
@@ -52,6 +76,12 @@ void algorithm::operator() (question_data const& data)
     print();
 #endif
     solve();
+}
+
+void algorithm::process(boost::coroutines::coroutine<return_type>::push_type& yield)
+{
+    // 訳ありで転送するだけの関数
+    (*this)(yield);
 }
 
 const point_type algorithm::current_point(point_type const& point) const

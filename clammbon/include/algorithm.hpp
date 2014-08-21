@@ -1,15 +1,27 @@
 #ifndef RESOLVER_ALGORITHM_HPP
 #define RESOLVER_ALGORITHM_HPP
 
+#include <boost/optional.hpp>
+#include <boost/coroutine/coroutine.hpp>
 #include "data_type.hpp"
 
 class algorithm
 {
 public:
+    typedef answer_list return_type; // TODO: あとで相談とか
+
     algorithm() = default;
     virtual ~algorithm() = default;
 
-    void operator() (question_data const& data);
+    auto get() -> boost::optional<return_type>;
+    void reset(question_data const& data);
+
+private:
+    void process(boost::coroutines::coroutine<return_type>::push_type& yield);
+    void operator() (boost::coroutines::coroutine<return_type>::push_type& yield);
+
+    boost::optional<question_data> data_;
+    boost::coroutines::coroutine<return_type>::pull_type co_;
 
     void solve();
     void greedy();
@@ -24,7 +36,6 @@ public:
     void move_to(point_type const& to);
     const step_type move_bf(step_type step, HVDirection const& direction) const;
 
-private:
     std::vector<std::vector<point_type>> matrix;
     std::unordered_set<point_type> sorted_points;
     answer_type answer;

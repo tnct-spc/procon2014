@@ -12,7 +12,7 @@ else
 	$(error buildtype must be release, debug, profile or coverage)
 endif
 
-CXXFLAGS += -std=c++1y $(shell fltk-config --cxxflags)
+CXXFLAGS += -W -Wall -std=c++1y $(shell fltk-config --cxxflags)
 CPPFLAGS += -I../clammbon/include
 LDFLAGS  += -L../lib $(shell fltk-config --ldflags)
 LIBS     += -lopencv_core -lopencv_highgui -lopencv_imgproc

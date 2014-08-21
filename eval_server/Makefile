@@ -1,21 +1,21 @@
 include ../makefile.in
 
-OUTDIR := ../bin/$(buildtype)
-TARGET = procon
+OUTDIR :=../bin/$(buildtype)
+TARGET := server
 
-SRCS := src/main.cpp src/network.cpp
+SRCS := src/http.cpp
 PROG := $(OUTDIR)/$(TARGET)
 OBJS := $(SRCS:src/%.cpp=obj/$(buildtype)/%.o)
 DEPS := $(SRCS:src/%.cpp=obj/$(buildtype)/%.d)
 
 CXXFLAGS +=
-CPPFLAGS += -Iinclude
+CPPFLAGS +=
 LDFLAGS  +=
-LIBS     += -lboost_system -lboost_thread -lboost_coroutine -lpthread -lcppnetlib-server-parsers -lcppnetlib-client-connections -lcppnetlib-uri -lcrypto -lssl
+LIBS     += -lpthread -lboost_system -lboost_thread -lcppnetlib-uri -lcppnetlib-client-connections -lssl -lcrypto
 
 .PHONY: all clean distclean
 
-all : $(PROG)
+all: $(PROG)
 
 -include $(DEPS)
 
@@ -31,9 +31,9 @@ obj/$(buildtype)/%.o : src/%.cpp
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) $(DEFS) -o $@ -c -MMD -MP -MF $(@:%.o=%.d) $<
 
 clean:
-	rm -rf $(OUTDIR) ./obj
+	rm -rf $(OUTDIR)
 
 distclean:
-	rm -rf ../bin ./obj
+	rm -rf ../bin
 
-# vim:set tabstop=4 noexpendtab
+# vim:set tabstop=4 noexpandtab

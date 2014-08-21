@@ -14,7 +14,7 @@ public:
     typedef std::vector<std::vector<direction_type<point_type>>> adjacent_type;
     typedef std::vector<std::vector<point_type>> return_type;
 
-    pixel_sorter<Algorithm>(){}
+    pixel_sorter<Algorithm>() : split_(){}
     virtual ~pixel_sorter<Algorithm>() = default;
 
     return_type operator() (question_raw_data const& raw) const

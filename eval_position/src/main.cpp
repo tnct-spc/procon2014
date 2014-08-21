@@ -111,6 +111,7 @@ namespace clammbon{
 
 int main(int argc, char *argv[])
 {
+    ppm_reader reader;
     pixel_sorter<yrange2> sorter;
     csv_manager csv("report.csv");
 
@@ -146,8 +147,7 @@ int main(int argc, char *argv[])
         }
 
         // 問題を解く
-        ppm_reader reader(filepath.string());
-        auto const raw_question = reader();
+        auto const raw_question = reader.from_file(filepath.string());
         auto const proposed_answers = sorter.proposed_answer(raw_question); // TODO: sorterはただ1つの解答を返すべき
 
         // 解答ファイルを読み取る
