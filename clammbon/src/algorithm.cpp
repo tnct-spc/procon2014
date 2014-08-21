@@ -332,6 +332,10 @@ void algorithm::brute_force()
         }
     }
 
+    if (!finished) {
+        std::cout << "NOT FOUND" << std::endl;
+    }
+
     return;
 }
 
@@ -711,6 +715,7 @@ inline void algorithm::print() const
         }
         std::cout << std::endl;
     }
+    /*
     int score_select = answer.list.size() * cost_select;
     int score_change = 0;
     for (auto step : answer.list) {
@@ -726,6 +731,7 @@ inline void algorithm::print() const
     std::cout << std::endl;
     std::cout << "answer:" << std::endl;
     std::cout << answer.str();
+    */
     std::cin.ignore();
 }
 #endif
