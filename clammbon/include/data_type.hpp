@@ -199,14 +199,8 @@ struct question_raw_data : private boost::noncopyable
     }
 };
 
-// 斜め方向を表す列挙型
-enum struct DiagonalDirection { UpperRight, DownerRight, DownerLeft, UpperLeft };
-
 // 水平垂直方向を表す列挙型
 enum struct HVDirection { Up, Right, Down, Left };
-
-// 八方を表す列挙型
-//enum struct AllDirection { Same, Up, UpperRight, Right, DownerRight, Down, DownerLeft, Left, UpperLeft };
 
 inline char direction_char(HVDirection const& d)
 {
