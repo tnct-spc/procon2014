@@ -7,6 +7,10 @@
 #include <fstream>
 
 #include "server.hpp"
+#include "tools.hpp"
+#include "problem.hpp"
+#include "answer.hpp"
+
 namespace http = boost::network::http;
 
 /*<< Defines the server. >>*/
@@ -18,23 +22,26 @@ struct submit_form {
     {
         std::string p = (std::string)destination(request);
         std::string b = (std::string)body(request);
-        pcserver pcs;
         if(p == "/SubmitForm") {
             std::ifstream ifs("res/SubmitForm.html");
             std::stringstream buf;
             buf << ifs.rdbuf();
             response = server::response::stock_reply(server::response::ok, buf.str());
         } else if(p == "/SubmitAnswer") {
-            auto req = pcs.post_req_to_map(b);
+            auto req = post_req_to_map(b);
+            pcserver pcs;
+            problem pro(problem_set);
+            pro.load(req["problemid"]);
+            answer ans(req["answer"]);
+            pcs.parse(pro.get(), ans.get());
             std::string s_res;
-            pcs.parse(pcs.load_problem(req["problemid"]), pcs.string_to_answer(req["answer"]));
             if(req["options"].find("quiet") != std::string::npos) // 見つかった場合
                 s_res = pcs.output.str();
             else 
-                s_res = pcs.outerr.str() + pcs.output.str();
+                s_res = pro.get_error() + ans.get_error() + pcs.output.str();
             response = server::response::stock_reply(server::response::ok, s_res);
         } else if(p.substr(0, 9) == "/problem/") {
-            std::ifstream ifs("problem_set/" + problem_set + "/problem/" + p.substr(9)); // insecure
+            std::ifstream ifs("problem_set/" + pcs.get_problem_set() + "/problem/" + p.substr(9)); // insecure
             if(ifs.fail()) {
                 response = server::response::stock_reply(server::response::not_found, "Not found");
             } else {
