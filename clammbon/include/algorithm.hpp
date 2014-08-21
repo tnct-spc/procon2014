@@ -26,7 +26,7 @@ public:
 
 private:
     std::vector<std::vector<point_type>> matrix;
-    std::vector<point_type> sorted_points;
+    std::unordered_set<point_type> sorted_points;
     answer_type answer;
     point_type selecting;
     int width;

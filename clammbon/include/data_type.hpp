@@ -5,6 +5,8 @@
 #include <cmath>
 #include <utility>
 #include <vector>
+#include <queue>
+#include <unordered_set>
 #include <boost/noncopyable.hpp>
 #include <boost/format.hpp>
 #include <boost/functional/hash/extensions.hpp>
@@ -257,17 +259,24 @@ namespace std
     template <>
     struct hash<step_type>
     {
-        typedef step_type argument_type;
-        typedef std::size_t result_type;
-        result_type operator() (argument_type const& step) const
+        std::size_t operator() (step_type const& step) const
         {
-            result_type result;
+            std::size_t result;
             for (auto row : step.matrix) {
                 for (auto point : row) {
                     boost::hash_combine(result, point);
                 }
             }
             return result;
+        }
+    };
+
+    template <>
+    struct hash<point_type>
+    {
+        std::size_t operator() (point_type const& point) const
+        {
+            return hash_value(point);
         }
     };
 }

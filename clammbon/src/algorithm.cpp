@@ -3,8 +3,6 @@
 #include <algorithm>
 #include <iterator>
 #include <cassert>
-#include <queue>
-#include <unordered_set>
 #include "algorithm.hpp"
 //#include "network.hpp"
 
@@ -41,13 +39,13 @@ void algorithm::operator() (question_data const& data)
     sorted_col = 0;
 
     // ソート済み断片画像
-    std::vector<point_type> sorted_points;
+    std::unordered_set<point_type> sorted_points;
 
     // 移動に用いる断片画像の原座標
     // 右下を選んでおけば間違いない
     selecting = point_type{width - 1, height - 1};
 
-    answer.list.push_back(answer_line{selecting, std::vector<HVDirection>()});
+    answer.list.push_back(answer_line{current_point(selecting), std::vector<HVDirection>()});
 
     // GO
 #ifdef algorithm_debug
@@ -244,7 +242,7 @@ void algorithm::greedy()
         }
 
         // ソート済みとする
-        sorted_points.push_back(target);
+        sorted_points.insert(target);
     }
 }
 
@@ -687,7 +685,7 @@ void algorithm::move_to(point_type const& to)
 
 inline const bool algorithm::is_sorted(point_type const& point) const
 {
-    return std::find(sorted_points.begin(), sorted_points.end(), point) != sorted_points.end();
+    return sorted_points.find(point) != sorted_points.end();
 }
 
 const bool algorithm::is_finished(std::vector<std::vector<point_type>> const& mat) const
