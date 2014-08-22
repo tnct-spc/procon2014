@@ -1,7 +1,7 @@
-#include "answer.cpp"
+#include "answer.hpp"
 
 // 🍣🍣🍣  解答変換  🍣🍣🍣
-answer_list const answer::convert(std::string const& s)
+void answer::convert(std::string const& s)
 {
     answer_list al;
     answer_type a;
@@ -16,6 +16,7 @@ answer_list const answer::convert(std::string const& s)
         point_type ipos = pos2int(pos);
         if(ipos.x == -1 || ipos.y == -1) {
             outerr << "ERROR: illegal position: \"" + pos + "\"\n";
+            return;
         } else {
             a.type = answer_type::action_type::select;
             a.position = ipos;
@@ -33,11 +34,14 @@ answer_list const answer::convert(std::string const& s)
             ipos = ipos.move_to(move[j]);
             if(ipos.x == -1 || ipos.y == -1) {
                 outerr << "ERROR: illegal move: \'" << move[j] << "\'\n";
+                return;
             } else {
                 al.push_back(a);
             }
         }
     }
-    return al;
+    final_answer = al;
+    outerr << "STATUS: answer loaded successfully\n" << std::endl;
+    sane = true;
 }
 

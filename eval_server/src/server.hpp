@@ -4,6 +4,7 @@
 #include <iostream>
 #include <vector>
 #include <sstream>
+#include <fstream>
 #include <string>
 #include <boost/algorithm/string.hpp>
 #include "data_type.hpp"
@@ -13,22 +14,37 @@ class pcserver
 {
 private:
     std::string problem_set;
+    std::ostringstream outerr, output;
+    bool sane;
 public:
     pcserver()
     {
         problem_set = "default";
+        sane = false;
     }
     pcserver(std::string s)
     {
         problem_set = s;
+        sane = false;
     }
-    std::ostringstream outerr, output;
     inline std::string const get_problem_set()
     {
         return problem_set;
     }
     void parse(question_data const& problem, answer_list const& answer);
     answer_list const string_to_answer(std::string const s);
+    inline bool ok()
+    {
+        return sane;
+    }
+    inline std::string const& get_error()
+    {
+        return outerr.str();
+    }
+    inline std::string const& get_output()
+    {
+        return output.str();
+    }
 };
 
 #endif

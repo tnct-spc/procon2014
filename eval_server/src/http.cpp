@@ -18,6 +18,7 @@ struct submit_form;
 typedef http::server<submit_form> server;
 
 struct submit_form {
+    std::string problem_set = "default";
     void operator() (server::request const &request, server::response &response)
     {
         std::string p = (std::string)destination(request);
@@ -28,20 +29,32 @@ struct submit_form {
             buf << ifs.rdbuf();
             response = server::response::stock_reply(server::response::ok, buf.str());
         } else if(p == "/SubmitAnswer") {
+            std::cerr << b << std::endl;
             auto req = post_req_to_map(b);
+            percent_decode(req["answer"]);
+            std::cerr << "playerid: " << req["playerid"] << std::endl;
+            std::cerr << "problemid: " << req["problemid"] << std::endl;
+            std::cerr << "options: " << req["options"] << std::endl;
+            std::cerr << "answer:\n" << req["answer"] << std::endl;
             pcserver pcs;
             problem pro(problem_set);
             pro.load(req["problemid"]);
             answer ans(req["answer"]);
-            pcs.parse(pro.get(), ans.get());
+            if(pro.valid() && ans.valid())
+                pcs.parse(pro.get(), ans.get());
             std::string s_res;
-            if(req["options"].find("quiet") != std::string::npos) // 見つかった場合
-                s_res = pcs.output.str();
-            else 
-                s_res = pro.get_error() + ans.get_error() + pcs.output.str();
+            if(pcs.ok()) {
+                if(req["options"].find("quiet") != std::string::npos) { // 見つかった場合
+                    s_res = pcs.get_output();
+                } else {
+                    s_res = pro.get_error() + ans.get_error() + pcs.get_output();
+                }
+            } else {
+                s_res = pro.get_error() + ans.get_error() + pcs.get_error();
+            }
             response = server::response::stock_reply(server::response::ok, s_res);
         } else if(p.substr(0, 9) == "/problem/") {
-            std::ifstream ifs("problem_set/" + pcs.get_problem_set() + "/problem/" + p.substr(9)); // insecure
+            std::ifstream ifs("problem_set/" + problem_set + "/problem/" + p.substr(9)); // insecure
             if(ifs.fail()) {
                 response = server::response::stock_reply(server::response::not_found, "Not found");
             } else {

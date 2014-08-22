@@ -8,14 +8,18 @@ class answer
 private:
     std::ostringstream outerr;
     answer_list final_answer;
-    answer_list const convert(std::string const& s);
+    void convert(std::string const& s);
+    bool sane;
 public:
     answer(std::string s)
     {
-        final_answer = convert(s);
+        convert(s);
+        sane = false;
     }
-    answer()
-    {}
+//    answer()
+//    {
+//        sane = false;
+//    }
     inline std::string get_error()
     {
         return outerr.str();
@@ -23,6 +27,10 @@ public:
     inline answer_list const& get()
     {
         return final_answer;
+    }
+    inline bool valid()
+    {
+        return sane;
     }
 };
 
