@@ -1,6 +1,38 @@
 ﻿procon2014
 =================
 
+####環境変数について(Windowsのみ)
+Windowsで環境変数を利用したincludeパス/libraryパスの設定に対応しました．
+***Visual Studioの「VC++ ディレクトリ」は事情があるとき以外は弄らないこと．***
+
+環境変数の設定の一例として次のように設定すれば動くはず．
+
+LIBRARIES_DLL
+: C:\opencv\build\x64\vc12\bin
+
+LIBRARIES_INCLUDE
+: C:\boost\include\boost-1_56;C:\cpp-netlib;C:\fltk-1.3.2;C:\opencv\build\include;C:\openssl-1.0.1h\include
+
+LIBRARIES_LIB
+: C:\boost\lib;C:\fltk-1.3.2\lib;C:\openssl-1.0.1h\lib\VC\static
+
+LIBRARIES_LIB_X64_DEBUG
+: C:\cpp-netlib\libs\network\src\Debug;C:\opencv\build\x64\vc12\lib
+
+LIBRARIES_LIB_X64_RELEASE
+: C:\cpp-netlib\libs\network\src\Release;C:\opencv\build\x64\vc12\lib
+
+LIBRARIES_LIB_X86_DEBUG
+: C:\cpp-netlib\libs\network\src\Debug;C:\opencv\build\x86\vc12\lib
+
+LIBRARIES_LIB_X86_RELEASE
+: C:\cpp-netlib\libs\network\src\Release;C:\opencv\build\x86\vc12\lib
+
+PATH
+: 末尾に`;%LIBRARIES_DLL%`を追加
+
+
+
 ####Boost C++ Libraries (http://www.boost.org/)
 -------------------
 Windowsならば，C:\\直下の位置に配置して以下に示すようにビルドすれば，
