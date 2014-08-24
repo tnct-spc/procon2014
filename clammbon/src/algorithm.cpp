@@ -1,17 +1,85 @@
 //#define algorithm_debug
-#include <iostream>
 #include <algorithm>
-#include <iterator>
 #include <cassert>
-#include "algorithm.hpp"
+#include <iostream>
+#include <iterator>
 #include <boost/bind.hpp>
 #include <boost/coroutine/all.hpp>
+#include <boost/coroutine/coroutine.hpp>
+#include <boost/function.hpp>
+#include <boost/noncopyable.hpp>
+#include "algorithm.hpp"
 
 // 幅優先探索に切り換えるタイミング
 // 2 にすると速い
 #define BFS_NUM 3
 
+class algorithm::impl : boost::noncopyable
+{
+public:
+    typedef algorithm::return_type return_type;
+
+    impl() = default;
+    virtual ~impl() = default;
+
+    auto get() -> boost::optional<return_type>;
+    void reset(question_data const& data);
+
+private:
+    void process(boost::coroutines::coroutine<return_type>::push_type& yield);
+    void operator() (boost::coroutines::coroutine<return_type>::push_type& yield);
+
+    boost::optional<question_data> data_;
+    boost::coroutines::coroutine<return_type>::pull_type co_;
+
+    const answer_type solve();
+    void greedy();
+    void brute_force();
+    inline void print() const;
+    const point_type current_point(point_type const& point) const;
+    inline bool is_sorted(point_type const& point) const;
+    bool is_finished(std::vector<std::vector<point_type>> const& mat) const;
+    void sequential_move(point_type const& target, std::vector<HVDirection> const& directions);
+    void move_selecting(HVDirection const& direction);
+    void move_target(point_type const& target, HVDirection const& direction);
+    void move_to(point_type const& to);
+    const step_type move_bf(step_type step, HVDirection const& direction) const;
+
+    std::vector<std::vector<point_type>> matrix;
+    std::unordered_set<point_type> sorted_points;
+    answer_type answer;
+    point_type selecting;
+    int width;
+    int height;
+    int cost_select;
+    int cost_change;
+    int score_select;
+    int score_change;
+    int sorted_row;
+    int sorted_col;
+};
+
+algorithm::algorithm()
+    : pimpl_(new impl())
+{
+}
+
+algorithm::~algorithm()
+{
+    delete pimpl_;
+}
+
 auto algorithm::get() -> boost::optional<return_type>
+{
+    return pimpl_->get();
+}
+
+void algorithm::reset(question_data const& data)
+{
+    pimpl_->reset(data);
+}
+
+auto algorithm::impl::get() -> boost::optional<return_type>
 {
     if(co_ && data_)
     {
@@ -22,15 +90,15 @@ auto algorithm::get() -> boost::optional<return_type>
     return boost::none;
 }
 
-void algorithm::reset(question_data const& data)
+void algorithm::impl::reset(question_data const& data)
 {
     data_ = data.clone();
     co_   = boost::coroutines::coroutine<return_type>::pull_type(
-                boost::bind(&algorithm::process, this, _1)
+                boost::bind(&impl::process, this, _1)
                 );
 }
 
-void algorithm::operator() (boost::coroutines::coroutine<return_type>::push_type& yield)
+void algorithm::impl::operator() (boost::coroutines::coroutine<return_type>::push_type& yield)
 {
     //
     // Main Algorithm
@@ -47,15 +115,15 @@ void algorithm::operator() (boost::coroutines::coroutine<return_type>::push_type
     //       呼び出し元が再度algorithm::getを呼びだせば，中断されたところから実行される(ハズ)．
 
     // 画像
-    matrix = data.block;
+    matrix = data_->block;
 
     // 幅と高さ
-    width = data.size.first;
-    height = data.size.second;
+    width = data_->size.first;
+    height = data_->size.second;
 
     // コストとレート
-    cost_select = data.cost_select;
-    cost_change = data.cost_change;
+    cost_select = data_->cost_select;
+    cost_change = data_->cost_change;
 
     // ソート済み行及び列
     // この値の行及び列を含む内側部分を操作する
@@ -75,16 +143,16 @@ void algorithm::operator() (boost::coroutines::coroutine<return_type>::push_type
 #ifdef algorithm_debug
     print();
 #endif
-    solve();
+    yield(solve());
 }
 
-void algorithm::process(boost::coroutines::coroutine<return_type>::push_type& yield)
+void algorithm::impl::process(boost::coroutines::coroutine<return_type>::push_type& yield)
 {
     // 訳ありで転送するだけの関数
     (*this)(yield);
 }
 
-const point_type algorithm::current_point(point_type const& point) const
+const point_type algorithm::impl::current_point(point_type const& point) const
 {
     // point を原座標として持つ断片画像の現在の座標を返す
     for (int y = 0; y < height; ++y) {
@@ -97,7 +165,7 @@ const point_type algorithm::current_point(point_type const& point) const
     throw std::runtime_error("No Tile " + point.str());
 }
 
-void algorithm::solve()
+const answer_type algorithm::impl::solve()
 {
     // Ian Parberry 氏のアルゴリズムを長方形に拡張したもの
     // とりあえず1回選択のみ
@@ -122,12 +190,10 @@ void algorithm::solve()
         }
     }
 
-    // TODO: 送信するなり返すなりする
-    std::cout << answer.str() << std::endl;
-    return;
+    return answer;
 }
 
-void algorithm::greedy()
+void algorithm::impl::greedy()
 {
     // 貪欲法で解く 一番要の部分
 
@@ -264,7 +330,7 @@ void algorithm::greedy()
     }
 }
 
-void algorithm::brute_force()
+void algorithm::impl::brute_force()
 {
     // Brute-Force Algorithm
     // 選択画像を変更しない幅優先探索
@@ -355,7 +421,7 @@ void algorithm::brute_force()
     return;
 }
 
-const step_type algorithm::move_bf(step_type step, HVDirection const& direction) const
+const step_type algorithm::impl::move_bf(step_type step, HVDirection const& direction) const
 {
     if (direction == HVDirection::Up) {
         std::swap(step.matrix[step.selecting_cur.y][step.selecting_cur.x], step.matrix[step.selecting_cur.y - 1][step.selecting_cur.x]);
@@ -374,7 +440,7 @@ const step_type algorithm::move_bf(step_type step, HVDirection const& direction)
     return step;
 }
 
-void algorithm::move_selecting(HVDirection const& direction)
+void algorithm::impl::move_selecting(HVDirection const& direction)
 {
     // selecting を指定された方向へ移動する
 #ifdef algorithm_debug
@@ -402,7 +468,7 @@ void algorithm::move_selecting(HVDirection const& direction)
 #endif
 }
 
-void algorithm::move_target(point_type const& target, HVDirection const& direction)
+void algorithm::impl::move_target(point_type const& target, HVDirection const& direction)
 {
     // selecting の操作によって原座標が target である断片画像を指定の方向へ移動させる.
 #ifdef algorithm_debug
@@ -575,7 +641,7 @@ void algorithm::move_target(point_type const& target, HVDirection const& directi
     sequential_move(selecting_cur, moving_process);
 }
 
-void algorithm::sequential_move(point_type const& target, std::vector<HVDirection> const& directions)
+void algorithm::impl::sequential_move(point_type const& target, std::vector<HVDirection> const& directions)
 {
     // move_selecting を連続して行う
 
@@ -596,7 +662,7 @@ void algorithm::sequential_move(point_type const& target, std::vector<HVDirectio
     }
 }
 
-void algorithm::move_to(point_type const& to)
+void algorithm::impl::move_to(point_type const& to)
 {
     // selecting を to まで移動させる
     point_type selecting_cur = current_point(selecting);
@@ -697,12 +763,12 @@ void algorithm::move_to(point_type const& to)
     }
 }
 
-inline const bool algorithm::is_sorted(point_type const& point) const
+inline bool algorithm::impl::is_sorted(point_type const& point) const
 {
     return sorted_points.find(point) != sorted_points.end();
 }
 
-const bool algorithm::is_finished(std::vector<std::vector<point_type>> const& mat) const
+bool algorithm::impl::is_finished(std::vector<std::vector<point_type>> const& mat) const
 {
     for (int y = 0; y < height; ++y) {
         for (int x = 0; x < width; ++x) {
@@ -715,7 +781,7 @@ const bool algorithm::is_finished(std::vector<std::vector<point_type>> const& ma
 }
 
 #ifdef algorithm_debug
-inline void algorithm::print() const
+inline void algorithm::impl::print() const
 {
     // 具合をいい感じに表示
     std::cout << std::endl;
@@ -757,11 +823,15 @@ int main(int argc, char* argv[])
         std::vector<point_type>{point_type{6,3},point_type{3,1},point_type{11,4},point_type{13,8},point_type{10,7},point_type{10,2},point_type{2,12},point_type{6,6},point_type{3,14},point_type{4,7},point_type{1,9},point_type{11,6},point_type{15,10},point_type{15,9},point_type{12,9},point_type{7,2}},std::vector<point_type>{point_type{11,8},point_type{8,12},point_type{7,9},point_type{13,5},point_type{3,13},point_type{5,12},point_type{10,8},point_type{3,2},point_type{5,4},point_type{15,14},point_type{12,4},point_type{9,11},point_type{6,8},point_type{14,6},point_type{1,2},point_type{11,2}},std::vector<point_type>{point_type{10,12},point_type{14,15},point_type{9,10},point_type{4,10},point_type{2,4},point_type{8,0},point_type{13,2},point_type{10,6},point_type{3,9},point_type{15,7},point_type{9,13},point_type{11,14},point_type{6,13},point_type{12,11},point_type{9,1},point_type{13,4}},std::vector<point_type>{point_type{3,15},point_type{13,12},point_type{13,6},point_type{11,10},point_type{4,14},point_type{2,9},point_type{14,5},point_type{5,8},point_type{7,14},point_type{3,12},point_type{9,14},point_type{12,0},point_type{3,11},point_type{13,10},point_type{12,15},point_type{0,12}},std::vector<point_type>{point_type{14,13},point_type{10,0},point_type{2,2},point_type{5,10},point_type{8,6},point_type{3,3},point_type{15,8},point_type{10,15},point_type{12,5},point_type{6,2},point_type{12,10},point_type{14,0},point_type{11,1},point_type{4,5},point_type{2,11},point_type{9,3}},std::vector<point_type>{point_type{6,10},point_type{0,9},point_type{13,9},point_type{2,13},point_type{6,11},point_type{5,7},point_type{0,5},point_type{7,13},point_type{15,12},point_type{9,6},point_type{10,4},point_type{8,3},point_type{3,0},point_type{2,14},point_type{12,7},point_type{1,13}},std::vector<point_type>{point_type{14,8},point_type{15,11},point_type{5,5},point_type{3,4},point_type{14,9},point_type{6,12},point_type{0,0},point_type{12,3},point_type{0,6},point_type{10,5},point_type{12,8},point_type{11,5},point_type{15,1},point_type{1,15},point_type{1,3},point_type{4,11}},std::vector<point_type>{point_type{15,3},point_type{10,11},point_type{0,7},point_type{11,7},point_type{4,8},point_type{9,8},point_type{3,7},point_type{2,1},point_type{14,3},point_type{0,10},point_type{4,9},point_type{14,12},point_type{2,6},point_type{7,8},point_type{4,2},point_type{0,2}},std::vector<point_type>{point_type{14,7},point_type{9,12},point_type{9,4},point_type{14,11},point_type{1,11},point_type{4,6},point_type{12,12},point_type{6,4},point_type{8,10},point_type{4,4},point_type{10,14},point_type{10,9},point_type{7,0},point_type{5,6},point_type{8,8},point_type{14,2}},std::vector<point_type>{point_type{2,7},point_type{12,6},point_type{8,5},point_type{2,3},point_type{7,4},point_type{11,12},point_type{15,4},point_type{9,2},point_type{2,8},point_type{15,6},point_type{13,15},point_type{6,15},point_type{11,3},point_type{15,15},point_type{14,4},point_type{2,0}},std::vector<point_type>{point_type{12,13},point_type{6,0},point_type{7,3},point_type{9,9},point_type{0,14},point_type{15,5},point_type{9,7},point_type{10,1},point_type{0,1},point_type{11,11},point_type{13,14},point_type{12,1},point_type{1,5},point_type{3,8},point_type{1,14},point_type{6,14}},std::vector<point_type>{point_type{14,14},point_type{1,1},point_type{13,7},point_type{5,14},point_type{11,9},point_type{15,13},point_type{6,5},point_type{15,0},point_type{8,13},point_type{1,6},point_type{7,12},point_type{8,14},point_type{5,15},point_type{5,0},point_type{8,4},point_type{8,15}},std::vector<point_type>{point_type{3,5},point_type{0,15},point_type{12,14},point_type{8,2},point_type{5,3},point_type{7,11},point_type{7,1},point_type{1,10},point_type{11,15},point_type{4,12},point_type{10,13},point_type{8,11},point_type{2,15},point_type{4,1},point_type{5,2},point_type{4,13}},std::vector<point_type>{point_type{3,6},point_type{5,9},point_type{2,10},point_type{11,0},point_type{6,9},point_type{13,1},point_type{8,1},point_type{5,1},point_type{4,0},point_type{1,4},point_type{1,7},point_type{1,0},point_type{8,9},point_type{0,11},point_type{1,8},point_type{7,6}},std::vector<point_type>{point_type{6,7},point_type{15,2},point_type{11,13},point_type{2,5},point_type{9,15},point_type{8,7},point_type{5,11},point_type{4,3},point_type{14,10},point_type{10,10},point_type{7,5},point_type{4,15},point_type{9,5},point_type{13,11},point_type{0,13},point_type{6,1}},std::vector<point_type>{point_type{0,3},point_type{0,4},point_type{7,10},point_type{9,0},point_type{1,12},point_type{3,10},point_type{0,8},point_type{13,0},point_type{13,3},point_type{12,2},point_type{14,1},point_type{7,15},point_type{7,7},point_type{13,13},point_type{5,13},point_type{10,3}}
     };
     const auto size = std::pair<int, int>(matrix[0].size(), matrix.size());
+    constexpr int problem_id = 1;
+    const std::string player_id = "player_id";
     constexpr int selectable = 16;
     constexpr int cost_select = 10;
     constexpr int cost_change = 10;
-    const auto qdata = question_data(size, selectable, cost_select, cost_change, matrix);
-    algorithm()(qdata);
+    const auto qdata = question_data(problem_id, player_id, size, selectable, cost_select, cost_change, matrix);
+    auto a = algorithm();
+    a.reset(qdata);
+    a.get();
     return 0;
 }
 #endif
