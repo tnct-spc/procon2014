@@ -39,11 +39,19 @@ private:
     const point_type current_point(point_type const& point) const;
     inline bool is_sorted(point_type const& point) const;
     bool is_finished(std::vector<std::vector<point_type>> const& mat) const;
-    void sequential_move(point_type const& target, std::vector<HVDirection> const& directions);
-    void move_selecting(HVDirection const& direction);
     void move_target(point_type const& target, HVDirection const& direction);
     void move_to(point_type const& to);
-    const step_type move_bf(step_type step, HVDirection const& direction) const;
+
+    template <HVDirection T>
+    void move_selecting();
+
+    template <HVDirection First>
+    void sequential_move(point_type const& target);
+    template <HVDirection First, HVDirection Second, HVDirection... Rest>
+    void sequential_move(point_type const& target);
+
+    template <HVDirection T>
+    const step_type move_bf(step_type step) const;
 
     std::vector<std::vector<point_type>> matrix;
     std::unordered_set<point_type> sorted_points;
@@ -150,6 +158,108 @@ void algorithm::impl::process(boost::coroutines::coroutine<return_type>::push_ty
 {
     // 訳ありで転送するだけの関数
     (*this)(yield);
+}
+
+template <>
+void algorithm::impl::move_selecting<HVDirection::Up>()
+{
+    std::cout << "move_selecting<HVDirection::Up>" << std::endl;
+    point_type selecting_cur = current_point(selecting);
+    assert(selecting_cur.y > sorted_row);
+    std::swap(matrix[selecting_cur.y][selecting_cur.x], matrix[selecting_cur.y - 1][selecting_cur.x]);
+    answer.list.back().change_list.push_back(HVDirection::Up);
+#ifdef algorithm_debug
+    print();
+#endif
+}
+
+template <>
+void algorithm::impl::move_selecting<HVDirection::Right>()
+{
+    std::cout << "move_selecting<HVDirection::Right>" << std::endl;
+    point_type selecting_cur = current_point(selecting);
+    assert(selecting_cur.x < width - 1);
+    std::swap(matrix[selecting_cur.y][selecting_cur.x], matrix[selecting_cur.y][selecting_cur.x + 1]);
+    answer.list.back().change_list.push_back(HVDirection::Right);
+#ifdef algorithm_debug
+    print();
+#endif
+}
+
+template <>
+void algorithm::impl::move_selecting<HVDirection::Down>()
+{
+    std::cout << "move_selecting<HVDirection::Down>" << std::endl;
+    point_type selecting_cur = current_point(selecting);
+    assert(selecting_cur.y < height - 1);
+    std::swap(matrix[selecting_cur.y][selecting_cur.x], matrix[selecting_cur.y + 1][selecting_cur.x]);
+    answer.list.back().change_list.push_back(HVDirection::Down);
+#ifdef algorithm_debug
+    print();
+#endif
+}
+
+template <>
+void algorithm::impl::move_selecting<HVDirection::Left>()
+{
+    std::cout << "move_selecting<HVDirection::Left>" << std::endl;
+    point_type selecting_cur = current_point(selecting);
+    assert(selecting_cur.x > sorted_col);
+    std::swap(matrix[selecting_cur.y][selecting_cur.x], matrix[selecting_cur.y][selecting_cur.x - 1]);
+    answer.list.back().change_list.push_back(HVDirection::Left);
+#ifdef algorithm_debug
+    print();
+#endif
+}
+
+template <>
+const step_type algorithm::impl::move_bf<HVDirection::Up>(step_type step) const
+{
+    std::swap(step.matrix[step.selecting_cur.y][step.selecting_cur.x], step.matrix[step.selecting_cur.y - 1][step.selecting_cur.x]);
+    step.selecting_cur.y -= 1;
+    step.answer.list.back().change_list.push_back(HVDirection::Up);
+    return step;
+}
+
+template <>
+const step_type algorithm::impl::move_bf<HVDirection::Right>(step_type step) const
+{
+    std::swap(step.matrix[step.selecting_cur.y][step.selecting_cur.x], step.matrix[step.selecting_cur.y][step.selecting_cur.x + 1]);
+    step.selecting_cur.x += 1;
+    step.answer.list.back().change_list.push_back(HVDirection::Right);
+    return step;
+}
+
+template <>
+const step_type algorithm::impl::move_bf<HVDirection::Down>(step_type step) const
+{
+    std::swap(step.matrix[step.selecting_cur.y][step.selecting_cur.x], step.matrix[step.selecting_cur.y + 1][step.selecting_cur.x]);
+    step.selecting_cur.y += 1;
+    step.answer.list.back().change_list.push_back(HVDirection::Down);
+    return step;
+}
+
+template <>
+const step_type algorithm::impl::move_bf<HVDirection::Left>(step_type step) const
+{
+    std::swap(step.matrix[step.selecting_cur.y][step.selecting_cur.x], step.matrix[step.selecting_cur.y][step.selecting_cur.x - 1]);
+    step.selecting_cur.x -= 1;
+    step.answer.list.back().change_list.push_back(HVDirection::Left);
+    return step;
+}
+
+template <HVDirection First>
+void algorithm::impl::sequential_move(point_type const& target)
+{
+    move_selecting<First>();
+}
+
+template <HVDirection First, HVDirection Second, HVDirection... Rest>
+void algorithm::impl::sequential_move(point_type const& target)
+{
+    std::cout << "sequential_move" << std::endl;
+    sequential_move<First>(target);
+    sequential_move<Second, Rest...>(target);
 }
 
 const point_type algorithm::impl::current_point(point_type const& point) const
@@ -295,33 +405,33 @@ void algorithm::impl::greedy()
             // ターゲットの真の原座標が右端の場合
             if (current_point(selecting) == waypoint.up().left()) {
                 // selecting が仮の原座標の左上にいる場合
-                move_selecting(HVDirection::Right);
-                move_selecting(HVDirection::Down);
+                move_selecting<HVDirection::Right>();
+                move_selecting<HVDirection::Down>();
             } else {
                 if (current_point(selecting) == waypoint.down()) {
                     // selecting が仮の原座標の直下にいる場合
-                    move_selecting(HVDirection::Left);
-                    move_selecting(HVDirection::Up);
+                    move_selecting<HVDirection::Left>();
+                    move_selecting<HVDirection::Up>();
                 }
-                move_selecting(HVDirection::Up);
-                move_selecting(HVDirection::Right);
-                move_selecting(HVDirection::Down);
+                move_selecting<HVDirection::Up>();
+                move_selecting<HVDirection::Right>();
+                move_selecting<HVDirection::Down>();
             }
         } else if (target.y == height - 1) {
             // ターゲットの真の原座標が下端の場合
             if (current_point(selecting) == waypoint.left().up()) {
                 // selecting が仮の原座標の左上にいる場合
-                move_selecting(HVDirection::Down);
-                move_selecting(HVDirection::Right);
+                move_selecting<HVDirection::Down>();
+                move_selecting<HVDirection::Right>();
             } else {
                 if (current_point(selecting) == waypoint.right()) {
                     // selecting が仮の原座標の直右にいる場合
-                    move_selecting(HVDirection::Up);
-                    move_selecting(HVDirection::Left);
+                    move_selecting<HVDirection::Up>();
+                    move_selecting<HVDirection::Left>();
                 }
-                move_selecting(HVDirection::Left);
-                move_selecting(HVDirection::Down);
-                move_selecting(HVDirection::Right);
+                move_selecting<HVDirection::Left>();
+                move_selecting<HVDirection::Down>();
+                move_selecting<HVDirection::Right>();
             }
         }
 
@@ -364,50 +474,50 @@ void algorithm::impl::brute_force()
             if (current.selecting_cur.y == height - BFS_NUM) {
                 if (current.selecting_cur.x == width - BFS_NUM) {
                     // 右と下
-                    open.push(move_bf(current, HVDirection::Right));
-                    open.push(move_bf(current, HVDirection::Down));
+                    open.push(move_bf<HVDirection::Right>(current));
+                    open.push(move_bf<HVDirection::Down>(current));
                 } else if (current.selecting_cur.x == width - 1) {
                     // 左と下
-                    open.push(move_bf(current, HVDirection::Left));
-                    open.push(move_bf(current, HVDirection::Down));
+                    open.push(move_bf<HVDirection::Left>(current));
+                    open.push(move_bf<HVDirection::Down>(current));
                 } else {
                     // 左右下
-                    open.push(move_bf(current, HVDirection::Left));
-                    open.push(move_bf(current, HVDirection::Right));
-                    open.push(move_bf(current, HVDirection::Down));
+                    open.push(move_bf<HVDirection::Left>(current));
+                    open.push(move_bf<HVDirection::Right>(current));
+                    open.push(move_bf<HVDirection::Down>(current));
                 }
             } else if (current.selecting_cur.y == height - 1) {
                 if (current.selecting_cur.x == width - BFS_NUM) {
                     // 右と上
-                    open.push(move_bf(current, HVDirection::Right));
-                    open.push(move_bf(current, HVDirection::Up));
+                    open.push(move_bf<HVDirection::Right>(current));
+                    open.push(move_bf<HVDirection::Up>(current));
                 } else if (current.selecting_cur.x == width - 1) {
                     // 左と上
-                    open.push(move_bf(current, HVDirection::Left));
-                    open.push(move_bf(current, HVDirection::Up));
+                    open.push(move_bf<HVDirection::Left>(current));
+                    open.push(move_bf<HVDirection::Up>(current));
                 } else {
                     // 左右上
-                    open.push(move_bf(current, HVDirection::Left));
-                    open.push(move_bf(current, HVDirection::Right));
-                    open.push(move_bf(current, HVDirection::Up));
+                    open.push(move_bf<HVDirection::Left>(current));
+                    open.push(move_bf<HVDirection::Right>(current));
+                    open.push(move_bf<HVDirection::Up>(current));
                 }
             } else {
                 if (current.selecting_cur.x == width - BFS_NUM) {
                     // 右上下
-                    open.push(move_bf(current, HVDirection::Right));
-                    open.push(move_bf(current, HVDirection::Up));
-                    open.push(move_bf(current, HVDirection::Down));
+                    open.push(move_bf<HVDirection::Right>(current));
+                    open.push(move_bf<HVDirection::Up>(current));
+                    open.push(move_bf<HVDirection::Down>(current));
                 } else if (current.selecting_cur.x == width - 1) {
                     // 左上下
-                    open.push(move_bf(current, HVDirection::Left));
-                    open.push(move_bf(current, HVDirection::Up));
-                    open.push(move_bf(current, HVDirection::Down));
+                    open.push(move_bf<HVDirection::Left>(current));
+                    open.push(move_bf<HVDirection::Up>(current));
+                    open.push(move_bf<HVDirection::Down>(current));
                 } else {
                     // 四方
-                    open.push(move_bf(current, HVDirection::Up));
-                    open.push(move_bf(current, HVDirection::Right));
-                    open.push(move_bf(current, HVDirection::Down));
-                    open.push(move_bf(current, HVDirection::Left));
+                    open.push(move_bf<HVDirection::Up>(current));
+                    open.push(move_bf<HVDirection::Right>(current));
+                    open.push(move_bf<HVDirection::Down>(current));
+                    open.push(move_bf<HVDirection::Left>(current));
                 }
             }
             closed.insert(current);
@@ -419,53 +529,6 @@ void algorithm::impl::brute_force()
     }
 
     return;
-}
-
-const step_type algorithm::impl::move_bf(step_type step, HVDirection const& direction) const
-{
-    if (direction == HVDirection::Up) {
-        std::swap(step.matrix[step.selecting_cur.y][step.selecting_cur.x], step.matrix[step.selecting_cur.y - 1][step.selecting_cur.x]);
-        step.selecting_cur.y -= 1;
-    } else if (direction == HVDirection::Right) {
-        std::swap(step.matrix[step.selecting_cur.y][step.selecting_cur.x], step.matrix[step.selecting_cur.y][step.selecting_cur.x + 1]);
-        step.selecting_cur.x += 1;
-    } else if (direction == HVDirection::Down) {
-        std::swap(step.matrix[step.selecting_cur.y][step.selecting_cur.x], step.matrix[step.selecting_cur.y + 1][step.selecting_cur.x]);
-        step.selecting_cur.y += 1;
-    } else {
-        std::swap(step.matrix[step.selecting_cur.y][step.selecting_cur.x], step.matrix[step.selecting_cur.y][step.selecting_cur.x - 1]);
-        step.selecting_cur.x -= 1;
-    }
-    step.answer.list.back().change_list.push_back(direction);
-    return step;
-}
-
-void algorithm::impl::move_selecting(HVDirection const& direction)
-{
-    // selecting を指定された方向へ移動する
-#ifdef algorithm_debug
-    std::cout << "move_selecting direction = " << "URDL"[static_cast<int>(direction)] << std::endl;
-#endif
-
-    point_type selecting_cur = current_point(selecting);
-    if (direction == HVDirection::Up) {
-        assert(selecting_cur.y > sorted_row);
-        std::swap(matrix[selecting_cur.y][selecting_cur.x], matrix[selecting_cur.y - 1][selecting_cur.x]);
-    } else if (direction == HVDirection::Right) {
-        assert(selecting_cur.x < width - 1);
-        std::swap(matrix[selecting_cur.y][selecting_cur.x], matrix[selecting_cur.y][selecting_cur.x + 1]);
-    } else if (direction == HVDirection::Down) {
-        assert(selecting_cur.y < height - 1);
-        std::swap(matrix[selecting_cur.y][selecting_cur.x], matrix[selecting_cur.y + 1][selecting_cur.x]);
-    } else if (direction == HVDirection::Left) {
-        assert(selecting_cur.x > sorted_col);
-        std::swap(matrix[selecting_cur.y][selecting_cur.x], matrix[selecting_cur.y][selecting_cur.x - 1]);
-    }
-
-    answer.list.back().change_list.push_back(direction);
-#ifdef algorithm_debug
-    print();
-#endif
 }
 
 void algorithm::impl::move_target(point_type const& target, HVDirection const& direction)
@@ -543,23 +606,23 @@ void algorithm::impl::move_target(point_type const& target, HVDirection const& d
     if (direction == HVDirection::Up) {
         if (selecting_cur.up() == target_cur) {
             if (target_cur.x == width - 1) {
-                moving_process = {HVDirection::Left, HVDirection::Up, HVDirection::Up, HVDirection::Right, HVDirection::Down};
+                sequential_move<HVDirection::Left, HVDirection::Up, HVDirection::Up, HVDirection::Right, HVDirection::Down>(selecting_cur);
             } else {
-                moving_process = {HVDirection::Right, HVDirection::Up, HVDirection::Up, HVDirection::Left, HVDirection::Down};
+                sequential_move<HVDirection::Right, HVDirection::Up, HVDirection::Up, HVDirection::Left, HVDirection::Down>(selecting_cur);
             }
         } else if (selecting_cur.right() == target_cur) {
             if (is_sorted(selecting_cur.up())) {
-                moving_process = {HVDirection::Down, HVDirection::Right, HVDirection::Right, HVDirection::Up, HVDirection::Up, HVDirection::Left, HVDirection::Down};
+                sequential_move<HVDirection::Down, HVDirection::Right, HVDirection::Right, HVDirection::Up, HVDirection::Up, HVDirection::Left, HVDirection::Down>(selecting_cur);
             } else {
-                moving_process = {HVDirection::Up, HVDirection::Right, HVDirection::Down};
+                sequential_move<HVDirection::Up, HVDirection::Right, HVDirection::Down>(selecting_cur);
             }
         } else if (selecting_cur.down() == target_cur) {
-            moving_process = {HVDirection::Down};
+            sequential_move<HVDirection::Down>(selecting_cur);
         } else if (selecting_cur.left() == target_cur) {
             if (is_sorted(selecting_cur.up())) {
-                moving_process = {HVDirection::Down, HVDirection::Left, HVDirection::Left, HVDirection::Up, HVDirection::Up, HVDirection::Right, HVDirection::Down};
+                sequential_move<HVDirection::Down, HVDirection::Left, HVDirection::Left, HVDirection::Up, HVDirection::Up, HVDirection::Right, HVDirection::Down>(selecting_cur);
             } else {
-                moving_process = {HVDirection::Up, HVDirection::Left, HVDirection::Down};
+                sequential_move<HVDirection::Up, HVDirection::Left, HVDirection::Down>(selecting_cur);
             }
         } else {
             throw std::runtime_error("多分ここに入ることはありえないと思う");
@@ -567,47 +630,47 @@ void algorithm::impl::move_target(point_type const& target, HVDirection const& d
     } else if (direction == HVDirection::Right) {
         if (selecting_cur.up() == target_cur) {
             if (is_sorted(selecting_cur.right())) {
-                moving_process = {HVDirection::Left, HVDirection::Up, HVDirection::Up, HVDirection::Right, HVDirection::Right, HVDirection::Down, HVDirection::Left};
+                sequential_move<HVDirection::Left, HVDirection::Up, HVDirection::Up, HVDirection::Right, HVDirection::Right, HVDirection::Down, HVDirection::Left>(selecting_cur);
             } else {
-                moving_process = {HVDirection::Right, HVDirection::Up, HVDirection::Left};
+                sequential_move<HVDirection::Right, HVDirection::Up, HVDirection::Left>(selecting_cur);
             }
         } else if (selecting_cur.right() == target_cur) {
             if (target_cur.y == height - 1) {
-                moving_process = {HVDirection::Up, HVDirection::Right, HVDirection::Right, HVDirection::Down, HVDirection::Left};
+                sequential_move<HVDirection::Up, HVDirection::Right, HVDirection::Right, HVDirection::Down, HVDirection::Left>(selecting_cur);
             } else {
-                moving_process = {HVDirection::Down, HVDirection::Right, HVDirection::Right, HVDirection::Up, HVDirection::Left};
+                sequential_move<HVDirection::Down, HVDirection::Right, HVDirection::Right, HVDirection::Up, HVDirection::Left>(selecting_cur);
             }
         } else if (selecting_cur.down() == target_cur) {
             if (is_sorted(selecting_cur.right())) {
-                moving_process = {HVDirection::Left, HVDirection::Down, HVDirection::Down, HVDirection::Right, HVDirection::Right, HVDirection::Up, HVDirection::Left};
+                sequential_move<HVDirection::Left, HVDirection::Down, HVDirection::Down, HVDirection::Right, HVDirection::Right, HVDirection::Up, HVDirection::Left>(selecting_cur);
             } else {
-                moving_process = {HVDirection::Right, HVDirection::Down, HVDirection::Left};
+                sequential_move<HVDirection::Right, HVDirection::Down, HVDirection::Left>(selecting_cur);
             }
         } else if (selecting_cur.left() == target_cur) {
-            moving_process = {HVDirection::Left};
+            sequential_move<HVDirection::Left>(selecting_cur);
         } else {
             throw std::runtime_error("多分ここに入ることはありえないと思う");
         }
     } else if (direction == HVDirection::Down) {
         if (selecting_cur.up() == target_cur) {
-            moving_process = {HVDirection::Up};
+            sequential_move<HVDirection::Up>(selecting_cur);
         } else if (selecting_cur.right() == target_cur) {
             if (is_sorted(selecting_cur.down())) {
-                moving_process = {HVDirection::Up, HVDirection::Right, HVDirection::Right, HVDirection::Down, HVDirection::Down, HVDirection::Left, HVDirection::Up};
+                sequential_move<HVDirection::Up, HVDirection::Right, HVDirection::Right, HVDirection::Down, HVDirection::Down, HVDirection::Left, HVDirection::Up>(selecting_cur);
             } else {
-                moving_process = {HVDirection::Down, HVDirection::Right, HVDirection::Up};
+                sequential_move<HVDirection::Down, HVDirection::Right, HVDirection::Up>(selecting_cur);
             }
         } else if (selecting_cur.down() == target_cur) {
             if (target_cur.x == width - 1) {
-                moving_process = {HVDirection::Left, HVDirection::Down, HVDirection::Down, HVDirection::Right, HVDirection::Up};
+                sequential_move<HVDirection::Left, HVDirection::Down, HVDirection::Down, HVDirection::Right, HVDirection::Up>(selecting_cur);
             } else {
-                moving_process = {HVDirection::Right, HVDirection::Down, HVDirection::Down, HVDirection::Left, HVDirection::Up};
+                sequential_move<HVDirection::Right, HVDirection::Down, HVDirection::Down, HVDirection::Left, HVDirection::Up>(selecting_cur);
             }
         } else if (selecting_cur.left() == target_cur) {
             if (is_sorted(selecting_cur.down())) {
-                moving_process = {HVDirection::Up, HVDirection::Left, HVDirection::Left, HVDirection::Down, HVDirection::Down, HVDirection::Right, HVDirection::Up};
+                sequential_move<HVDirection::Up, HVDirection::Left, HVDirection::Left, HVDirection::Down, HVDirection::Down, HVDirection::Right, HVDirection::Up>(selecting_cur);
             } else {
-                moving_process = {HVDirection::Down, HVDirection::Left, HVDirection::Up};
+                sequential_move<HVDirection::Down, HVDirection::Left, HVDirection::Up>(selecting_cur);
             }
         } else {
             throw std::runtime_error("多分ここに入ることはありえないと思う");
@@ -615,53 +678,29 @@ void algorithm::impl::move_target(point_type const& target, HVDirection const& d
     } else if (direction == HVDirection::Left) {
         if (selecting_cur.up() == target_cur) {
             if (is_sorted(selecting_cur.left())) {
-                moving_process = {HVDirection::Right, HVDirection::Up, HVDirection::Up, HVDirection::Left, HVDirection::Left, HVDirection::Down, HVDirection::Right};
+                sequential_move<HVDirection::Right, HVDirection::Up, HVDirection::Up, HVDirection::Left, HVDirection::Left, HVDirection::Down, HVDirection::Right>(selecting_cur);
             } else {
-                moving_process = {HVDirection::Left, HVDirection::Up, HVDirection::Right};
+                sequential_move<HVDirection::Left, HVDirection::Up, HVDirection::Right>(selecting_cur);
             }
         } else if (selecting_cur.right() == target_cur) {
-            moving_process = {HVDirection::Right};
+            sequential_move<HVDirection::Right>(selecting_cur);
         } else if (selecting_cur.down() == target_cur) {
             if (is_sorted(selecting_cur.left())) {
-                moving_process = {HVDirection::Right, HVDirection::Down, HVDirection::Down, HVDirection::Left, HVDirection::Left, HVDirection::Up, HVDirection::Right};
+                sequential_move<HVDirection::Right, HVDirection::Down, HVDirection::Down, HVDirection::Left, HVDirection::Left, HVDirection::Up, HVDirection::Right>(selecting_cur);
             } else {
-                moving_process = {HVDirection::Left, HVDirection::Down, HVDirection::Right};
+                sequential_move<HVDirection::Left, HVDirection::Down, HVDirection::Right>(selecting_cur);
             }
         } else if (selecting_cur.left() == target_cur) {
             if (target_cur.y == height - 1) {
-                moving_process = {HVDirection::Up, HVDirection::Left, HVDirection::Left, HVDirection::Down, HVDirection::Right};
+                sequential_move<HVDirection::Up, HVDirection::Left, HVDirection::Left, HVDirection::Down, HVDirection::Right>(selecting_cur);
             } else {
-                moving_process = {HVDirection::Down, HVDirection::Left, HVDirection::Left, HVDirection::Up, HVDirection::Right};
+                sequential_move<HVDirection::Down, HVDirection::Left, HVDirection::Left, HVDirection::Up, HVDirection::Right>(selecting_cur);
             }
         } else {
             throw std::runtime_error("多分ここに入ることはありえないと思う");
         }
     }
-
-    sequential_move(selecting_cur, moving_process);
 }
-
-void algorithm::impl::sequential_move(point_type const& target, std::vector<HVDirection> const& directions)
-{
-    // move_selecting を連続して行う
-
-    // target の現在の座標
-    point_type target_cur = current_point(target);
-
-    for (auto direction : directions) {
-        move_selecting(direction);
-        if (direction == HVDirection::Up) {
-            target_cur = point_type{target_cur.x, target_cur.y - 1};
-        } else if (direction == HVDirection::Right) {
-            target_cur = point_type{target_cur.x + 1, target_cur.y};
-        } else if (direction == HVDirection::Down) {
-            target_cur = point_type{target_cur.x, target_cur.y + 1};
-        } else if (direction == HVDirection::Left) {
-            target_cur = point_type{target_cur.x - 1, target_cur.y};
-        }
-    }
-}
-
 void algorithm::impl::move_to(point_type const& to)
 {
     // selecting を to まで移動させる
@@ -676,86 +715,86 @@ void algorithm::impl::move_to(point_type const& to)
     // TODO: 同じコード使い回しだしどうにからないか
     if (direction == AllDirection::Up) {
         for (int i = diff.y; i < 0; ++i) {
-            move_selecting(HVDirection::Up);
+            move_selecting<HVDirection::Up>();
         }
     } else if (direction == AllDirection::UpperRight) {
         tmp = selecting_cur.up();
         if (is_sorted(matrix[tmp.y][tmp.x])) {
             for (int i = diff.x; i > 0; --i) {
-                move_selecting(HVDirection::Right);
+                move_selecting<HVDirection::Right>();
             }
             for (int i = diff.y; i < 0; ++i) {
-                move_selecting(HVDirection::Up);
+                move_selecting<HVDirection::Up>();
             }
         } else {
             for (int i = diff.y; i < 0; ++i) {
-                move_selecting(HVDirection::Up);
+                move_selecting<HVDirection::Up>();
             }
             for (int i = diff.x; i > 0; --i) {
-                move_selecting(HVDirection::Right);
+                move_selecting<HVDirection::Right>();
             }
         }
     } else if (direction == AllDirection::Right) {
         for (int i = diff.x; i > 0; --i) {
-            move_selecting(HVDirection::Right);
+            move_selecting<HVDirection::Right>();
         }
     } else if (direction == AllDirection::DownerRight) {
         tmp = selecting_cur.down();
         if (is_sorted(matrix[tmp.y][tmp.x])) {
             for (int i = diff.x; i > 0; --i) {
-                move_selecting(HVDirection::Right);
+                move_selecting<HVDirection::Right>();
             }
             for (int i = diff.y; i > 0; --i) {
-                move_selecting(HVDirection::Down);
+                move_selecting<HVDirection::Down>();
             }
         } else {
             for (int i = diff.y; i > 0; --i) {
-                move_selecting(HVDirection::Down);
+                move_selecting<HVDirection::Down>();
             }
             for (int i = diff.x; i > 0; --i) {
-                move_selecting(HVDirection::Right);
+                move_selecting<HVDirection::Right>();
             }
         }
     } else if (direction == AllDirection::Down) {
         for (int i = diff.y; i > 0; --i) {
-            move_selecting(HVDirection::Down);
+            move_selecting<HVDirection::Down>();
         }
     } else if (direction == AllDirection::DownerLeft) {
         tmp = selecting_cur.down();
         if (is_sorted(matrix[tmp.y][tmp.x])) {
             for (int i = diff.x; i < 0; ++i) {
-                move_selecting(HVDirection::Left);
+                move_selecting<HVDirection::Left>();
             }
             for (int i = diff.y; i > 0; --i) {
-                move_selecting(HVDirection::Down);
+                move_selecting<HVDirection::Down>();
             }
         } else {
             for (int i = diff.y; i > 0; --i) {
-                move_selecting(HVDirection::Down);
+                move_selecting<HVDirection::Down>();
             }
             for (int i = diff.x; i < 0; ++i) {
-                move_selecting(HVDirection::Left);
+                move_selecting<HVDirection::Left>();
             }
         }
     } else if (direction == AllDirection::Left) {
         for (int i = diff.x; i < 0; ++i) {
-            move_selecting(HVDirection::Left);
+            move_selecting<HVDirection::Left>();
         }
     } else if (direction == AllDirection::UpperLeft) {
         tmp = selecting_cur.up();
         if (is_sorted(matrix[tmp.y][tmp.x])) {
             for (int i = diff.x; i < 0; ++i) {
-                move_selecting(HVDirection::Left);
+                move_selecting<HVDirection::Left>();
             }
             for (int i = diff.y; i < 0; ++i) {
-                move_selecting(HVDirection::Up);
+                move_selecting<HVDirection::Up>();
             }
         } else {
             for (int i = diff.y; i < 0; ++i) {
-                move_selecting(HVDirection::Up);
+                move_selecting<HVDirection::Up>();
             }
             for (int i = diff.x; i < 0; ++i) {
-                move_selecting(HVDirection::Left);
+                move_selecting<HVDirection::Left>();
             }
         }
     } else {
@@ -816,7 +855,7 @@ inline void algorithm::impl::print() const
 
 #ifdef algorithm_debug
 // 検証用main
-// g++ -std=c++11 -I../include algorithm.cpp
+// g++ -std=c++11 -I../include -lboost_system -lboost_coroutine
 int main(int argc, char* argv[])
 {
     const auto matrix = std::vector<std::vector<point_type>>{
@@ -829,9 +868,9 @@ int main(int argc, char* argv[])
     constexpr int cost_select = 10;
     constexpr int cost_change = 10;
     const auto qdata = question_data(problem_id, player_id, size, selectable, cost_select, cost_change, matrix);
-    auto a = algorithm();
-    a.reset(qdata);
-    a.get();
+    algorithm algo;
+    algo.reset(qdata);
+    const auto answer = algo.get();
     return 0;
 }
 #endif

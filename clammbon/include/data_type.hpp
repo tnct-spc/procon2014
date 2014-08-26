@@ -163,7 +163,7 @@ struct question_raw_data : private boost::noncopyable
     std::pair<int,int> size; // x * y
     int max_brightness; // 最大輝度
     image_type pixels;
-    
+
     question_raw_data()
     {
     }
