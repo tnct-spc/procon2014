@@ -70,8 +70,11 @@ int main()
     analyzer analyze;
     auto const data = analyze(1, "test token");
 
-    algorithm algorithm;
-    algorithm(data);
+    algorithm algo;
+    algo.reset(data);
+
+    auto const answer = algo.get();
+    // 送信処理をしたり，結果を見て再実行(algo.get())したり．
 
     return 0;
 }

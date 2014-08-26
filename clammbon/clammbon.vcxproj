@@ -66,26 +66,30 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>$(ProjectDir)include;C:\boost\include\boost-1_55;$(IncludePath);C:\fltk-1.3.2;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)include;$(SolutionDir)clammbon\include;$(LIBRARIES_INCLUDE);$(IncludePath)</IncludePath>
     <OutDir>$(SolutionDir)lib\</OutDir>
     <IntDir>obj\$(Configuration)\</IntDir>
     <TargetName>$(ProjectName)d</TargetName>
+    <LibraryPath>$(SolutionDir)lib;$(LIBRARIES_LIB_X86_DEBUG);$(LIBRARIES_LIB);$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(ProjectDir)include;C:\boost\include\boost-1_55;$(IncludePath);C:\fltk-1.3.2;$(IncludePath);C:\opencv\build\include</IncludePath>
+    <IncludePath>$(ProjectDir)include;$(SolutionDir)clammbon\include;$(LIBRARIES_INCLUDE);$(IncludePath)</IncludePath>
     <OutDir>$(SolutionDir)lib\</OutDir>
     <IntDir>obj\$(Configuration)\</IntDir>
     <TargetName>$(ProjectName)d</TargetName>
+    <LibraryPath>$(SolutionDir)lib;$(LIBRARIES_LIB_X64_DEBUG);$(LIBRARIES_LIB);$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>$(SolutionDir)lib\</OutDir>
     <IntDir>obj\$(Configuration)\</IntDir>
-    <IncludePath>$(ProjectDir)include;C:\boost\include\boost-1_55;$(IncludePath);C:\fltk-1.3.2;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)include;$(SolutionDir)clammbon\include;$(LIBRARIES_INCLUDE);$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)lib;$(LIBRARIES_LIB_X86_RELEASE);$(LIBRARIES_LIB);$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(SolutionDir)lib\</OutDir>
     <IntDir>obj\$(Configuration)\</IntDir>
-    <IncludePath>$(ProjectDir)include;C:\boost\include\boost-1_55;$(IncludePath);C:\fltk-1.3.2;$(IncludePath);C:\opencv\build\include</IncludePath>
+    <IncludePath>$(ProjectDir)include;$(SolutionDir)clammbon\include;$(LIBRARIES_INCLUDE);$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)lib;$(LIBRARIES_LIB_X64_RELEASE);$(LIBRARIES_LIB);$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -93,6 +97,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -104,6 +109,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -117,6 +123,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -132,6 +139,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
