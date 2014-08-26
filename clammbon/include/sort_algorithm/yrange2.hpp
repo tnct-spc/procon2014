@@ -20,7 +20,7 @@ private:
 	//場を評価する関数
 	uint64_t yrange2::form_evaluate(std::vector<point_type> matrix);
 	//縦入れ替え
-	void yrange2::vertical_replacement(return_type& matrix);
+	void yrange2::column_replacement(return_type& matrix);
 	//横入れ替え
 	void yrange2::horizontal_replacement(return_type& matrix);
 

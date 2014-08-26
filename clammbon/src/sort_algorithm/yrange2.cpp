@@ -46,7 +46,7 @@ uint64_t yrange2::form_evaluate(std::vector<point_type>  matrix)
 }
 
 /*縦入れ替え*/
-void yrange2::vertical_replacement(return_type& matrix)
+void yrange2::column_replacement(return_type& matrix)
 {
 	const int sepx = data_.split_num.first;
 	const int sepy = data_.split_num.second;
@@ -70,13 +70,13 @@ void yrange2::vertical_replacement(return_type& matrix)
 	}
 }
 
-/*横入れ替え*//*
+/*横入れ替え*/
 void yrange2::horizontal_replacement(return_type& matrix)
 {
 	int const sepx = data_.split_num.first;
 	int const sepy = data_.split_num.second;
-	uint64_t good_val;
-	std::vector<std::vector<int> > matrix_good(sepx, (sepx, std::vector<int>(sepy)));
+	std::uint_fast64_t good_val;
+	std::vector<point_type>good_matrix;
 	int temp_val;
 
 	matrix_good = matrix;
@@ -95,7 +95,6 @@ void yrange2::horizontal_replacement(return_type& matrix)
 	}
 	matrix = matrix_good;
 }
-*/
 
 yrange2::yrange2(question_raw_data const& data, compared_type const& comp)
     : data_(data), comp_(comp), adjacent_data_(select_minimum(comp))
