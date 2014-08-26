@@ -44,33 +44,29 @@ uint64_t yrange2::form_evaluate(std::vector<point_type>  matrix)
 	}
 	return s;
 }
-/*
+
+/*縦入れ替え*/
 void yrange2::vertical_replacement(return_type& matrix)
 {
 	const int sepx = data_.split_num.first;
 	const int sepy = data_.split_num.second;
 	std::uint_fast64_t good_val;
 	std::vector<point_type>good_matrix;
-	std::vector<point_type> temp_vec;
 
-	for (auto sort_matrix : matrix){
+	for (auto& sort_matrix : matrix){
 		good_matrix = sort_matrix;
 		good_val = form_evaluate(good_matrix);
-
 		for (int i = 0; i < sepx; i++){
-
-			temp_vec = matrix[sepy - 1];
-			matrix.insert(matrix.begin(), temp_vec);
-			matrix.erase(matrix.end() - 1);
-
-			if (good_val>form_evaluate(matrix)){
-				good_val = form_evaluate(matrix);
-				matrix_good = matrix;
+			for (int j = 0; j < sepy; j++){
+				sort_matrix.insert(sort_matrix.begin()+j*sepx, sort_matrix[(j + 1)*sepx]);
+				sort_matrix.erase(sort_matrix.begin() + sepx);
 			}
-
+			if (good_val>form_evaluate(sort_matrix)){
+				good_val = form_evaluate(sort_matrix);
+				good_matrix = sort_matrix;
+			}
 		}
-		matrix = matrix_good;
-
+		sort_matrix = good_matrix;
 	}
 }
 
