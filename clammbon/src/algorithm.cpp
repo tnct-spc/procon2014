@@ -163,7 +163,6 @@ void algorithm::impl::process(boost::coroutines::coroutine<return_type>::push_ty
 template <>
 void algorithm::impl::move_selecting<HVDirection::Up>()
 {
-    std::cout << "move_selecting<HVDirection::Up>" << std::endl;
     point_type selecting_cur = current_point(selecting);
     assert(selecting_cur.y > sorted_row);
     std::swap(matrix[selecting_cur.y][selecting_cur.x], matrix[selecting_cur.y - 1][selecting_cur.x]);
@@ -176,7 +175,6 @@ void algorithm::impl::move_selecting<HVDirection::Up>()
 template <>
 void algorithm::impl::move_selecting<HVDirection::Right>()
 {
-    std::cout << "move_selecting<HVDirection::Right>" << std::endl;
     point_type selecting_cur = current_point(selecting);
     assert(selecting_cur.x < width - 1);
     std::swap(matrix[selecting_cur.y][selecting_cur.x], matrix[selecting_cur.y][selecting_cur.x + 1]);
@@ -189,7 +187,6 @@ void algorithm::impl::move_selecting<HVDirection::Right>()
 template <>
 void algorithm::impl::move_selecting<HVDirection::Down>()
 {
-    std::cout << "move_selecting<HVDirection::Down>" << std::endl;
     point_type selecting_cur = current_point(selecting);
     assert(selecting_cur.y < height - 1);
     std::swap(matrix[selecting_cur.y][selecting_cur.x], matrix[selecting_cur.y + 1][selecting_cur.x]);
@@ -202,7 +199,6 @@ void algorithm::impl::move_selecting<HVDirection::Down>()
 template <>
 void algorithm::impl::move_selecting<HVDirection::Left>()
 {
-    std::cout << "move_selecting<HVDirection::Left>" << std::endl;
     point_type selecting_cur = current_point(selecting);
     assert(selecting_cur.x > sorted_col);
     std::swap(matrix[selecting_cur.y][selecting_cur.x], matrix[selecting_cur.y][selecting_cur.x - 1]);
@@ -257,7 +253,6 @@ void algorithm::impl::sequential_move(point_type const& target)
 template <HVDirection First, HVDirection Second, HVDirection... Rest>
 void algorithm::impl::sequential_move(point_type const& target)
 {
-    std::cout << "sequential_move" << std::endl;
     sequential_move<First>(target);
     sequential_move<Second, Rest...>(target);
 }
@@ -534,9 +529,6 @@ void algorithm::impl::brute_force()
 void algorithm::impl::move_target(point_type const& target, HVDirection const& direction)
 {
     // selecting の操作によって原座標が target である断片画像を指定の方向へ移動させる.
-#ifdef algorithm_debug
-    std::cout << "move_target target = " << target << " direction = " << "URDL"[static_cast<int>(direction)] << std::endl;
-#endif
 
     // selecting の現在の座標
     point_type selecting_cur = current_point(selecting);
@@ -832,23 +824,6 @@ inline void algorithm::impl::print() const
         }
         std::cout << std::endl;
     }
-    /*
-    int score_select = answer.list.size() * cost_select;
-    int score_change = 0;
-    for (auto step : answer.list) {
-        score_change += step.change_list.size() * cost_change;
-    }
-    std::cout << std::endl;
-    std::cout << boost::format("score = %1% (select = %2%, change = %3%)") % (score_select + score_change) % score_select % score_change << std::endl;
-    std::cout << "sorted : [ ";
-    for (auto point : sorted_points) {
-        std::cout << point << " ";
-    }
-    std::cout << "]" << std::endl;
-    std::cout << std::endl;
-    std::cout << "answer:" << std::endl;
-    std::cout << answer.str();
-    */
     std::cin.ignore();
 }
 #endif
