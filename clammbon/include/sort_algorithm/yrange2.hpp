@@ -22,7 +22,7 @@ private:
 	//縦入れ替え
 	void yrange2::column_replacement(return_type& matrix);
 	//横入れ替え
-	void yrange2::horizontal_replacement(return_type& matrix);
+	void yrange2::row_replacement(return_type& matrix);
 
 public:
     // 泣きのポインタ渡し

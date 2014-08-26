@@ -71,7 +71,7 @@ void yrange2::column_replacement(return_type& matrix)
 }
 
 /*横入れ替え*/
-void yrange2::horizontal_replacement(return_type& matrix)
+void yrange2::row_replacement(return_type& matrix)
 {
 	int const sepx = data_.split_num.first;
 	int const sepy = data_.split_num.second;
@@ -79,21 +79,21 @@ void yrange2::horizontal_replacement(return_type& matrix)
 	std::vector<point_type>good_matrix;
 	int temp_val;
 
-	matrix_good = matrix;
-	good_val = form_evaluate(matrix);
-
-	for (int i = 0; i < sepy; i++){
-		for (int j = 0; j<sepx; j++){
-			temp_val = matrix[j][sepy - 1];
-			matrix[j].insert(matrix[j].begin(), temp_val);
-			matrix[j].erase(matrix[j].end() - 1);
+	for (auto& sort_matrix : matrix){
+		good_matrix = sort_matrix;
+		good_val = form_evaluate(good_matrix);
+		for (int i = 0; i < sepx; i++){
+			for (int j = 0; j < sepy; j++){
+				std::copy(sort_matrix.begin(), sort_matrix.begin() + sepx,std::back_inserter(sort_matrix));
+				sort_matrix.erase(sort_matrix.begin(), sort_matrix.begin() + sepx);
+			}
+			if (good_val>form_evaluate(sort_matrix)){
+				good_val = form_evaluate(sort_matrix);
+				good_matrix = sort_matrix;
+			}
 		}
-		if (good_val>form_evaluate(matrix)){
-			good_val = form_evaluate(matrix);
-			matrix_good = matrix;
-		}
+		sort_matrix = good_matrix;
 	}
-	matrix = matrix_good;
 }
 
 yrange2::yrange2(question_raw_data const& data, compared_type const& comp)
