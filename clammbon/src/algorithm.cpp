@@ -338,40 +338,40 @@ void algorithm::impl::greedy()
             do {
                 if (i % 2 == 0 && !is_sorted(current_point(target).up())) {
                     move_target(target, HVDirection::Up);
-                    ++i;
                 } else if (!is_sorted(current_point(target).right())) {
                     move_target(target, HVDirection::Right);
                 }
+                ++i;
             } while (current_point(target).direction(waypoint) == AllDirection::UpperRight);
         } else if (current_point(target).direction(waypoint) == AllDirection::DownerRight) {
             i = 0;
             do {
                 if (i % 2 == 0 && !is_sorted(current_point(target).down())) {
                     move_target(target, HVDirection::Down);
-                    ++i;
                 } else if (!is_sorted(current_point(target).right())) {
                     move_target(target, HVDirection::Right);
                 }
+                ++i;
             } while (current_point(target).direction(waypoint) == AllDirection::DownerRight);
         } else if (current_point(target).direction(waypoint) == AllDirection::DownerLeft) {
             i = 0;
             do {
                 if (i % 2 == 0 && !is_sorted(current_point(target).down())) {
                     move_target(target, HVDirection::Down);
-                    ++i;
                 } else if (!is_sorted(current_point(target).left())) {
                     move_target(target, HVDirection::Left);
                 }
+                ++i;
             } while (current_point(target).direction(waypoint) == AllDirection::DownerLeft);
         } else if (current_point(target).direction(waypoint) == AllDirection::UpperLeft) {
             i = 0;
             do {
                 if (i % 2 == 0 && !is_sorted(current_point(target).up())) {
                     move_target(target, HVDirection::Up);
-                    ++i;
                 } else if (!is_sorted(current_point(target).left())) {
                     move_target(target, HVDirection::Left);
                 }
+                ++i;
             } while (current_point(target).direction(waypoint) == AllDirection::UpperLeft);
         }
 
