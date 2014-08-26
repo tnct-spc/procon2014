@@ -17,6 +17,13 @@ private:
     // 指定した範囲の配列の和を返す
     int array_sum(return_type const& array_, int const x, int const y, int const height, int const width) const;
 
+	//場を評価する関数
+	uint64_t yrange2::form_evaluate(std::vector<point_type> matrix);
+	//縦入れ替え
+	void yrange2::vertical_replacement(return_type& matrix);
+	//横入れ替え
+	void yrange2::horizontal_replacement(return_type& matrix);
+
 public:
     // 泣きのポインタ渡し
     yrange2(question_raw_data const& data, compared_type const& comp);

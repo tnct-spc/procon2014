@@ -4,6 +4,7 @@
 #endif
 
 #include <vector>
+#include <algorithm>
 #include <data_type.hpp>
 #include <sort_algorithm/adjacent.hpp>
 #include <sort_algorithm/compare.hpp>
@@ -28,6 +29,77 @@ int yrange2::array_sum(return_type const& array_, int const x, int const y, int 
     }
     return sum;
 }
+
+/*場を評価する関数*/
+uint64_t yrange2::form_evaluate(std::vector<point_type>  matrix)
+{
+	const int sepx = data_.split_num.first;
+	const int sepy = data_.split_num.second;
+	unsigned _int64 s = 0;
+	int i, j;
+
+	for (i = 0; i < sepx*sepy; i++){
+		if (i%sepx != 0)      s += comp_[matrix[i].y][matrix[i].x][matrix[i + 1   ].y][matrix[i + 1   ].x].right;
+		if (i>sepx*(sepy - 1))s += comp_[matrix[i].y][matrix[i].x][matrix[i + sepx].y][matrix[i + sepx].x].down;
+	}
+	return s;
+}
+/*
+void yrange2::vertical_replacement(return_type& matrix)
+{
+	const int sepx = data_.split_num.first;
+	const int sepy = data_.split_num.second;
+	std::uint_fast64_t good_val;
+	std::vector<point_type>good_matrix;
+	std::vector<point_type> temp_vec;
+
+	for (auto sort_matrix : matrix){
+		good_matrix = sort_matrix;
+		good_val = form_evaluate(good_matrix);
+
+		for (int i = 0; i < sepx; i++){
+
+			temp_vec = matrix[sepy - 1];
+			matrix.insert(matrix.begin(), temp_vec);
+			matrix.erase(matrix.end() - 1);
+
+			if (good_val>form_evaluate(matrix)){
+				good_val = form_evaluate(matrix);
+				matrix_good = matrix;
+			}
+
+		}
+		matrix = matrix_good;
+
+	}
+}
+
+/*横入れ替え*//*
+void yrange2::horizontal_replacement(return_type& matrix)
+{
+	int const sepx = data_.split_num.first;
+	int const sepy = data_.split_num.second;
+	uint64_t good_val;
+	std::vector<std::vector<int> > matrix_good(sepx, (sepx, std::vector<int>(sepy)));
+	int temp_val;
+
+	matrix_good = matrix;
+	good_val = form_evaluate(matrix);
+
+	for (int i = 0; i < sepy; i++){
+		for (int j = 0; j<sepx; j++){
+			temp_val = matrix[j][sepy - 1];
+			matrix[j].insert(matrix[j].begin(), temp_val);
+			matrix[j].erase(matrix[j].end() - 1);
+		}
+		if (good_val>form_evaluate(matrix)){
+			good_val = form_evaluate(matrix);
+			matrix_good = matrix;
+		}
+	}
+	matrix = matrix_good;
+}
+*/
 
 yrange2::yrange2(question_raw_data const& data, compared_type const& comp)
     : data_(data), comp_(comp), adjacent_data_(select_minimum(comp))
@@ -159,7 +231,12 @@ std::vector<std::vector<std::vector<point_type>>> yrange2::operator() ()
 	// unique()を使う準備としてソートが必要
 	std::sort(answer.begin(), answer.end());
 	// unique()をしただけでは後ろにゴミが残るので、eraseで削除する
-	answer.erase(unique(answer.begin(), answer.end()), answer.end());
+	answer.erase(std::unique(answer.begin(), answer.end()), answer.end());
+
+//
+//yrange2.5
+//
+	
 
 #ifdef _DEBUG
     std::cout << "There are " << answer.size() << " solutions" << std::endl;
@@ -179,5 +256,4 @@ std::vector<std::vector<std::vector<point_type>>> yrange2::operator() ()
 #endif
 
     return answer;
-} // waaaai
-
+}
