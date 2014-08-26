@@ -23,6 +23,8 @@ private:
 	void yrange2::column_replacement(return_type& matrix);
 	//横入れ替え
 	void yrange2::row_replacement(return_type& matrix);
+	//指定された範囲内の問題画像の種類を返す関数
+	int get_kind_num(std::vector<point_type> matrix, int x, int y);
 
 public:
     // 泣きのポインタ渡し

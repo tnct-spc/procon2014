@@ -96,6 +96,22 @@ void yrange2::row_replacement(return_type& matrix)
 	}
 }
 
+//指定された範囲内の問題画像の種類を返す関数
+int yrange2::get_kind_num(std::vector<std::vector<point_type>> matrix, int x, int y){
+	int const sepx = data_.split_num.first;
+	int const sepy = data_.split_num.second;
+
+	std::vector<point_type> temp;
+	for (int i; i < sepy; i++){
+		for (int j; j < sepx; j++){
+			temp.push_back(matrix[j][i]);
+		}
+	}
+	std::sort(temp.begin(), temp.end());
+	temp.erase(std::unique(temp.begin(), temp.end()), temp.end());
+	return temp.size();
+}
+
 yrange2::yrange2(question_raw_data const& data, compared_type const& comp)
     : data_(data), comp_(comp), adjacent_data_(select_minimum(comp))
 {
@@ -211,7 +227,7 @@ std::vector<std::vector<std::vector<point_type>>> yrange2::operator() ()
         
         for(int y=0; y<height; ++y) for(int x=0; x<width; ++x)
         {
-            if(array_sum(sorted_matrix, x, y, height, width) == ((width*height-1)*(width*height)/2))
+			if (array_sum(sorted_matrix, x, y, height, width) == ((width*height - 1)*(width*height) / 2) && get_kind_num(sorted_matrix, x, y) == width*height)
             {
                 for(int i=0; i<height; ++i) for(int j=0; j<width; ++j)
                 {
