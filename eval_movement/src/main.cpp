@@ -2,6 +2,7 @@
 #include <fstream>
 #include "algorithm.hpp"
 #include "data_type.hpp"
+#include "test_tool.hpp"
 
 int main(int argc, char* argv[])
 {
@@ -67,12 +68,17 @@ int main(int argc, char* argv[])
         algorithm algo;
         algo.reset(question);     // テストデータのセット
 
+        test_tool::emulator emu(question);
+
         int counter = 0;
         while(auto first_result = algo.get())  // 解答が受け取れる間ループ
         {
-            // TODO: 評価
+            // 評価
+            auto const evaluate = emu.start(first_result.get());
 
             // TODO: 書出
+            // とりあえず，標準出力へ
+            std::cout << "再試行 " << counter << ": " << "Wrong=" << evaluate.wrong << ",Cost=" << evaluate.cost << std::endl;;
 
             ++counter; // テストなので解答回数をカウントする必要あるかなと
         }
