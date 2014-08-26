@@ -150,14 +150,16 @@ std::vector<std::vector<std::vector<point_type>>> yrange2::operator() ()
                 {
                     one_answer[i][j] = sorted_matrix[y + i][x + j];
                 }
-
                 answer.push_back(std::move(one_answer));
-                goto OUT;
             }
         }
-    OUT:
-        continue;
     }
+
+	//現段階で重複しているものは1つに絞る
+	// unique()を使う準備としてソートが必要
+	std::sort(answer.begin(), answer.end());
+	// unique()をしただけでは後ろにゴミが残るので、eraseで削除する
+	answer.erase(unique(answer.begin(), answer.end()), answer.end());
 
 #ifdef _DEBUG
     std::cout << "There are " << answer.size() << " solutions" << std::endl;
@@ -177,4 +179,5 @@ std::vector<std::vector<std::vector<point_type>>> yrange2::operator() ()
 #endif
 
     return answer;
-}
+} // waaaai
+
