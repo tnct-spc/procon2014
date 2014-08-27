@@ -6,6 +6,9 @@
 
 int main(int argc, char* argv[])
 {
+    // スコープ長いけれど……
+    std::string const output_filename = "report_movement";
+
     if(argc != 2 || argc != 4)\
     {
         std::cout << "Usage: " << argv[0] << "試行回数 [分割数タテ 分割数ヨコ]" << std::endl;
@@ -68,7 +71,24 @@ int main(int argc, char* argv[])
         algorithm algo;
         algo.reset(question);     // テストデータのセット
 
+        // エミュレータ起動
         test_tool::emulator emu(question);
+
+        // 評価保存先ファイルを開き，問題データを書き込む
+        std::ofstream ofs(output_filename + std::to_string(n) + ".csv");
+        ofs << "[Question]\n";
+        for(auto const& line : block)
+        {
+            for(auto const& elem : line)
+            {
+                ofs << R"(")" << elem.x << "," << elem.y << R"(", )";
+            }
+            ofs << "\n";
+        }
+        ofs << "\n";
+
+        ofs << "[Answer]\n";
+        ofs << "回数,間違い位置数,コスト\n";
 
         int counter = 0;
         while(auto first_result = algo.get())  // 解答が受け取れる間ループ
@@ -76,9 +96,8 @@ int main(int argc, char* argv[])
             // 評価
             auto const evaluate = emu.start(first_result.get());
 
-            // TODO: 書出
-            // とりあえず，標準出力へ
-            std::cout << "再試行 " << counter << ": " << "Wrong=" << evaluate.wrong << ",Cost=" << evaluate.cost << std::endl;;
+            // 書出
+            ofs << counter+1 << "," <<evaluate.wrong << "," << evaluate.cost << "\n";
 
             ++counter; // テストなので解答回数をカウントする必要あるかなと
         }
