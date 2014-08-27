@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <random>
 #include "algorithm.hpp"
 #include "data_type.hpp"
 #include "test_tool.hpp"
@@ -12,7 +13,8 @@ int main(int argc, char* argv[])
     if(argc != 2 || argc != 4)\
     {
         std::cout << "Usage: " << argv[0] << "試行回数 [分割数タテ 分割数ヨコ]" << std::endl;
-        std::quick_exit(-1);
+        //std::quick_exit(-1);
+        return -1;
     }
 
     bool const is_fixed  = argc == 4;
