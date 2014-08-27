@@ -1,11 +1,14 @@
 buildtype := release
 
+.PHONY: all clean test
+
 all :
 	cd clammbon     ; buildtype=$(buildtype) make
 	cd resolver     ; buildtype=$(buildtype) make
 	cd eval_movement; buildtype=$(buildtype) make
 	cd eval_position; buildtype=$(buildtype) make
 	cd eval_server  ; buildtype=$(buildtype) make
+	cd test         ; buildtype=$(buildtype) make
 
 clean :
 	cd clammbon     ; buildtype=$(buildtype) make clean
@@ -13,5 +16,11 @@ clean :
 	cd eval_movement; buildtype=$(buildtype) make clean
 	cd eval_position; buildtype=$(buildtype) make clean
 	cd eval_server  ; buildtype=$(buildtype) make clean
+	cd test         ; buildtype=$(buildtype) make clean
+
+test :
+	cd clammbon     ; buildtype=$(buildtype) make
+	cd test         ; buildtype=$(buildtype) make
+	./bin/$(buildtype)/test
 
 # vim:set tabstop=4 noexpendtab
