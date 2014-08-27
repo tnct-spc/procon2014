@@ -1,4 +1,7 @@
-﻿#include <future>
+﻿// MS WARNINGS MACRO
+#define _SCL_SECURE_NO_WARNINGS
+
+#include <future>
 #include <memory>
 #include <unordered_map>
 #include <boost/bind.hpp>
