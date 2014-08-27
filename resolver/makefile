@@ -3,7 +3,7 @@ include ../makefile.in
 OUTDIR := ../bin/$(buildtype)
 TARGET = procon
 
-SRCS := src/main.cpp src/network.cpp
+SRCS := src/main.cpp
 PROG := $(OUTDIR)/$(TARGET)
 OBJS := $(SRCS:src/%.cpp=obj/$(buildtype)/%.o)
 DEPS := $(SRCS:src/%.cpp=obj/$(buildtype)/%.d)

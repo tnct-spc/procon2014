@@ -7,7 +7,7 @@ else ifeq ($(buildtype),debug)
 	TARGET = libclammbond.a
 endif
 
-SRCS := src/splitter.cpp src/ppm_reader.cpp src/algorithm.cpp src/gui.cpp src/sort_algorithm/adjacent.cpp src/sort_algorithm/compare.cpp src/test_tool.cpp src/sort_algorithm/genetic.cpp src/sort_algorithm/yrange2.cpp
+SRCS := src/splitter.cpp src/ppm_reader.cpp src/algorithm.cpp src/network.cpp src/gui.cpp src/sort_algorithm/adjacent.cpp src/sort_algorithm/compare.cpp src/test_tool.cpp src/sort_algorithm/genetic.cpp src/sort_algorithm/yrange2.cpp
 PROG := $(OUTDIR)/$(TARGET)
 OBJS := $(SRCS:src/%.cpp=obj/$(buildtype)/%.o)
 DEPS := $(SRCS:src/%.cpp=obj/$(buildtype)/%.d)
