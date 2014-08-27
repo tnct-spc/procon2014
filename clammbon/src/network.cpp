@@ -7,6 +7,7 @@
 #include <boost/bind.hpp>
 #include <boost/format.hpp>
 #include <boost/network.hpp>
+#include <boost/range/algorithm.hpp>
 #include "network.hpp"
 
 namespace network
@@ -49,6 +50,42 @@ namespace network
         std::string ret;
         urlencode(src.cbegin(), src.cend(), std::back_inserter(ret));
         return ret;
+    }
+    
+    std::string client::serialize_answer(answer_list const& answer)
+    {
+        std::string answer_string;
+
+        // 選択回数を数える
+        int const select_num = 
+            boost::count_if(
+                answer, 
+                [](answer_type const& elem){ return elem.type == answer_type::action_type::select; }
+                );
+
+        // 1行目 選択回数
+        answer_string = (boost::format("%d\r\n") % select_num).str();
+
+        auto it = answer.cbegin();
+        for(int i=0; i<select_num; ++i)
+        {
+            // 3n+2行目 選択画像位置
+            answer_string += (boost::format("%X%X\r\n") % it->position.x % it->position.y).str();
+
+            // 交換回数を数える
+            auto range = ++it;
+            while(range != answer.cend() && range->type == answer_type::action_type::change) ++range;
+            int const change_num = std::distance(it, range);
+
+            // 3n+3行目 交換回数
+            answer_string += (boost::format("%d\r\n") % change_num).str();
+
+            // 3n+4行目 交換操作
+            for(;it != range; ++it) answer_string.push_back(it->direction);
+            answer_string += "\r\n";
+        }
+
+        return answer_string;
     }
 
     std::string client::form_urlencode(std::unordered_map<std::string, std::string> const& header) const
@@ -115,6 +152,11 @@ namespace network
             std::launch::async,
             boost::bind(&client::http_request, this, url, body)
             );
+    }
+
+    std::future<std::string> client::submit(int const problem_id, std::string const& player_id, answer_list const& answer)
+    {
+        return submit(problem_id, player_id, serialize_answer(answer));
     }
 } // namespace network
 
