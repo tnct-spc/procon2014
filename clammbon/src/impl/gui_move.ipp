@@ -88,7 +88,7 @@ namespace impl
           split_y_     (images         .size())
     {
         int const window_width  = split_x_ * image_width_;
-        int const window_height = split_x_ * image_height_;
+        int const window_height = split_y_ * image_height_;
 
         this->size(window_width, window_height);
         this->label(window_name_.c_str());
