@@ -1,9 +1,9 @@
 include ../makefile.in
 
 OUTDIR := ../bin/$(buildtype)
-TARGET = procon
+TARGET = test
 
-SRCS := src/main.cpp
+SRCS := src/test_main.cpp
 PROG := $(OUTDIR)/$(TARGET)
 OBJS := $(SRCS:src/%.cpp=obj/$(buildtype)/%.o)
 DEPS := $(SRCS:src/%.cpp=obj/$(buildtype)/%.d)

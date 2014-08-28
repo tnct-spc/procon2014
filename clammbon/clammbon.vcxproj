@@ -96,7 +96,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WINSOCK_DEPRECATED_NO_WARNINGS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -108,7 +108,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WINSOCK_DEPRECATED_NO_WARNINGS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -122,7 +122,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WINSOCK_DEPRECATED_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -138,7 +138,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WINSOCK_DEPRECATED_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -150,17 +150,20 @@
   <ItemGroup>
     <ClCompile Include="src\algorithm.cpp" />
     <ClCompile Include="src\gui.cpp" />
+    <ClCompile Include="src\network.cpp" />
     <ClCompile Include="src\ppm_reader.cpp" />
     <ClCompile Include="src\sort_algorithm\adjacent.cpp" />
     <ClCompile Include="src\sort_algorithm\compare.cpp" />
     <ClCompile Include="src\sort_algorithm\genetic.cpp" />
     <ClCompile Include="src\sort_algorithm\yrange2.cpp" />
     <ClCompile Include="src\splitter.cpp" />
+    <ClCompile Include="src\test_tool.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\gui.hpp" />
     <ClInclude Include="include\algorithm.hpp" />
     <ClInclude Include="include\data_type.hpp" />
+    <ClInclude Include="include\network.hpp" />
     <ClInclude Include="include\pixel_sorter.hpp" />
     <ClInclude Include="include\ppm_reader.hpp" />
     <ClInclude Include="include\sort_algorithm\adjacent.hpp" />
@@ -168,6 +171,7 @@
     <ClInclude Include="include\sort_algorithm\genetic.hpp" />
     <ClInclude Include="include\sort_algorithm\yrange2.hpp" />
     <ClInclude Include="include\splitter.hpp" />
+    <ClInclude Include="include\test_tool.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="src\impl\gui_move.ipp" />

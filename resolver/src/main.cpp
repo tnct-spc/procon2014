@@ -1,4 +1,7 @@
-﻿#include <iostream>
+﻿// MS WARNINGS MACRO
+#define _SCL_SECURE_NO_WARNINGS
+
+#include <iostream>
 #include <array>
 #include <vector>
 #include <boost/noncopyable.hpp>
