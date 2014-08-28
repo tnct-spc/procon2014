@@ -17,15 +17,11 @@ private:
     // 指定した範囲の配列の和を返す
     int array_sum(return_type const& array_, int const x, int const y, int const height, int const width) const;
 
-	//場を評価する関数
-	uint64_t yrange2::form_evaluate(std::vector<point_type> matrix);
 	//縦入れ替え
 	void yrange2::column_replacement(return_type& matrix);
 	//横入れ替え
 	void yrange2::row_replacement(return_type& matrix);
-	//指定された範囲内の問題画像の種類を返す関数
-	int get_kind_num(std::vector<point_type> matrix, int x, int y);
-
+	
 public:
     // 泣きのポインタ渡し
     yrange2(question_raw_data const& data, compared_type const& comp);

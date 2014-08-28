@@ -6,6 +6,7 @@
 #include <vector>
 #include <algorithm>
 #include <data_type.hpp>
+#include <sort_algorithm/compare.hpp>
 #include <sort_algorithm/adjacent.hpp>
 #include <sort_algorithm/compare.hpp>
 #include <sort_algorithm/yrange2.hpp>
@@ -30,86 +31,53 @@ int yrange2::array_sum(return_type const& array_, int const x, int const y, int 
     return sum;
 }
 
-/*場を評価する関数*/
-uint64_t yrange2::form_evaluate(std::vector<point_type>  matrix)
-{
-	const int sepx = data_.split_num.first;
-	const int sepy = data_.split_num.second;
-	unsigned _int64 s = 0;
-	int i, j;
-
-	for (i = 0; i < sepx*sepy; i++){
-		if (i%sepx != 0)      s += comp_[matrix[i].y][matrix[i].x][matrix[i + 1   ].y][matrix[i + 1   ].x].right;
-		if (i>sepx*(sepy - 1))s += comp_[matrix[i].y][matrix[i].x][matrix[i + sepx].y][matrix[i + sepx].x].down;
-	}
-	return s;
-}
-
 /*縦入れ替え*/
 void yrange2::column_replacement(return_type& matrix)
 {
 	const int sepx = data_.split_num.first;
 	const int sepy = data_.split_num.second;
-	std::uint_fast64_t good_val;
-	std::vector<point_type>good_matrix;
+	uint64_t good_val;
+	std::vector<std::vector<point_type> > good_matrix(sepx, (sepx, std::vector<point_type>(sepy)));
+	std::vector<point_type> temp_vec;
 
-	for (auto& sort_matrix : matrix){
-		good_matrix = sort_matrix;
-		good_val = form_evaluate(good_matrix);
-		for (int i = 0; i < sepx; i++){
-			for (int j = 0; j < sepy; j++){
-				sort_matrix.insert(sort_matrix.begin()+j*sepx, sort_matrix[(j + 1)*sepx]);
-				sort_matrix.erase(sort_matrix.begin() + sepx);
-			}
-			if (good_val>form_evaluate(sort_matrix)){
-				good_val = form_evaluate(sort_matrix);
-				good_matrix = sort_matrix;
-			}
+	good_matrix = matrix;
+	good_val = form_evaluate(comp_,matrix);
+
+	for (int i = 0; i < sepx; ++i){
+		for (int j = 0; j < sepy; ++j){
+			matrix[j].push_back(matrix[j][sepx - 1]);
+			matrix[j].pop_back();
 		}
-		sort_matrix = good_matrix;
+
+		if (good_val>form_evaluate(comp_,matrix)){
+			good_val = form_evaluate(comp_,matrix);
+			good_matrix = matrix;
+		}
 	}
+	matrix = good_matrix;
 }
 
 /*横入れ替え*/
 void yrange2::row_replacement(return_type& matrix)
 {
-	int const sepx = data_.split_num.first;
-	int const sepy = data_.split_num.second;
-	std::uint_fast64_t good_val;
-	std::vector<point_type>good_matrix;
-	int temp_val;
+	const int sepx = data_.split_num.first;
+	const int sepy = data_.split_num.second;
+	uint64_t good_val;
+	std::vector<std::vector<point_type> > good_matrix(sepx, (sepx, std::vector<point_type>(sepy)));
+	std::vector<point_type> temp_vec;
 
-	for (auto& sort_matrix : matrix){
-		good_matrix = sort_matrix;
-		good_val = form_evaluate(good_matrix);
-		for (int i = 0; i < sepx; i++){
-			for (int j = 0; j < sepy; j++){
-				std::copy(sort_matrix.begin(), sort_matrix.begin() + sepx,std::back_inserter(sort_matrix));
-				sort_matrix.erase(sort_matrix.begin(), sort_matrix.begin() + sepx);
-			}
-			if (good_val>form_evaluate(sort_matrix)){
-				good_val = form_evaluate(sort_matrix);
-				good_matrix = sort_matrix;
-			}
-		}
-		sort_matrix = good_matrix;
+	good_matrix = matrix;
+	good_val = form_evaluate(comp_,matrix);
+
+	for (int i = 0; i < sepy; ++i){
+		matrix.push_back(matrix[sepy - 1]);
+		matrix.pop_back();
 	}
-}
-
-//指定された範囲内の問題画像の種類を返す関数
-int yrange2::get_kind_num(std::vector<std::vector<point_type>> matrix, int x, int y){
-	int const sepx = data_.split_num.first;
-	int const sepy = data_.split_num.second;
-
-	std::vector<point_type> temp;
-	for (int i; i < sepy; i++){
-		for (int j; j < sepx; j++){
-			temp.push_back(matrix[j][i]);
-		}
+	if (good_val>form_evaluate(comp_,matrix)){
+		good_val = form_evaluate(comp_,matrix);
+		good_matrix = matrix;
 	}
-	std::sort(temp.begin(), temp.end());
-	temp.erase(std::unique(temp.begin(), temp.end()), temp.end());
-	return temp.size();
+	matrix = good_matrix;
 }
 
 yrange2::yrange2(question_raw_data const& data, compared_type const& comp)
@@ -227,9 +195,9 @@ std::vector<std::vector<std::vector<point_type>>> yrange2::operator() ()
         
         for(int y=0; y<height; ++y) for(int x=0; x<width; ++x)
         {
-			if (array_sum(sorted_matrix, x, y, height, width) == ((width*height - 1)*(width*height) / 2) && get_kind_num(sorted_matrix, x, y) == width*height)
+			if (array_sum(sorted_matrix, x, y, height, width) == ((width*height - 1)*(width*height) / 2) && get_kind_num(data_,sorted_matrix, x, y) == width*height)
             {
-                for(int i=0; i<height; ++i) for(int j=0; j<width; ++j)
+                for(int i=0; i<height; i++) for(int j=0; j<width; j++)
                 {
                     one_answer[i][j] = sorted_matrix[y + i][x + j];
                 }
@@ -247,6 +215,8 @@ std::vector<std::vector<std::vector<point_type>>> yrange2::operator() ()
 //
 //yrange2.5
 //
+
+//	row_replacement(answer)
 	
 
 #ifdef _DEBUG
