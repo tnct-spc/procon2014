@@ -57,31 +57,24 @@ namespace network
         std::string answer_string;
 
         // 選択回数を数える
-        int const select_num = 
-            boost::count_if(
-                answer, 
-                [](answer_type const& elem){ return elem.type == answer_type::action_type::select; }
-                );
+        int const select_num = answer.size();
 
         // 1行目 選択回数
         answer_string = (boost::format("%d\r\n") % select_num).str();
 
-        auto it = answer.cbegin();
-        for(int i=0; i<select_num; ++i)
+        for(answer_type const& line : answer)
         {
             // 3n+2行目 選択画像位置
-            answer_string += (boost::format("%X%X\r\n") % it->position.x % it->position.y).str();
+            answer_string += (boost::format("%X%X\r\n") % line.position.x % line.position.y).str();
 
             // 交換回数を数える
-            auto range = ++it;
-            while(range != answer.cend() && range->type == answer_type::action_type::change) ++range;
-            int const change_num = std::distance(it, range);
+            int const change_num = line.actions.size();
 
             // 3n+3行目 交換回数
             answer_string += (boost::format("%d\r\n") % change_num).str();
 
             // 3n+4行目 交換操作
-            for(;it != range; ++it) answer_string.push_back(it->direction);
+            for(char& direction : line.actions) answer_string.push_back(direction);
             answer_string += "\r\n";
         }
 

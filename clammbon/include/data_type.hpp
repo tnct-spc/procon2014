@@ -128,11 +128,8 @@ struct question_raw_data : private boost::noncopyable
 
 struct answer_type
 {
-    enum class action_type{ change, select };
-
-    action_type type;
     point_type position;
-    char direction;
+    std::vector<char> actions;
 };
 typedef std::vector<answer_type> answer_list;
 
