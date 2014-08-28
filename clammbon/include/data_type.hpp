@@ -183,40 +183,12 @@ struct question_raw_data : private boost::noncopyable
     }
 };
 
-// 水平垂直方向を表す列挙型
-enum struct HVDirection { Up, Right, Down, Left };
-
-inline char direction_char(HVDirection const& d)
-{
-    return "URDL"[static_cast<int>(d)];
-}
-
-struct answer_line
-{
-    point_type select;
-    std::vector<HVDirection> change_list;
-};
 struct answer_type
 {
-    std::vector<answer_line> list;
-
-    std::string const& str() const
-    {
-        static std::string answer_string;
-
-        answer_string.erase(answer_string.begin(), answer_string.end());
-        for (auto step : list) {
-            answer_string += (boost::format("%1$02X") % step.select.num()).str();
-            answer_string.push_back('\n');
-            for (auto direction : step.change_list) {
-                answer_string.push_back(direction_char(direction));
-            }
-            answer_string.push_back('\n');
-        }
-
-        return answer_string;
-    }
+    point_type position;
+    std::vector<char> actions;
 };
+typedef std::vector<answer_type> answer_list;
 
 struct step_type {
     answer_type answer;
