@@ -41,18 +41,13 @@ namespace test_tool
         locate_type state = question_.block;
         point_type selected{-1, -1};
 
-        for(auto const& process : answer)
+        for(auto const& select : answer)
         {
-            if(process.type == answer_type::action_type::select)
+            selected = select.position;
+            for(const char action : select.actions)
             {
-                selected = process.position;
-            }
-            else if(process.type == answer_type::action_type::change)
-            {
-                if(selected == point_type{-1, -1}) throw std::runtime_error("emulator::emulate_movement: Didn't select");
-
                 // 移動先を見つけて交換(std::vectorからあふれた時はatが例外を送出する)
-                auto const target = target_point(process.direction, selected);
+                auto const target = target_point(action, selected);
                 std::swap(
                     state.at(selected.y).at(selected.x),
                     state.at(target  .y).at(target  .x)
@@ -70,13 +65,10 @@ namespace test_tool
     {
         int cost = 0;
 
-        for(auto const& process : answer)
+        for(auto const& select : answer)
         {
-            if(process.type == answer_type::action_type::select)
-            {
-                cost += question_.cost_select;
-            }
-            else if(process.type == answer_type::action_type::change)
+            cost += question_.cost_select;
+            for(char const action : select.actions)
             {
                 cost += question_.cost_change;
             }
