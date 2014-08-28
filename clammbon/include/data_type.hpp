@@ -191,7 +191,7 @@ struct answer_type
 typedef std::vector<answer_type> answer_list;
 
 struct step_type {
-    answer_type answer;
+    answer_list answer;
     point_type selecting_cur;
     std::vector<std::vector<point_type>> matrix;
 

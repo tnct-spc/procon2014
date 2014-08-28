@@ -47,7 +47,7 @@ namespace test_tool
             for(const char action : select.actions)
             {
                 // 移動先を見つけて交換(std::vectorからあふれた時はatが例外を送出する)
-                auto const target = target_point(direction, selected);
+                auto const target = target_point(action, selected);
                 std::swap(
                     state.at(selected.y).at(selected.x),
                     state.at(target  .y).at(target  .x)

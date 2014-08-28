@@ -74,7 +74,7 @@ namespace network
             answer_string += (boost::format("%d\r\n") % change_num).str();
 
             // 3n+4行目 交換操作
-            for(const char direction : line.actions) answer_string.push_back(direction);
+            for(char const direction : line.actions) answer_string.push_back(direction);
             answer_string += "\r\n";
         }
 

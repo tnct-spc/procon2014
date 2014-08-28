@@ -58,25 +58,11 @@ BOOST_AUTO_TEST_CASE(submit2)
     answer_list answer;
     network::client client{};
 
-    answer.push_back({ answer_type::action_type::select, point_type{ 0, 0}, '\0' });
-    answer.push_back({ answer_type::action_type::change, point_type{-1,-1},  'D' });
-    answer.push_back({ answer_type::action_type::change, point_type{-1,-1},  'D' });
-    answer.push_back({ answer_type::action_type::change, point_type{-1,-1},  'R' });
-    answer.push_back({ answer_type::action_type::change, point_type{-1,-1},  'U' });
-    answer.push_back({ answer_type::action_type::change, point_type{-1,-1},  'L' });    
+    answer.push_back({ point_type{ 0, 0}, { 'D', 'D', 'R', 'U', 'L' } });
     auto const response1 = client.submit(0, "1", answer).get();
     BOOST_CHECK(response1 == "ACCEPTED 16");
 
-    answer.push_back({ answer_type::action_type::select, point_type{ 0, 1}, '\0' });
-    answer.push_back({ answer_type::action_type::change, point_type{-1,-1},  'R' });
-    answer.push_back({ answer_type::action_type::change, point_type{-1,-1},  'D' });
-    answer.push_back({ answer_type::action_type::change, point_type{-1,-1},  'R' });
-    answer.push_back({ answer_type::action_type::change, point_type{-1,-1},  'D' });
-    answer.push_back({ answer_type::action_type::change, point_type{-1,-1},  'R' });
-    answer.push_back({ answer_type::action_type::change, point_type{-1,-1},  'U' });
-    answer.push_back({ answer_type::action_type::change, point_type{-1,-1},  'U' });
-    answer.push_back({ answer_type::action_type::change, point_type{-1,-1},  'U' });
-    answer.push_back({ answer_type::action_type::change, point_type{-1,-1},  'L' });
+    answer.push_back({ point_type{ 0, 1}, { 'R', 'D', 'R', 'D', 'R', 'U', 'U', 'U', 'L' } });
     auto const response2 = client.submit(0, "2", answer).get();
     BOOST_CHECK(response2 == "ACCEPTED 11");
 }
