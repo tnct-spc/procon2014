@@ -44,11 +44,8 @@ private:
 
     template <char T>
     void move_selecting();
-
-    template <char First>
-    void sequential_move(point_type const& target);
     template <char First, char Second, char... Rest>
-    void sequential_move(point_type const& target);
+    void move_selecting();
 
     template <char T>
     const step_type move_bf(step_type step) const;
@@ -118,9 +115,6 @@ void algorithm::impl::operator() (boost::coroutines::coroutine<return_type>::pus
     //
     // point_type を使って指しているものが座標なのか断片画像なのかわかりにくい (型の意味としては座標だが)
     //
-
-    // TODO: "yield(return_type型の解答)"とすれば，呼び出し元に制御が戻り，送信処理を行える．
-    //       呼び出し元が再度algorithm::getを呼びだせば，中断されたところから実行される(ハズ)．
 
     // 画像
     matrix = data_->block;
@@ -244,17 +238,11 @@ const step_type algorithm::impl::move_bf<'L'>(step_type step) const
     return step;
 }
 
-template <char First>
-void algorithm::impl::sequential_move(point_type const& target)
+template <char First, char Second, char... Rest>
+void algorithm::impl::move_selecting()
 {
     move_selecting<First>();
-}
-
-template <char First, char Second, char... Rest>
-void algorithm::impl::sequential_move(point_type const& target)
-{
-    sequential_move<First>(target);
-    sequential_move<Second, Rest...>(target);
+    move_selecting<Second, Rest...>();
 }
 
 const point_type algorithm::impl::current_point(point_type const& point) const
@@ -598,23 +586,23 @@ void algorithm::impl::move_target(point_type const& target, char const& directio
     if (direction == 'U') {
         if (selecting_cur.up() == target_cur) {
             if (target_cur.x == width - 1) {
-                sequential_move<'L', 'U', 'U', 'R', 'D'>(selecting_cur);
+                move_selecting<'L', 'U', 'U', 'R', 'D'>();
             } else {
-                sequential_move<'R', 'U', 'U', 'L', 'D'>(selecting_cur);
+                move_selecting<'R', 'U', 'U', 'L', 'D'>();
             }
         } else if (selecting_cur.right() == target_cur) {
             if (is_sorted(selecting_cur.up())) {
-                sequential_move<'D', 'R', 'R', 'U', 'U', 'L', 'D'>(selecting_cur);
+                move_selecting<'D', 'R', 'R', 'U', 'U', 'L', 'D'>();
             } else {
-                sequential_move<'U', 'R', 'D'>(selecting_cur);
+                move_selecting<'U', 'R', 'D'>();
             }
         } else if (selecting_cur.down() == target_cur) {
-            sequential_move<'D'>(selecting_cur);
+            move_selecting<'D'>();
         } else if (selecting_cur.left() == target_cur) {
             if (is_sorted(selecting_cur.up())) {
-                sequential_move<'D', 'L', 'L', 'U', 'U', 'R', 'D'>(selecting_cur);
+                move_selecting<'D', 'L', 'L', 'U', 'U', 'R', 'D'>();
             } else {
-                sequential_move<'U', 'L', 'D'>(selecting_cur);
+                move_selecting<'U', 'L', 'D'>();
             }
         } else {
             throw std::runtime_error("多分ここに入ることはありえないと思う");
@@ -622,47 +610,47 @@ void algorithm::impl::move_target(point_type const& target, char const& directio
     } else if (direction == 'R') {
         if (selecting_cur.up() == target_cur) {
             if (is_sorted(selecting_cur.right())) {
-                sequential_move<'L', 'U', 'U', 'R', 'R', 'D', 'L'>(selecting_cur);
+                move_selecting<'L', 'U', 'U', 'R', 'R', 'D', 'L'>();
             } else {
-                sequential_move<'R', 'U', 'L'>(selecting_cur);
+                move_selecting<'R', 'U', 'L'>();
             }
         } else if (selecting_cur.right() == target_cur) {
             if (target_cur.y == height - 1) {
-                sequential_move<'U', 'R', 'R', 'D', 'L'>(selecting_cur);
+                move_selecting<'U', 'R', 'R', 'D', 'L'>();
             } else {
-                sequential_move<'D', 'R', 'R', 'U', 'L'>(selecting_cur);
+                move_selecting<'D', 'R', 'R', 'U', 'L'>();
             }
         } else if (selecting_cur.down() == target_cur) {
             if (is_sorted(selecting_cur.right())) {
-                sequential_move<'L', 'D', 'D', 'R', 'R', 'U', 'L'>(selecting_cur);
+                move_selecting<'L', 'D', 'D', 'R', 'R', 'U', 'L'>();
             } else {
-                sequential_move<'R', 'D', 'L'>(selecting_cur);
+                move_selecting<'R', 'D', 'L'>();
             }
         } else if (selecting_cur.left() == target_cur) {
-            sequential_move<'L'>(selecting_cur);
+            move_selecting<'L'>();
         } else {
             throw std::runtime_error("多分ここに入ることはありえないと思う");
         }
     } else if (direction == 'D') {
         if (selecting_cur.up() == target_cur) {
-            sequential_move<'U'>(selecting_cur);
+            move_selecting<'U'>();
         } else if (selecting_cur.right() == target_cur) {
             if (is_sorted(selecting_cur.down())) {
-                sequential_move<'U', 'R', 'R', 'D', 'D', 'L', 'U'>(selecting_cur);
+                move_selecting<'U', 'R', 'R', 'D', 'D', 'L', 'U'>();
             } else {
-                sequential_move<'D', 'R', 'U'>(selecting_cur);
+                move_selecting<'D', 'R', 'U'>();
             }
         } else if (selecting_cur.down() == target_cur) {
             if (target_cur.x == width - 1) {
-                sequential_move<'L', 'D', 'D', 'R', 'U'>(selecting_cur);
+                move_selecting<'L', 'D', 'D', 'R', 'U'>();
             } else {
-                sequential_move<'R', 'D', 'D', 'L', 'U'>(selecting_cur);
+                move_selecting<'R', 'D', 'D', 'L', 'U'>();
             }
         } else if (selecting_cur.left() == target_cur) {
             if (is_sorted(selecting_cur.down())) {
-                sequential_move<'U', 'L', 'L', 'D', 'D', 'R', 'U'>(selecting_cur);
+                move_selecting<'U', 'L', 'L', 'D', 'D', 'R', 'U'>();
             } else {
-                sequential_move<'D', 'L', 'U'>(selecting_cur);
+                move_selecting<'D', 'L', 'U'>();
             }
         } else {
             throw std::runtime_error("多分ここに入ることはありえないと思う");
@@ -670,23 +658,23 @@ void algorithm::impl::move_target(point_type const& target, char const& directio
     } else if (direction == 'L') {
         if (selecting_cur.up() == target_cur) {
             if (is_sorted(selecting_cur.left())) {
-                sequential_move<'R', 'U', 'U', 'L', 'L', 'D', 'R'>(selecting_cur);
+                move_selecting<'R', 'U', 'U', 'L', 'L', 'D', 'R'>();
             } else {
-                sequential_move<'L', 'U', 'R'>(selecting_cur);
+                move_selecting<'L', 'U', 'R'>();
             }
         } else if (selecting_cur.right() == target_cur) {
-            sequential_move<'R'>(selecting_cur);
+            move_selecting<'R'>();
         } else if (selecting_cur.down() == target_cur) {
             if (is_sorted(selecting_cur.left())) {
-                sequential_move<'R', 'D', 'D', 'L', 'L', 'U', 'R'>(selecting_cur);
+                move_selecting<'R', 'D', 'D', 'L', 'L', 'U', 'R'>();
             } else {
-                sequential_move<'L', 'D', 'R'>(selecting_cur);
+                move_selecting<'L', 'D', 'R'>();
             }
         } else if (selecting_cur.left() == target_cur) {
             if (target_cur.y == height - 1) {
-                sequential_move<'U', 'L', 'L', 'D', 'R'>(selecting_cur);
+                move_selecting<'U', 'L', 'L', 'D', 'R'>();
             } else {
-                sequential_move<'D', 'L', 'L', 'U', 'R'>(selecting_cur);
+                move_selecting<'D', 'L', 'L', 'U', 'R'>();
             }
         } else {
             throw std::runtime_error("多分ここに入ることはありえないと思う");
@@ -828,8 +816,9 @@ inline void algorithm::impl::print() const
 }
 #endif
 
+#ifdef algorithm_debug
 // 検証用main
-// g++ -std=c++11 -I../include -lboost_system -lboost_coroutine
+// clang++ -std=c++11 -I../include -lboost_system -lboost_coroutine algorithm.cpp
 int main(int argc, char* argv[])
 {
     const auto matrix = std::vector<std::vector<point_type>>{
@@ -847,3 +836,4 @@ int main(int argc, char* argv[])
     const auto answer = algo.get();
     return 0;
 }
+#endif
