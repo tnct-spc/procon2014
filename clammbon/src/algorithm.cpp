@@ -54,6 +54,7 @@ private:
     std::unordered_set<point_type> sorted_points;
     answer_list answer;
     point_type selecting;
+    point_type selecting_cur;
     int width;
     int height;
     int cost_select;
@@ -138,6 +139,7 @@ void algorithm::impl::operator() (boost::coroutines::coroutine<return_type>::pus
     // 移動に用いる断片画像の原座標
     // 右下を選んでおけば間違いない
     selecting = point_type{width - 1, height - 1};
+    selecting_cur = current_point(selecting);
 
     answer.push_back(answer_type{current_point(selecting), std::vector<char>()});
 
@@ -157,9 +159,9 @@ void algorithm::impl::process(boost::coroutines::coroutine<return_type>::push_ty
 template <>
 void algorithm::impl::move_selecting<'U'>()
 {
-    point_type selecting_cur = current_point(selecting);
     assert(selecting_cur.y > sorted_row);
     std::swap(matrix[selecting_cur.y][selecting_cur.x], matrix[selecting_cur.y - 1][selecting_cur.x]);
+    --selecting_cur.y;
     answer.back().actions.push_back('U');
 #ifdef algorithm_debug
     print();
@@ -169,9 +171,9 @@ void algorithm::impl::move_selecting<'U'>()
 template <>
 void algorithm::impl::move_selecting<'R'>()
 {
-    point_type selecting_cur = current_point(selecting);
     assert(selecting_cur.x < width - 1);
     std::swap(matrix[selecting_cur.y][selecting_cur.x], matrix[selecting_cur.y][selecting_cur.x + 1]);
+    ++selecting_cur.x;
     answer.back().actions.push_back('R');
 #ifdef algorithm_debug
     print();
@@ -181,9 +183,9 @@ void algorithm::impl::move_selecting<'R'>()
 template <>
 void algorithm::impl::move_selecting<'D'>()
 {
-    point_type selecting_cur = current_point(selecting);
     assert(selecting_cur.y < height - 1);
     std::swap(matrix[selecting_cur.y][selecting_cur.x], matrix[selecting_cur.y + 1][selecting_cur.x]);
+    ++selecting_cur.y;
     answer.back().actions.push_back('D');
 #ifdef algorithm_debug
     print();
@@ -193,9 +195,9 @@ void algorithm::impl::move_selecting<'D'>()
 template <>
 void algorithm::impl::move_selecting<'L'>()
 {
-    point_type selecting_cur = current_point(selecting);
     assert(selecting_cur.x > sorted_col);
     std::swap(matrix[selecting_cur.y][selecting_cur.x], matrix[selecting_cur.y][selecting_cur.x - 1]);
+    --selecting_cur.x;
     answer.back().actions.push_back('L');
 #ifdef algorithm_debug
     print();
@@ -386,12 +388,12 @@ void algorithm::impl::greedy()
         // 端の部分の処理
         if (target.x == width - 1) {
             // ターゲットの真の原座標が右端の場合
-            if (current_point(selecting) == waypoint.up().left()) {
+            if (selecting_cur == waypoint.up().left()) {
                 // selecting が仮の原座標の左上にいる場合
                 move_selecting<'R'>();
                 move_selecting<'D'>();
             } else {
-                if (current_point(selecting) == waypoint.down()) {
+                if (selecting_cur == waypoint.down()) {
                     // selecting が仮の原座標の直下にいる場合
                     move_selecting<'L'>();
                     move_selecting<'U'>();
@@ -402,12 +404,12 @@ void algorithm::impl::greedy()
             }
         } else if (target.y == height - 1) {
             // ターゲットの真の原座標が下端の場合
-            if (current_point(selecting) == waypoint.left().up()) {
+            if (selecting_cur == waypoint.left().up()) {
                 // selecting が仮の原座標の左上にいる場合
                 move_selecting<'D'>();
                 move_selecting<'R'>();
             } else {
-                if (current_point(selecting) == waypoint.right()) {
+                if (selecting_cur == waypoint.right()) {
                     // selecting が仮の原座標の直右にいる場合
                     move_selecting<'U'>();
                     move_selecting<'L'>();
@@ -436,7 +438,7 @@ void algorithm::impl::brute_force()
     step_type current;
 
     // 根ノードをキューに追加
-    open.push(step_type{answer, current_point(selecting), matrix});
+    open.push(step_type{answer, selecting_cur, matrix});
 
     // 解答発見フラグ
     bool finished = false;
@@ -518,9 +520,6 @@ void algorithm::impl::move_target(point_type const& target, char const& directio
 {
     // selecting の操作によって原座標が target である断片画像を指定の方向へ移動させる.
 
-    // selecting の現在の座標
-    point_type selecting_cur = current_point(selecting);
-
     // target の現在の座標
     point_type target_cur = current_point(target);
 
@@ -582,7 +581,6 @@ void algorithm::impl::move_target(point_type const& target, char const& directio
         }
     }
 
-    selecting_cur = current_point(selecting);
     if (direction == 'U') {
         if (selecting_cur.up() == target_cur) {
             if (target_cur.x == width - 1) {
@@ -684,7 +682,6 @@ void algorithm::impl::move_target(point_type const& target, char const& directio
 void algorithm::impl::move_to(point_type const& to)
 {
     // selecting を to まで移動させる
-    point_type selecting_cur = current_point(selecting);
     point_type diff = to - selecting_cur;
     AllDirection direction = selecting_cur.direction(to);
 
