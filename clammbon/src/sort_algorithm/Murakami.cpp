@@ -2,6 +2,8 @@
 #include <boost/format.hpp>
 #include <boost/range/algorithm_ext/erase.hpp>
 #include <vector>
+#include <fstream>
+#include <string>
 #include <algorithm>
 #include <data_type.hpp>
 #include <sort_algorithm/compare.hpp>
@@ -199,12 +201,13 @@ std::int_fast64_t Murakami::eval_comp_(point_type p1, point_type p2, direction d
 	}
 	return score;
 }
-std::map <point_type, std::vector < std::vector<point_type>>> Murakami::sorted_comparation()
+
+void Murakami::sort_compare()
 {
 	auto const width = data_.split_num.first;
 	auto const height = data_.split_num.second;
 
-	std::map<point_type, std::vector < std::vector<point_type>>> data;
+	std::map<point_type, std::vector < std::vector<point_type>>> sorted_comparation;
 	
 	struct point_type_score{
 		uint_fast64_t score;
@@ -223,6 +226,10 @@ std::map <point_type, std::vector < std::vector<point_type>>> Murakami::sorted_c
 		point_type now_point;
 		now_point.x = j;
 		now_point.y = i;
+		point_type temp_point;
+		temp_point.x = -1;
+		temp_point.y = -1;
+
 
 		//###up###//
 		for (int k = 0; i < height; ++i)for (int l = 0; j < width; ++j){
@@ -233,9 +240,6 @@ std::map <point_type, std::vector < std::vector<point_type>>> Murakami::sorted_c
 		temp_vec.push_back(temp_score);
 		std::sort(temp_vec.begin(), temp_vec.end());
 		//è„Ç©ÇÁ10å¬ë„ì¸
-		point_type temp_point;
-		temp_point.x = 0;
-		temp_point.y = 0;
 		direct[up].push_back(temp_point);
 		for (int i = 0; i < 10; ++i){
 			temp_point.x = temp_vec[i].point.x;
@@ -252,9 +256,6 @@ std::map <point_type, std::vector < std::vector<point_type>>> Murakami::sorted_c
 		temp_vec.push_back(temp_score);
 		std::sort(temp_vec.begin(), temp_vec.end());
 		//è„Ç©ÇÁ10å¬ë„ì¸
-		point_type temp_point;
-		temp_point.x = 0;
-		temp_point.y = 0;
 		direct[down].push_back(temp_point);
 		for (int i = 0; i < 10; ++i){
 			temp_point.x = temp_vec[i].point.x;
@@ -271,9 +272,6 @@ std::map <point_type, std::vector < std::vector<point_type>>> Murakami::sorted_c
 		temp_vec.push_back(temp_score);
 		std::sort(temp_vec.begin(), temp_vec.end());
 		//è„Ç©ÇÁ10å¬ë„ì¸
-		point_type temp_point;
-		temp_point.x = 0;
-		temp_point.y = 0;
 		direct[right].push_back(temp_point);
 		for (int i = 0; i < 10; ++i){
 			temp_point.x = temp_vec[i].point.x;
@@ -290,35 +288,33 @@ std::map <point_type, std::vector < std::vector<point_type>>> Murakami::sorted_c
 		temp_vec.push_back(temp_score);
 		std::sort(temp_vec.begin(), temp_vec.end());
 		//è„Ç©ÇÁ10å¬ë„ì¸
-		point_type temp_point;
-		temp_point.x = 0;
-		temp_point.y = 0;
 		direct[left].push_back(temp_point);
 		for (int i = 0; i < 10; ++i){
 			temp_point.x = temp_vec[i].point.x;
 			temp_point.y = temp_vec[i].point.y;
 			direct[left].push_back(temp_point);
 		}
-		std::map<point_type, std::vector < std::vector<point_type>>> data;
-		data.insert(std::map<point_type, std::vector < std::vector<point_type>>>::value_type(now_point, direct));
+		std::map<point_type, std::vector < std::vector<point_type>>> sorted_comparation;
+		sorted_comparation.insert(std::map<point_type, std::vector < std::vector<point_type>>>::value_type(now_point, direct));
 	}
 
 	std::ofstream ofs("solusions.csv", std::ios::out | std::ios::app | std::ios::ate);
-	std::map<point_type, std::vector < std::vector<point_type>>>::iterator data_it;
-	for (data_it = data.begin(); data_it != data.end(); data_it++){
+	std::map<point_type, std::vector < std::vector<point_type>>>::iterator sorted_comparation_it;
+	for (sorted_comparation_it = sorted_comparation.begin(); sorted_comparation_it != sorted_comparation.end(); sorted_comparation_it++){
 		for (int i = 0; i < 4; ++i)for (int j = 0; j < 11; ++j){
-			ofs << data_it->first.x << "," << data_it->first.y << "," << i << "," << j << "," << data_it->second[i][j].x << "," << data_it->second[i][j].y << std::endl;
+			ofs << sorted_comparation_it->first.x << "," << sorted_comparation_it->first.y << "," << i << "," << j << "," << sorted_comparation_it->second[i][j].x << "," << sorted_comparation_it->second[i][j].y << std::endl;
 		}
 	}
 	std::cout << "Output solusions done." << std::endl;
 
 }
+
 Murakami::block_type Murakami::combine_block(block_combination){
 	auto const width = data_.split_num.first;
 	auto const height = data_.split_num.second;
-	for (i = -height; i < height * 2 - 1; height ++){
-		for (j = -width; j < width * 2 - 1; width++){
+	for (int i = -height; i < height * 2 - 1; height ++){
+		for (int j = -width; j < width * 2 - 1; width++){
 
-		}
+}
 	}
 }
