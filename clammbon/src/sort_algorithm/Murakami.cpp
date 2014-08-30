@@ -309,12 +309,13 @@ void Murakami::sort_compare()
 
 }
 
-Murakami::block_type Murakami::combine_block(block_combination){
+Murakami::block_type Murakami::combine_block(block_combination block){
 	auto const width = data_.split_num.first;
 	auto const height = data_.split_num.second;
 	for (int i = -height; i < height * 2 - 1; i ++){
 		for (int j = -width; j < width * 2 - 1; j++){
 
-}
+		}
 	}
+	return block.block1;
 }
