@@ -4,6 +4,7 @@
 #include <boost/format.hpp>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 
 int constexpr hsplit_default = 16;
 int constexpr vsplit_default = 16;
@@ -14,11 +15,11 @@ std::string const ext = ".ppm";
 
 int main(int argc, char* argv[])
 {
-    std::vector<std::string> input_filenames;
-    std::string output_filename_base;
-    int hsplit, vsplit;
-    int selectable;
-    int select_cost, change_cost;
+    std::vector<std::string> input_filenames;  // 入力ファイルの名前の配列
+    std::string output_filename_base;  // 出力ファイル名のもと
+    int hsplit, vsplit;  // 分割数
+    int selectable;  // 選択可能回数
+    int select_cost, change_cost;  // 選択コスト変換レート
 
     // コマンドラインオプションの定義
     boost::program_options::options_description options(argv[0]);
@@ -43,20 +44,26 @@ int main(int argc, char* argv[])
         return -1;
     }
 
-    // 入力ファイル名でループ
-    cv::Mat input_image;
-    std::string header;
-    std::vector<uchar> output_buffer;
-    std::string output_filename;
-    std::ofstream output_file;
+    cv::Mat input_image;  // 入力画像
+    std::string header;  // ヘッダ文字列
+    std::vector<uchar> output_buffer;  // 出力画像バッファ
+    std::string output_filename;  // 出力ファイルの名前
+    std::ofstream output_file; // 出力ファイルのストリーム
+    int count = 0;
+
     output_file.exceptions(std::ofstream::eofbit | std::ofstream::failbit | std::ofstream::badbit);
 
+    // 入力ファイル名でループ
     for (std::string const& input_filename : input_filenames) {
         // 出力ファイル名の設定
         if (output_filename_base.size() == 0) {
             output_filename = input_filename;
         } else {
             output_filename = output_filename_base;
+            if (input_filenames.size() > 1) {
+                output_filename += (boost::format("_%1$d") % count).str();
+                ++count;
+            }
         }
         auto dotpos = output_filename.find_last_of('.');
         if (dotpos != std::string::npos) {
