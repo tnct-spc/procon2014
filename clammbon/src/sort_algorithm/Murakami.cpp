@@ -226,6 +226,10 @@ void Murakami::sort_compare()
 		point_type now_point;
 		now_point.x = j;
 		now_point.y = i;
+		point_type temp_point;
+		temp_point.x = -1;
+		temp_point.y = -1;
+
 
 		//###up###//
 		for (int k = 0; i < height; ++i)for (int l = 0; j < width; ++j){
@@ -236,9 +240,6 @@ void Murakami::sort_compare()
 		temp_vec.push_back(temp_score);
 		std::sort(temp_vec.begin(), temp_vec.end());
 		//ã‚©‚ç10ŒÂ‘ã“ü
-		point_type temp_point;
-		temp_point.x = 0;
-		temp_point.y = 0;
 		direct[up].push_back(temp_point);
 		for (int i = 0; i < 10; ++i){
 			temp_point.x = temp_vec[i].point.x;
@@ -255,9 +256,6 @@ void Murakami::sort_compare()
 		temp_vec.push_back(temp_score);
 		std::sort(temp_vec.begin(), temp_vec.end());
 		//ã‚©‚ç10ŒÂ‘ã“ü
-		point_type temp_point;
-		temp_point.x = 0;
-		temp_point.y = 0;
 		direct[down].push_back(temp_point);
 		for (int i = 0; i < 10; ++i){
 			temp_point.x = temp_vec[i].point.x;
@@ -274,9 +272,6 @@ void Murakami::sort_compare()
 		temp_vec.push_back(temp_score);
 		std::sort(temp_vec.begin(), temp_vec.end());
 		//ã‚©‚ç10ŒÂ‘ã“ü
-		point_type temp_point;
-		temp_point.x = 0;
-		temp_point.y = 0;
 		direct[right].push_back(temp_point);
 		for (int i = 0; i < 10; ++i){
 			temp_point.x = temp_vec[i].point.x;
@@ -293,9 +288,6 @@ void Murakami::sort_compare()
 		temp_vec.push_back(temp_score);
 		std::sort(temp_vec.begin(), temp_vec.end());
 		//ã‚©‚ç10ŒÂ‘ã“ü
-		point_type temp_point;
-		temp_point.x = 0;
-		temp_point.y = 0;
 		direct[left].push_back(temp_point);
 		for (int i = 0; i < 10; ++i){
 			temp_point.x = temp_vec[i].point.x;
@@ -316,6 +308,8 @@ void Murakami::sort_compare()
 	std::cout << "Output solusions done." << std::endl;
 
 }
+
 Murakami::block_type Murakami::combine_block(block_combination){
 
 }
+
