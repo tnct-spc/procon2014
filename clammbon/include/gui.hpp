@@ -14,6 +14,8 @@ namespace gui
         std::string const& window_name = ""
         );
 
+	void show_image(question_raw_data const& data_, compared_type const& comp_, std::vector<std::vector<std::vector<point_type>>>const & matrix);
+
 } // namespace gui
 
 #endif

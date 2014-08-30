@@ -10,6 +10,7 @@
 #include <sort_algorithm/adjacent.hpp>
 #include <sort_algorithm/compare.hpp>
 #include <sort_algorithm/yrange2.hpp>
+#include <gui.hpp>
 
 // 2値座標系式から1値座標系式に変えながら和
 // 指定した範囲の配列の和を返す
@@ -208,8 +209,9 @@ std::vector<std::vector<std::vector<point_type>>> yrange2::operator() ()
 	// unique()をしただけでは後ろにゴミが残るので、eraseで削除する
 	answer.erase(std::unique(answer.begin(), answer.end()), answer.end());
 
-	//
-	//yrange2.5
+	
+	//#########################################################yrange2.5#########################################################//
+
 	//縦入れ替え，横入れ替え
 	for (auto matrix : answer){
 		row_replacement(matrix);
@@ -217,9 +219,7 @@ std::vector<std::vector<std::vector<point_type>>> yrange2::operator() ()
 	}
 
 	//もっかいやっとく
-	// unique()を使う準備としてソートが必要
 	std::sort(answer.begin(), answer.end());
-	// unique()をしただけでは後ろにゴミが残るので、eraseで削除する
 	answer.erase(std::unique(answer.begin(), answer.end()), answer.end());
 
 #ifdef _DEBUG
@@ -238,6 +238,8 @@ std::vector<std::vector<std::vector<point_type>>> yrange2::operator() ()
         std::cout << "\n";
     }
 #endif
+
+	gui::show_image(data_, comp_, answer);
 
     return answer;
 }
