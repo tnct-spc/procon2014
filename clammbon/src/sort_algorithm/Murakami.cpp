@@ -312,8 +312,8 @@ void Murakami::sort_compare()
 Murakami::block_type Murakami::combine_block(block_combination){
 	auto const width = data_.split_num.first;
 	auto const height = data_.split_num.second;
-	for (int i = -height; i < height * 2 - 1; height ++){
-		for (int j = -width; j < width * 2 - 1; width++){
+	for (int i = -height; i < height * 2 - 1; i ++){
+		for (int j = -width; j < width * 2 - 1; j++){
 
 }
 	}
