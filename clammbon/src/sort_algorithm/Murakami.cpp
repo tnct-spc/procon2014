@@ -314,5 +314,11 @@ std::map <point_type, std::vector < std::vector<point_type>>> Murakami::sorted_c
 
 }
 Murakami::block_type Murakami::combine_block(block_combination){
+	auto const width = data_.split_num.first;
+	auto const height = data_.split_num.second;
+	for (i = -height; i < height * 2 - 1; height ++){
+		for (j = -width; j < width * 2 - 1; width++){
 
+		}
+	}
 }
