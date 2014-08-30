@@ -4,6 +4,7 @@
 #include <vector>
 #include <algorithm>
 #include <data_type.hpp>
+#include "C:\Users\Senri\Source\Repos\procon2014\clammbon\include\data_type.hpp"
 #include <sort_algorithm/compare.hpp>
 #include <sort_algorithm/adjacent.hpp>
 #include <sort_algorithm/Murakami.hpp>
@@ -59,6 +60,7 @@ std::vector<std::vector<std::vector<point_type>>> Murakami::operator() (){
 	}
 	return block_list;
 }
+
 Murakami::block_combination Murakami::eval_block(block_type block1, block_type block2){
 	auto const width = data_.split_num.first;
 	auto const height = data_.split_num.second;
@@ -111,4 +113,47 @@ Murakami::block_combination Murakami::eval_block(block_type block1, block_type b
 			}
 		}
 	}
+}
+
+
+std::map <point_type, std::vector < std::vector<point_type>>> Murakami::sorted_comparation()
+{
+	auto const width = data_.split_num.first;
+	auto const height = data_.split_num.second;
+
+	std::map<point_type, std::vector<std::vector<point_type>>> data(
+		width*height,
+		std::vector < std::vector<point_type>(
+		direction,
+		std::vector<point_type>(
+		11
+		)
+		)
+		);
+	
+	
+	point_type temp;
+	temp.x = 1;
+	temp.y = 1;
+
+	point_type i = data[temp,[up][2]];
+
+
+	for (int i = 0; i < height; ++i)for (int j = 0; j < width; ++j){
+		point_typen target;
+		target.y = i;
+		target.x = j;
+
+		
+		data[target,[up][]
+
+	}
+
+
+	std::map<point_type, uint_fast64_t>temp_map(width*height);
+	for (int m = 0; m < height; ++m)for (int n = 0; n < width; ++n){
+		temp_map.push_back(comp_[target.y][target.x][m][n]);
+	}
+
+
 }
