@@ -23,6 +23,8 @@ private:
 		//ここでブロックへの参照を保持しないと結合後のブロックを消せない
 		block_type block1;
 		block_type block2;
+		int shift_x;
+		int shift_y;
 		//あるブロックとの結合するとき(結合したあと)の評価値
 		std::int_fast64_t score; //評価値は結構大きいので32bitだとオーバーフローするかも?
 	};
@@ -30,7 +32,7 @@ private:
 	block_combination eval_block(block_type, block_type);
 	//ピース対ピースの評価,仕様をよく理解しないと書くのが辛い
 	std::int_fast64_t eval_piece(point_type, point_type);
-	block_type combine_block(block_type, block_type);
+	block_type combine_block(block_combination);
 public:
 	Murakami(question_raw_data const& data, compared_type const& comp);
 	virtual ~Murakami() = default;
