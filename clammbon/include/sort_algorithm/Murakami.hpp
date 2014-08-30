@@ -10,6 +10,9 @@ private:
 
 	//ブロック(分割画像のかたまり),サイズは分割数(m,n)で固定,空白(分割画像の入らない部分)にはpoint_type(x = -1,y = -1)が入る
 	typedef std::vector<std::vector<point_type>> block_type;//サイズを固定し,point_typeを初期化する
+	enum direction{
+		up,right,down,left
+	};
 	//作ったブロックをしまっておくlist,この要素が1になったら復元画像完成(ただしはみ出ないものとする)
 	//std::vector<block_type> block_list; //std::mapで一緒に評価値を持たせてもいいかも////cppに移動
 	//一枚目      二枚目  一枚目から見た向き 順位(10位までの11要素,0は自分)

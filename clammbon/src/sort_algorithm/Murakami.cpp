@@ -95,6 +95,7 @@ Murakami::block_combination Murakami::eval_block(block_type block1, block_type b
 						int_fast64_t rank1_num = 0;//ƒLƒƒƒXƒg‚ª–Ê“|‚­‚³‚¢‚©‚çint_fast64_t‚Å
 						if (exists(k + i - 1,l + j,block2)){//ã
 							c += eval_piece(block1[k][l], block2[k + i - 1][l + j]);
+							if (sorted_comparation[block1[k][l]][up][1] == block2[k + i - 1][l + j]) rank1_num ++;
 						}
 						if (exists(k + i, l + j - 1,block2)){//¶
 
