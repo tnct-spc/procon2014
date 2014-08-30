@@ -1,10 +1,12 @@
 #include <vector>
 #include <data_type.hpp>
+#include <boost/multiprecision/cpp_int.hpp>
 //人名(村上剛基)なのでキャメルケースです
 class Murakami
 {
 private:
 	typedef std::vector<std::vector<point_type>> return_type;
+	typedef boost::multiprecision::cpp_int bigint;//
 	question_raw_data const& data_;
 	compared_type const& comp_;
 
@@ -31,7 +33,8 @@ private:
 	//ブロック対ブロックの評価,ブロックに持たせるべき?
 	block_combination eval_block(block_type, block_type);
 	//ピース対ピースの評価,仕様をよく理解しないと書くのが辛い
-	std::int_fast64_t eval_piece(point_type, point_type);
+	std::int_fast64_t eval_piece(point_type, point_type,direction);
+	std::int_fast64_t eval_comp_(point_type, point_type,direction);
 	block_type combine_block(block_combination);
 public:
 	Murakami(question_raw_data const& data, compared_type const& comp);
