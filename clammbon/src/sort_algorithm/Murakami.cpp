@@ -5,6 +5,7 @@
 #include <fstream>
 #include <string>
 #include <algorithm>
+#include <map>
 #include <data_type.hpp>
 #include <sort_algorithm/compare.hpp>
 #include <sort_algorithm/adjacent.hpp>
@@ -208,120 +209,121 @@ void Murakami::sort_compare()
 	auto const width = data_.split_num.first;
 	auto const height = data_.split_num.second;
 
-	std::map<point_type, std::vector < std::vector<point_type>>> sorted_comparation;
-	
 	struct point_type_score{
-		uint_fast64_t score;
+		int_fast64_t score;
 		int x, y;
 		bool operator<(const point_type_score& right) const {
-			return (score == right.score) ? x < right.x : score < right.score;
+			return score == right.score ? x < right.x : score < right.score;
 		}
 	};
+	std::vector<std::vector<std::vector<std::vector<point_type>>>> sorted_comparation(
+		height, (
+		std::vector<std::vector<std::vector<point_type>>>(
+		width, (
+		std::vector<std::vector<point_type>>(
+		4, (
+		std::vector<point_type >(
+		11
+		)
+		)
+		)
+		)
+		)
+		)
+		);
+	std::vector<point_type_score> rank;
+	std::vector<std::vector<point_type>> direct(4, (std::vector<point_type>(11)));
+	point_type init_pt;
+	init_pt.x = -1;
+	init_pt.y = -1;
 
-	std::vector<point_type_score> temp_vec;
-	std::vector<std::vector<point_type> > direct(4, (4, std::vector<point_type>(width*height)));
-											
-	//一番外側のループ
+	//全てのピースに対して（一番外側のループ）
 	for (int i = 0; i < height; ++i)for (int j = 0; j < width; ++j){
-		point_type_score temp_score;
-		point_type temp_point;
 		point_type now_point;
 		now_point.x = j;
 		now_point.y = i;
-		
-		//###up###//
-		temp_vec.clear();
+
+		//全てのピースを組み合わせる	##up##
 		for (int k = 0; k < height; ++k)for (int l = 0; l < width; ++l){
-			temp_score.score = comp_[i][j][k][l].up;
-			temp_score.x = j;
-			temp_score.y = i;
-			temp_vec.push_back(temp_score);
+			point_type_score temp_pts;
+			temp_pts.score = comp_[i][j][k][l].up;
+			temp_pts.x = l;
+			temp_pts.y = k;
+			rank.push_back(temp_pts);
 		}
-		std::sort(temp_vec.begin(), temp_vec.end());
-		int d = temp_vec[0].x;
-		//上から最大で10個代入
-		temp_point.x = -1;
-		temp_point.y = -1;
-		direct[up].push_back(temp_point);
-		for (int i = 0; i < 10; ++i){
-			if (i >= temp_vec.size())break;
-			temp_point.x = temp_vec[i].x;
-			temp_point.y = temp_vec[i].y;
-			direct[up].push_back(temp_point);
+		std::sort(rank.begin(), rank.end());
+		direct[0].push_back(init_pt);//0番目には(-1,-1)を
+		for (int c = 0; c < 10 && c < rank.size(); ++c){
+			point_type temp_pt;
+			temp_pt.x = rank[c].x;
+			temp_pt.y = rank[c].y;
+			sorted_comparation[now_point.y][now_point.x][0].push_back(temp_pt);
 		}
 
-		//###down###//
-		temp_vec.clear();
+		//全てのピースを組み合わせる	##down##
 		for (int k = 0; k < height; ++k)for (int l = 0; l < width; ++l){
-			temp_score.score = comp_[i][j][k][l].down;
-			temp_score.x = j;
-			temp_score.y = i;
-			temp_vec.push_back(temp_score);
+			point_type_score temp_pts;
+			temp_pts.score = comp_[i][j][k][l].down;
+			temp_pts.x = l;
+			temp_pts.y = k;
+			rank.push_back(temp_pts);
 		}
-		std::sort(temp_vec.begin(), temp_vec.end());
-		//上から最大で10個代入
-		temp_point.x = -1;
-		temp_point.y = -1;
-		direct[down].push_back(temp_point);
-		for (int i = 0; i < 10; ++i){
-			if (i >= temp_vec.size())break;
-			temp_point.x = temp_vec[i].x;
-			temp_point.y = temp_vec[i].y;
-			direct[down].push_back(temp_point);
+		std::sort(rank.begin(), rank.end());
+		direct[1].push_back(init_pt);//0番目には(-1,-1)を
+		for (int c = 0; c < 10 && c < rank.size(); ++c){
+			point_type temp_pt;
+			temp_pt.x = rank[c].x;
+			temp_pt.y = rank[c].y;
+			sorted_comparation[now_point.y][now_point.x][1].push_back(temp_pt);
 		}
 
-		//###right###//
-		temp_vec.clear();
+		//全てのピースを組み合わせる	##right##
 		for (int k = 0; k < height; ++k)for (int l = 0; l < width; ++l){
-			temp_score.score = comp_[i][j][k][l].right;
-			temp_score.x = j;
-			temp_score.y = i;
+			point_type_score temp_pts;
+			temp_pts.score = comp_[i][j][k][l].right;
+			temp_pts.x = l;
+			temp_pts.y = k;
+			rank.push_back(temp_pts);
 		}
-		temp_vec.push_back(temp_score);
-		std::sort(temp_vec.begin(), temp_vec.end());
-		//上から最大で10個代入
-		temp_point.x = -1;
-		temp_point.y = -1;
-		direct[right].push_back(temp_point);
-		for (int i = 0; i < 10; ++i){
-			if (i >= temp_vec.size())break;
-			temp_point.x = temp_vec[i].x;
-			temp_point.y = temp_vec[i].y;
-			direct[right].push_back(temp_point);
+		std::sort(rank.begin(), rank.end());
+		direct[2].push_back(init_pt);//0番目には(-1,-1)を
+		for (int c = 0; c < 10 && c < rank.size(); ++c){
+			point_type temp_pt;
+			temp_pt.x = rank[c].x;
+			temp_pt.y = rank[c].y;
+			sorted_comparation[now_point.y][now_point.x][2].push_back(temp_pt);
 		}
 
-		//###left###//
-		temp_vec.clear();
+		//全てのピースを組み合わせる	##left##
 		for (int k = 0; k < height; ++k)for (int l = 0; l < width; ++l){
-			temp_score.score = comp_[i][j][k][l].left;
-			temp_score.x = j;
-			temp_score.y = i;
+			point_type_score temp_pts;
+			temp_pts.score = comp_[i][j][k][l].left;
+			temp_pts.x = l;
+			temp_pts.y = k;
+			rank.push_back(temp_pts);
 		}
-		temp_vec.push_back(temp_score);
-		std::sort(temp_vec.begin(), temp_vec.end());
-		//上から最大で10個代入
-		temp_point.x = -1;
-		temp_point.y = -1;
-		direct[left].push_back(temp_point);
-		for (int i = 0; i < 10; ++i){
-			if (i >= temp_vec.size())break;
-			temp_point.x = temp_vec[i].x;
-			temp_point.y = temp_vec[i].y;
-			direct[left].push_back(temp_point);
+		std::sort(rank.begin(), rank.end());
+		direct[3].push_back(init_pt);//0番目には(-1,-1)を
+		for (int c = 0; c < 10 && c < rank.size(); ++c){
+			point_type temp_pt;
+			temp_pt.x = rank[c].x;
+			temp_pt.y = rank[c].y;
+			sorted_comparation[now_point.y][now_point.x][3].push_back(temp_pt);
 		}
-		std::map<point_type, std::vector < std::vector<point_type>>> sorted_comparation;
-		sorted_comparation.insert(std::map<point_type, std::vector < std::vector<point_type>>>::value_type(now_point, direct));
 	}
 
+	/*ファイル書き出し
 	std::ofstream ofs("solusions.csv", std::ios::out | std::ios::app | std::ios::ate);
-	std::map<point_type, std::vector < std::vector<point_type>>>::iterator sorted_comparation_it;
-	for (sorted_comparation_it = sorted_comparation.begin(); sorted_comparation_it != sorted_comparation.end(); sorted_comparation_it++){
-		for (int i = 0; i < 4; ++i)for (int j = 0; j < 11; ++j){
-			ofs << sorted_comparation_it->first.x << "," << sorted_comparation_it->first.y << "," << i << "," << j << "," << sorted_comparation_it->second[i][j].x << "," << sorted_comparation_it->second[i][j].y << std::endl;
+	for (int i = 0; i < sorted_comparation.size(); ++i)for (int j = 0; j < sorted_comparation[0].size(); ++j){
+		for (int k = 0; k < 4; ++k){
+			for (int l = 0; l < sorted_comparation[i][j][k].size(); ++l){
+				ofs << sorted_comparation[i][j][k][l].y << "," << sorted_comparation[i][j][k][l].x << std::endl;
+			}
 		}
 	}
 	std::cout << "Output solusions done." << std::endl;
-
+	*/
+	
 }
 
 Murakami::block_type Murakami::combine_block(block_combination block_comb){
