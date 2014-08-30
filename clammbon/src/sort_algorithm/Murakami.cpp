@@ -87,10 +87,11 @@ Murakami::block_combination Murakami::eval_block(block_type block1, block_type b
 	int_fast64_t best_block_c = std::numeric_limits<int_fast64_t>::min();
 	int best_shift_i;
 	int best_shift_j;
-	for (int i = 0; i < height * 2 - 1; i++){
-		for (int j = 0; j < width * 2 - 1; j++){
+	for (int i = -height; i < height * 2 - 1; i++){
+		for (int j = -width; j < width * 2 - 1; j++){
 			bool confliction = false;
 			int_fast64_t block_c = 0;
+			int_fast64_t rank1_num = 0;//ƒLƒƒƒXƒg‚ª–Ê“|‚­‚³‚¢‚©‚çint_fast64_t‚Å
 			for (int k = 0; k < height; k++){
 				for (int l = 0; l < width; l++){
 					if (exists(k - i, l - j, block2)){
@@ -101,30 +102,30 @@ Murakami::block_combination Murakami::eval_block(block_type block1, block_type b
 					}
 					if (exists(k,l,block1) && !exists(k + i, l + j,block2)){
 						int_fast64_t piece_c = 0;
-						int_fast64_t rank1_num = 0;//ƒLƒƒƒXƒg‚ª–Ê“|‚­‚³‚¢‚©‚çint_fast64_t‚Å
 						if (exists(k + i - 1,l + j,block2)){//ã
-							piece_c += eval_piece(block1[k][l], block2[k + i - 1][l + j]);
+							piece_c += eval_piece(block1[k][l], block2[k + i - 1][l + j],up);
 							if (sorted_comparation[block1[k][l]][up][1] == block2[k + i - 1][l + j]) rank1_num ++;
 						}
 						if (exists(k + i, l + j - 1,block2)){//¶
-							piece_c += eval_piece(block1[k][l], block2[k + i][l + j - 1]);
+							piece_c += eval_piece(block1[k][l], block2[k + i][l + j - 1],left);
 							if (sorted_comparation[block1[k][l]][left][1] == block2[k + i][l + j -1]) rank1_num++;
 						}
 						if (exists(k + i + 1, l + j,block2)){//‰º
-							piece_c += eval_piece(block1[k][l], block2[k + i + 1][l + j]);
+							piece_c += eval_piece(block1[k][l], block2[k + i + 1][l + j],down);
 							if (sorted_comparation[block1[k][l]][down][1] == block2[k + i + 1][l + j]) rank1_num++;
 						}
 						if (exists(k + i, l + j + 1,block2)){//‰E
-							piece_c += eval_piece(block1[k][l], block2[k + i][l + j + 1]);
+							piece_c += eval_piece(block1[k][l], block2[k + i][l + j + 1],right);
 							if (sorted_comparation[block1[k][l]][right][1] == block2[k + i][l + j + 1]) rank1_num++;
 						}
-						pow(piece_c, rank1_num);
+						//pow(piece_c, rank1_num);
 						block_c += piece_c;
 					}
 				}
 				if (confliction)break;
 			}
 			if (!confliction){
+				block_c *= (rank1_num + 1); //0‚ğŠ|‚¯‚é‚Ì‚Í•|‚¢
 				if (block_c > best_block_c){
 					best_block_c = block_c;
 					best_shift_i = i;
