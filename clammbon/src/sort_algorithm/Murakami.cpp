@@ -248,13 +248,14 @@ std::map <point_type, std::vector < std::vector<point_type>>> Murakami::sorted_c
 		data.insert(std::map<point_type, std::vector < std::vector<point_type>>>::value_type(now_point, direct));
 	}
 
-//	for (int i = 0; i < height; ++i)for (int j = 0; j < width; ++j){
-//		point_type temp;
-//		temp.x = j;
-//		temp.y = i;
-//		data
-//	std::ofstream ofs("solusions.csv", std::ios::out | std::ios::app | std::ios::ate);
-//	ofs <<  << "," << failure << std::endl;
-//	std::cout << "Output solusions done." << std::endl;
+	std::ofstream ofs("solusions.csv", std::ios::out | std::ios::app | std::ios::ate);
+	std::map<point_type, std::vector < std::vector<point_type>>>::iterator data_it;
+	for (data_it = data.begin(); data_it != data.end(); data_it++){
+		for (int i = 0; i < 4; ++i)for (int j = 0; j < 11; ++j){
+			ofs << data_it->first.x << "," << data_it->first.y << "," << i << "," << j << "," << data_it->second[i][j].x << "," << data_it->second[i][j].y << std::endl;
+		}
+	}
+	std::cout << "Output solusions done." << std::endl;
 
 }
+
