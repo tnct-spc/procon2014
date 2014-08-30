@@ -309,13 +309,33 @@ void Murakami::sort_compare()
 
 }
 
-Murakami::block_type Murakami::combine_block(block_combination block){
+Murakami::block_type Murakami::combine_block(block_combination block_comb){
 	auto const width = data_.split_num.first;
 	auto const height = data_.split_num.second;
+	int min_x = -width;
+	int max_x = width * 2 - 1;
+	int min_y = -height;
+	int max_y = height * 2 - 1;
 	for (int i = -height; i < height * 2 - 1; i ++){
 		for (int j = -width; j < width * 2 - 1; j++){
-
+			if ((block_comb.block1[i][j].x != -1 && block_comb.block1[i][j].y != -1) || (block_comb.block2[i + block_comb.shift_y][j + block_comb.shift_x].x != -1 && block_comb.block2[i + block_comb.shift_y][j + block_comb.shift_x].y != -1)){
+				if (min_x > j)min_x = j;
+				if (max_x < j)max_x = j;
+				if (min_y > i)min_y = i;
+				if (max_y < i)max_y = i;
+			}
 		}
 	}
-	return block.block1;
+	std::vector<std::vector<point_type>> return_combined_block(height, std::vector<point_type>(width, {-1,-1}));
+	for (int i = min_y; i <= max_y; i++){
+		for (int j = min_x; j <= max_x; j++){
+			if (block_comb.block1[i][j].x != -1 && block_comb.block1[i][j].y != -1){
+				return_combined_block[i][j] = block_comb.block1[i][j];
+			}
+			else if (block_comb.block2[i + block_comb.shift_y][j + block_comb.shift_x].x != -1 && block_comb.block2[i + block_comb.shift_y][j + block_comb.shift_x].y != -1){
+				return_combined_block[i][j] = block_comb.block2[i + block_comb.shift_y][j + block_comb.shift_x];
+			}
+		}
+	}
+	return return_combined_block;
 }
