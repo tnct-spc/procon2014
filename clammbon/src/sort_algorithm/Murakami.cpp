@@ -316,4 +316,6 @@ void Murakami::sort_compare()
 	std::cout << "Output solusions done." << std::endl;
 
 }
+Murakami::block_type Murakami::combine_block(block_combination){
 
+}
