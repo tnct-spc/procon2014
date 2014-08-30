@@ -4,7 +4,6 @@
 #include <vector>
 #include <algorithm>
 #include <data_type.hpp>
-#include "C:\Users\Senri\Source\Repos\procon2014\clammbon\include\data_type.hpp"
 #include <sort_algorithm/compare.hpp>
 #include <sort_algorithm/adjacent.hpp>
 #include <sort_algorithm/Murakami.hpp>
@@ -52,7 +51,7 @@ std::vector<std::vector<std::vector<point_type>>> Murakami::operator() (){
 				}
 			}
 		}
-		block_type combined_block = combine_block(best_block_combination.block1, best_block_combination.block2);//ブロックを結合する
+		block_type combined_block = combine_block(best_block_combination);//ブロックを結合する
 		boost::remove_erase_if(block_list, [best_block_combination](block_type it){//block_listから結合する前のブロックを消す
 			return (it == best_block_combination.block1 || it == best_block_combination.block2);
 		});
@@ -60,13 +59,9 @@ std::vector<std::vector<std::vector<point_type>>> Murakami::operator() (){
 	}
 	return block_list;
 }
-
 Murakami::block_combination Murakami::eval_block(block_type block1, block_type block2){
 	auto const width = data_.split_num.first;
 	auto const height = data_.split_num.second;
-	block_combination comb;
-	comb.block1 = block1;
-	comb.block1 = block2;
 	auto const in_range = [height, width](int y, int x){
 		if (x >= 0 && x < width && y >= 0 && y < height){
 			return true;
@@ -88,72 +83,61 @@ Murakami::block_combination Murakami::eval_block(block_type block1, block_type b
 			return false;
 		}
 	};
+	int_fast64_t best_block_c = std::numeric_limits<int_fast64_t>::min();
+	int best_shift_i;
+	int best_shift_j;
 	for (int i = 0; i < height * 2 - 1; i++){
 		for (int j = 0; j < width * 2 - 1; j++){
+			bool confliction = false;
+			int_fast64_t block_c = 0;
 			for (int k = 0; k < height; k++){
 				for (int l = 0; l < width; l++){
+					if (exists(k - i, l - j, block2)){
+						if (block1[k][l].x != -1 && block1[k][l].y != -1 && block2[k - i][l - j].x != -1 && block2[k - i][l - j].y != -1){
+							confliction = true;
+							break;
+						} 
+					}
 					if (exists(k,l,block1) && !exists(k + i, l + j,block2)){
-						int_fast64_t c = 0;
+						int_fast64_t piece_c = 0;
 						int_fast64_t rank1_num = 0;//キャストが面倒くさいからint_fast64_tで
 						if (exists(k + i - 1,l + j,block2)){//上
-							c += eval_piece(block1[k][l], block2[k + i - 1][l + j]);
+							piece_c += eval_piece(block1[k][l], block2[k + i - 1][l + j]);
 							if (sorted_comparation[block1[k][l]][up][1] == block2[k + i - 1][l + j]) rank1_num ++;
 						}
 						if (exists(k + i, l + j - 1,block2)){//左
-
+							piece_c += eval_piece(block1[k][l], block2[k + i][l + j - 1]);
+							if (sorted_comparation[block1[k][l]][left][1] == block2[k + i][l + j -1]) rank1_num++;
 						}
 						if (exists(k + i + 1, l + j,block2)){//下
-
+							piece_c += eval_piece(block1[k][l], block2[k + i + 1][l + j]);
+							if (sorted_comparation[block1[k][l]][down][1] == block2[k + i + 1][l + j]) rank1_num++;
 						}
 						if (exists(k + i, l + j + 1,block2)){//右
-
+							piece_c += eval_piece(block1[k][l], block2[k + i][l + j + 1]);
+							if (sorted_comparation[block1[k][l]][right][1] == block2[k + i][l + j + 1]) rank1_num++;
 						}
+						pow(piece_c, rank1_num);
+						block_c += piece_c;
 					}
+				}
+				if (confliction)break;
+			}
+			if (!confliction){
+				if (block_c > best_block_c){
+					best_block_c = block_c;
+					best_shift_i = i;
+					best_shift_j = j;
 				}
 			}
 		}
 	}
-}
-
-
-std::map <point_type, std::vector < std::vector<point_type>>> Murakami::sorted_comparation()
-{
-	auto const width = data_.split_num.first;
-	auto const height = data_.split_num.second;
-
-	std::map<point_type, std::vector<std::vector<point_type>>> data(
-		width*height,
-		std::vector < std::vector<point_type>(
-		direction,
-		std::vector<point_type>(
-		11
-		)
-		)
-		);
-	
-	
-	point_type temp;
-	temp.x = 1;
-	temp.y = 1;
-
-	point_type i = data[temp,[up][2]];
-
-
-	for (int i = 0; i < height; ++i)for (int j = 0; j < width; ++j){
-		point_typen target;
-		target.y = i;
-		target.x = j;
-
-		
-		data[target,[up][]
-
-	}
-
-
-	std::map<point_type, uint_fast64_t>temp_map(width*height);
-	for (int m = 0; m < height; ++m)for (int n = 0; n < width; ++n){
-		temp_map.push_back(comp_[target.y][target.x][m][n]);
-	}
-
-
+	block_combination return_struct{
+		block1,
+		block2,
+		best_shift_j,
+		best_shift_i,
+		best_block_c
+	};
+	return return_struct;
 }
