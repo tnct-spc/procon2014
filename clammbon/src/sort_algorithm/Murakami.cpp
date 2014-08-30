@@ -3,6 +3,7 @@
 #include <boost/range/algorithm_ext/erase.hpp>
 #include <vector>
 #include <algorithm>
+#include <fstream>
 #include <data_type.hpp>
 #include <sort_algorithm/compare.hpp>
 #include <sort_algorithm/adjacent.hpp>
@@ -140,4 +141,119 @@ Murakami::block_combination Murakami::eval_block(block_type block1, block_type b
 		best_block_c
 	};
 	return return_struct;
+}
+
+std::map <point_type, std::vector < std::vector<point_type>>> Murakami::sorted_comparation()
+{
+	auto const width = data_.split_num.first;
+	auto const height = data_.split_num.second;
+
+	std::map<point_type, std::vector < std::vector<point_type>>> data;
+	
+	struct point_type_score{
+		uint_fast64_t score;
+		point_type point;
+		bool operator<(const point_type_score& right) const {
+			return (score == right.score) ? point < right.point : score < right.score;
+		}
+	};
+
+	std::vector<point_type_score> temp_vec;
+	std::vector<std::vector<point_type> > direct(4, (4, std::vector<point_type>(width*height)));
+											
+	//ˆê”ÔŠO‘¤‚Ìƒ‹[ƒv
+	for (int i = 0; i < height; ++i)for (int j = 0; j < width; ++j){
+		point_type_score temp_score;
+		point_type now_point;
+		now_point.x = j;
+		now_point.y = i;
+
+		//###up###//
+		for (int k = 0; i < height; ++i)for (int l = 0; j < width; ++j){
+			temp_score.score = comp_[i][j][k][l].up;
+			temp_score.point.x = j;
+			temp_score.point.y = i;
+		}
+		temp_vec.push_back(temp_score);
+		std::sort(temp_vec.begin(), temp_vec.end());
+		//ã‚©‚ç10ŒÂ‘ã“ü
+		point_type temp_point;
+		temp_point.x = 0;
+		temp_point.y = 0;
+		direct[up].push_back(temp_point);
+		for (int i = 0; i < 10; ++i){
+			temp_point.x = temp_vec[i].point.x;
+			temp_point.y = temp_vec[i].point.y;
+			direct[up].push_back(temp_point);
+		}
+
+		//###down###//
+		for (int k = 0; i < height; ++i)for (int l = 0; j < width; ++j){
+			temp_score.score = comp_[i][j][k][l].down;
+			temp_score.point.x = j;
+			temp_score.point.y = i;
+		}
+		temp_vec.push_back(temp_score);
+		std::sort(temp_vec.begin(), temp_vec.end());
+		//ã‚©‚ç10ŒÂ‘ã“ü
+		point_type temp_point;
+		temp_point.x = 0;
+		temp_point.y = 0;
+		direct[down].push_back(temp_point);
+		for (int i = 0; i < 10; ++i){
+			temp_point.x = temp_vec[i].point.x;
+			temp_point.y = temp_vec[i].point.y;
+			direct[down].push_back(temp_point);
+		}
+
+		//###right###//
+		for (int k = 0; i < height; ++i)for (int l = 0; j < width; ++j){
+			temp_score.score = comp_[i][j][k][l].right;
+			temp_score.point.x = j;
+			temp_score.point.y = i;
+		}
+		temp_vec.push_back(temp_score);
+		std::sort(temp_vec.begin(), temp_vec.end());
+		//ã‚©‚ç10ŒÂ‘ã“ü
+		point_type temp_point;
+		temp_point.x = 0;
+		temp_point.y = 0;
+		direct[right].push_back(temp_point);
+		for (int i = 0; i < 10; ++i){
+			temp_point.x = temp_vec[i].point.x;
+			temp_point.y = temp_vec[i].point.y;
+			direct[right].push_back(temp_point);
+		}
+
+		//###left###//
+		for (int k = 0; i < height; ++i)for (int l = 0; j < width; ++j){
+			temp_score.score = comp_[i][j][k][l].left;
+			temp_score.point.x = j;
+			temp_score.point.y = i;
+		}
+		temp_vec.push_back(temp_score);
+		std::sort(temp_vec.begin(), temp_vec.end());
+		//ã‚©‚ç10ŒÂ‘ã“ü
+		point_type temp_point;
+		temp_point.x = 0;
+		temp_point.y = 0;
+		direct[left].push_back(temp_point);
+		for (int i = 0; i < 10; ++i){
+			temp_point.x = temp_vec[i].point.x;
+			temp_point.y = temp_vec[i].point.y;
+			direct[left].push_back(temp_point);
+		}
+		std::map<point_type, std::vector < std::vector<point_type>>> data;
+		data.insert(std::map<point_type, std::vector < std::vector<point_type>>>::value_type(now_point, direct));
+	}
+
+//	for (int i = 0; i < height; ++i)for (int j = 0; j < width; ++j){
+//		point_type temp;
+//		temp.x = j;
+//		temp.y = i;
+//		data
+//	std::ofstream ofs("solusions.csv", std::ios::out | std::ios::app | std::ios::ate);
+//	ofs <<  << "," << failure << std::endl;
+//	std::cout << "Output solusions done." << std::endl;
+
 }
