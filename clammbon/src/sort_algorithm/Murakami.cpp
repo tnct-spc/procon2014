@@ -313,3 +313,6 @@ std::map <point_type, std::vector < std::vector<point_type>>> Murakami::sorted_c
 //	std::cout << "Output solusions done." << std::endl;
 
 }
+Murakami::block_type Murakami::combine_block(block_combination){
+
+}
