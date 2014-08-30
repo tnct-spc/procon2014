@@ -45,10 +45,12 @@ int main(int argc, char* argv[])
 
     // 入力ファイル名でループ
     cv::Mat input_image;
-    std::vector<uchar> output_buffer;
     std::string header;
+    std::vector<uchar> output_buffer;
     std::string output_filename;
-    int count = 0;
+    std::ofstream output_file;
+    output_file.exceptions(std::ofstream::eofbit | std::ofstream::failbit | std::ofstream::badbit);
+
     for (std::string const& input_filename : input_filenames) {
         // 出力ファイル名の設定
         if (output_filename_base.size() == 0) {
@@ -60,7 +62,6 @@ int main(int argc, char* argv[])
         if (dotpos != std::string::npos) {
             output_filename.resize(dotpos);
         }
-        output_filename += (boost::format("_%1$02d") % count).str();
         output_filename += ext;
 
         // ヘッダ文字列の設定
@@ -72,7 +73,7 @@ int main(int argc, char* argv[])
         // 画像読み込み
         input_image = cv::imread(input_filename);
         if (input_image.data == nullptr) {
-            std::cout << "Fatal: " << input_filename << " を読み込めませんでした。" << std::endl;
+            std::cerr << "Fatal: " << input_filename << " を読み込めませんでした" << std::endl;
             return -1;
         }
 
@@ -80,15 +81,26 @@ int main(int argc, char* argv[])
         cv::imencode(ext, input_image, output_buffer, std::vector<int>(CV_IMWRITE_PXM_BINARY));
 
         // ヘッダ流し込み
+        // 先頭の "P6\n" の後にヘッダ文字列を挿入する
         output_buffer.insert(output_buffer.begin() + 3, header.begin(), header.end());
 
         // ファイル書き出し
-        std::ofstream output_file(output_filename, std::ofstream::binary);
-        if (!output_file) {
-            std::cout << "Fatal: " << output_filename << " へ書き込めませんでした。" << std::endl;
+        try {
+            output_file.open(output_filename, std::ofstream::binary);
+            std::copy(output_buffer.begin(), output_buffer.end(), std::ostream_iterator<uchar>(output_file));
+            output_file.close();
+        } catch (std::ofstream::failure e) {
+            std::cerr << "Fatal: " << output_filename << " へ書き込めません";
+            if (output_file.bad()) {
+                std::cerr << " (bad)";
+            } else if (output_file.fail()) {
+                std::cerr << " (fail)";
+            } else {
+                std::cerr << " (eof)";
+            }
+            std::cerr << std::endl;
             return -1;
         }
-        std::copy(output_buffer.begin(), output_buffer.end(), std::ostream_iterator<uchar>(output_file));
     }
     return 0;
 }
