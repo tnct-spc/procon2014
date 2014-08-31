@@ -109,35 +109,28 @@ int main(int argc, char* argv[])
                 max_height = std::min(vertical_split * piece_size_max, image_size_max);
             }
 
-            std::cout << "入力画像を縮小します" << std::endl;
             if (max_width < input_size.width && max_height < input_size.height) {
                 if (max_width < input_size.width && max_height < input_size.height) {
                     if (input_size.width > input_size.height) {
-                        std::cout << "幅を基準として縮小します1" << std::endl;
                         output_size.width = max_width;
                         output_size.height = input_size.height * max_width / input_size.width;
                     } else {
-                        std::cout << "高さを基準として縮小します1" << std::endl;
                         output_size.width = input_size.width * max_height / input_size.height;
                         output_size.height = max_height;
                     }
                 } else if (max_width < input_size.width) {
-                    std::cout << "幅を基準として縮小します2" << std::endl;
                     output_size.width = max_width;
                     output_size.height = input_size.height * max_width / input_size.width;
                 } else if (max_height < input_size.height) {
-                    std::cout << "高さを基準として縮小します2" << std::endl;
                     output_size.width = input_size.width * max_height / input_size.height;
                     output_size.height = max_height;
                 }
-                std::cout << input_size.width << "x" << input_size.height << " -> " << output_size.width << "x" << output_size.height << std::endl;
                 cv::resize(input_image, output_image, output_size);
             } else {
                 output_size = input_size;
                 output_image = input_image;
             }
 
-            std::cout << output_size.width << "x" << output_size.height << " -> ";
             if (piece_size_valid) {
                 horizontal_split = output_size.width / piece_width;
                 vertical_split = output_size.height / piece_height;
@@ -149,7 +142,6 @@ int main(int argc, char* argv[])
                 output_size.width -= output_size.width % horizontal_split;
                 output_size.height -= output_size.height % vertical_split;
             }
-            std::cout << output_size.width << "x" << output_size.height << std::endl;
             output_image = output_image.colRange(0, output_size.width).rowRange(0, output_size.height);
         } else {
             std::cerr << "Fatal: " << "分割数と断片画像サイズのどちらかを指定してください" << std::endl;
