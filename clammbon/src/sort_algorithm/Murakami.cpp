@@ -208,7 +208,7 @@ void Murakami::sort_compare()
 {
 	auto const width = data_.split_num.first;
 	auto const height = data_.split_num.second;
-
+	const point_type init_pt{ -1, -1 };
 	struct point_type_score{
 		int_fast64_t score;
 		int x, y;
@@ -216,6 +216,7 @@ void Murakami::sort_compare()
 			return score == right.score ? x < right.x : score < right.score;
 		}
 	};
+
 	std::vector<std::vector<std::vector<std::vector<point_type>>>> sorted_comparation(
 		height, (
 		std::vector<std::vector<std::vector<point_type>>>(
@@ -223,7 +224,9 @@ void Murakami::sort_compare()
 		std::vector<std::vector<point_type>>(
 		4, (
 		std::vector<point_type >(
-		11
+		1, (
+		point_type(init_pt)
+		)
 		)
 		)
 		)
@@ -233,9 +236,6 @@ void Murakami::sort_compare()
 		);
 	std::vector<point_type_score> rank;
 	std::vector<std::vector<point_type>> direct(4, (std::vector<point_type>(11)));
-	point_type init_pt;
-	init_pt.x = -1;
-	init_pt.y = -1;
 
 	//全てのピースに対して（一番外側のループ）
 	for (int i = 0; i < height; ++i)for (int j = 0; j < width; ++j){
@@ -244,6 +244,7 @@ void Murakami::sort_compare()
 		now_point.y = i;
 
 		//全てのピースを組み合わせる	##up##
+		rank.clear();
 		for (int k = 0; k < height; ++k)for (int l = 0; l < width; ++l){
 			point_type_score temp_pts;
 			temp_pts.score = comp_[i][j][k][l].up;
@@ -252,7 +253,7 @@ void Murakami::sort_compare()
 			rank.push_back(temp_pts);
 		}
 		std::sort(rank.begin(), rank.end());
-		direct[0].push_back(init_pt);//0番目には(-1,-1)を
+		direct[0][0]=init_pt;//0番目には(-1,-1)を
 		for (int c = 0; c < 10 && c < rank.size(); ++c){
 			point_type temp_pt;
 			temp_pt.x = rank[c].x;
@@ -261,6 +262,7 @@ void Murakami::sort_compare()
 		}
 
 		//全てのピースを組み合わせる	##down##
+		rank.clear();
 		for (int k = 0; k < height; ++k)for (int l = 0; l < width; ++l){
 			point_type_score temp_pts;
 			temp_pts.score = comp_[i][j][k][l].down;
@@ -269,7 +271,7 @@ void Murakami::sort_compare()
 			rank.push_back(temp_pts);
 		}
 		std::sort(rank.begin(), rank.end());
-		direct[1].push_back(init_pt);//0番目には(-1,-1)を
+		direct[1][0] = init_pt;//0番目には(-1,-1)を;//0番目には(-1,-1)を
 		for (int c = 0; c < 10 && c < rank.size(); ++c){
 			point_type temp_pt;
 			temp_pt.x = rank[c].x;
@@ -278,6 +280,7 @@ void Murakami::sort_compare()
 		}
 
 		//全てのピースを組み合わせる	##right##
+		rank.clear();
 		for (int k = 0; k < height; ++k)for (int l = 0; l < width; ++l){
 			point_type_score temp_pts;
 			temp_pts.score = comp_[i][j][k][l].right;
@@ -286,7 +289,7 @@ void Murakami::sort_compare()
 			rank.push_back(temp_pts);
 		}
 		std::sort(rank.begin(), rank.end());
-		direct[2].push_back(init_pt);//0番目には(-1,-1)を
+		direct[2][0] = init_pt;//0番目には(-1,-1)を;//0番目には(-1,-1)を
 		for (int c = 0; c < 10 && c < rank.size(); ++c){
 			point_type temp_pt;
 			temp_pt.x = rank[c].x;
@@ -295,6 +298,7 @@ void Murakami::sort_compare()
 		}
 
 		//全てのピースを組み合わせる	##left##
+		rank.clear();
 		for (int k = 0; k < height; ++k)for (int l = 0; l < width; ++l){
 			point_type_score temp_pts;
 			temp_pts.score = comp_[i][j][k][l].left;
@@ -303,7 +307,7 @@ void Murakami::sort_compare()
 			rank.push_back(temp_pts);
 		}
 		std::sort(rank.begin(), rank.end());
-		direct[3].push_back(init_pt);//0番目には(-1,-1)を
+		direct[3][0] = init_pt;//0番目には(-1,-1)を;//0番目には(-1,-1)を
 		for (int c = 0; c < 10 && c < rank.size(); ++c){
 			point_type temp_pt;
 			temp_pt.x = rank[c].x;
@@ -312,17 +316,18 @@ void Murakami::sort_compare()
 		}
 	}
 
-	/*ファイル書き出し
+
+	//ファイル書き出し
 	std::ofstream ofs("solusions.csv", std::ios::out | std::ios::app | std::ios::ate);
+	ofs << "point_type.y,point_type.x,direct,rank,point_type.y,point_type.x" << std::endl;
 	for (int i = 0; i < sorted_comparation.size(); ++i)for (int j = 0; j < sorted_comparation[0].size(); ++j){
 		for (int k = 0; k < 4; ++k){
 			for (int l = 0; l < sorted_comparation[i][j][k].size(); ++l){
-				ofs << sorted_comparation[i][j][k][l].y << "," << sorted_comparation[i][j][k][l].x << std::endl;
+				ofs << i << "," << j << "," << k << "," << l << "," << sorted_comparation[i][j][k][l].y << "," << sorted_comparation[i][j][k][l].x << std::endl;
 			}
 		}
 	}
 	std::cout << "Output solusions done." << std::endl;
-	*/
 	
 }
 
