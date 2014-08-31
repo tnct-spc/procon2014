@@ -19,7 +19,8 @@ Murakami::Murakami(question_raw_data const& data, compared_type const& comp)
 std::vector<std::vector<std::vector<point_type>>> Murakami::operator() (){
 	auto const width = data_.split_num.first;
 	auto const height = data_.split_num.second;
-	sort_compare();//sorted_comparation作成
+	//sort_compare();//sorted_comparation作成
+	make_sorted_comparation();
 	//block_type block(height, std::vector<point_type>(width, { -1, -1 }));
 	//大きさが[height * width][height][width]で中身がx,y = -1で初期化
 	std::vector<std::vector<std::vector<point_type>>> block_list(
@@ -44,7 +45,7 @@ std::vector<std::vector<std::vector<point_type>>> Murakami::operator() (){
 			}
 		}
 
-		while (block_list.size() == 1){//メインループ
+		while (block_list.size() != 1){//メインループ
 			block_combination best_block_combination;//一番いいblockの組み合わせいれるところ
 			for (auto i : block_list){//ブロック同士を比較するループ
 				for (auto j : block_list){
@@ -60,6 +61,12 @@ std::vector<std::vector<std::vector<point_type>>> Murakami::operator() (){
 				return (it == best_block_combination.block1 || it == best_block_combination.block2);
 			});
 			block_list.push_back(combined_block);//結合したのを入れる
+		}
+		for (int i = 0; i < height; i++){
+			for (int j = 0; j < width; j++){
+				std::cout << block_list[0][i][j].y << "," << block_list[0][i][j].y;
+			}
+			std::cout << "\n";
 		}
 		return block_list;
 }
@@ -296,6 +303,7 @@ void Murakami::sort_compare()
 	}
 
 	//ファイル書き出し
+	/*
 	std::ofstream ofs("solusions.csv", std::ios::out | std::ios::app | std::ios::ate);
 	ofs << "point_type.y,point_type.x,direct,rank,point_type.y,point_type.x" << std::endl;
 	for (int i = 0; i < height; ++i)for (int j = 0; j < width; ++j){
@@ -307,8 +315,76 @@ void Murakami::sort_compare()
 		}
 	}
 	std::cout << "Output solusions done." << std::endl;
+	*/
 }
 
+void Murakami::make_sorted_comparation(){
+	auto width = data_.split_num.first;
+	auto height = data_.split_num.second;
+	struct point_type_score{
+		point_type point;
+		int_fast64_t score;
+		bool operator<(const point_type_score& right) const {
+			return (score < right.score);
+		}
+	};
+
+	std::map<point_type,std::vector<std::vector<point_type>>> sorted_point_score_dir_point;
+	for (int k = 0; k < height; k++){
+		for (int l = 0; l < width; l++){
+			point_type point_k_l{ l, k};
+			std::vector<std::vector<point_type>> sorted_point_score_dir;
+			for (int dir_l = 0; dir_l < 4; dir_l++){
+				std::vector<point_type_score> sorted_point_score;
+				for (int i = 0; i < height; i++){
+					for (int j = 0; j < width; j++){
+						point_type p{ j, i };
+						point_type_score t;
+						t.point = p;
+						switch (dir_l)
+						{
+						case up:
+							t.score = comp_[k][l][i][j].up;
+							break;
+						case right:
+							t.score = comp_[k][l][i][j].right;
+							break;
+						case down:
+							t.score = comp_[k][l][i][j].down;
+							break;
+						case left:
+							t.score = comp_[k][l][i][j].left;
+							break;
+						}
+						sorted_point_score.push_back(t);
+					}
+				}
+				std::sort(sorted_point_score.begin(), sorted_point_score.end());
+				std::vector<point_type> p_vec;
+				for (int a = 0; a < height * width; a++){
+						p_vec.push_back(sorted_point_score[a].point);
+				}
+				sorted_point_score_dir.push_back(p_vec);
+			}
+			sorted_point_score_dir_point[point_k_l] = sorted_point_score_dir;
+		}
+
+	}
+
+	sorted_comparation = sorted_point_score_dir_point;
+
+	std::ofstream ofs("solusions.csv", std::ios::out | std::ios::app | std::ios::ate);
+	ofs << "point_type.y,point_type.x,direct,rank,point_type.y,point_type.x" << std::endl;
+	for (int i = 0; i < height; ++i)for (int j = 0; j < width; ++j){
+		point_type now_point{ i, j };
+		for (int k = 0; k < 4; ++k){
+			for (int l = 0; l < width*height - 1; ++l){
+				ofs << now_point.y << "," << now_point.x << "," << k << "," << l << "," << sorted_comparation[now_point][k][l].y << "," << sorted_comparation[now_point][k][l].x << std::endl;
+			}
+		}
+	}
+	std::cout << "Output solusions done." << std::endl;
+}
 Murakami::block_type Murakami::combine_block(block_combination block_comb){
 	auto const width = data_.split_num.first;
 	auto const height = data_.split_num.second;

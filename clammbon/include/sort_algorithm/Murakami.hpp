@@ -1,6 +1,7 @@
 #include <vector>
 #include <data_type.hpp>
 #include <boost/multiprecision/cpp_int.hpp>
+#include <map>
 //人名(村上剛基)なのでキャメルケースです
 class Murakami
 {
@@ -37,6 +38,7 @@ private:
 	std::int_fast64_t eval_piece(point_type, point_type,direction);
 	std::int_fast64_t eval_comp_(point_type, point_type,direction);
 	block_type combine_block(block_combination);
+	void make_sorted_comparation();
 public:
 	Murakami(question_raw_data const& data, compared_type const& comp);
 	virtual ~Murakami() = default;
