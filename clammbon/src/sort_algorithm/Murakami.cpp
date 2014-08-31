@@ -216,8 +216,8 @@ void Murakami::sort_compare()
 			return score == right.score ? x < right.x : score < right.score;
 		}
 	};
-
-	std::vector<std::vector<std::vector<std::vector<point_type>>>> sorted_comparation(
+	std::map <point_type, std::vector < std::vector<point_type>>> sorted_comparation;
+/*	std::vector<std::vector<std::vector<std::vector<point_type>>>> sorted_comparation(
 		height, (
 		std::vector<std::vector<std::vector<point_type>>>(
 		width, (
@@ -234,6 +234,7 @@ void Murakami::sort_compare()
 		)
 		)
 		);
+*/
 	std::vector<point_type_score> rank;
 	std::vector<std::vector<point_type>> direct(4, (std::vector<point_type>(11)));
 
@@ -258,8 +259,10 @@ void Murakami::sort_compare()
 			point_type temp_pt;
 			temp_pt.x = rank[c].x;
 			temp_pt.y = rank[c].y;
-			sorted_comparation[now_point.y][now_point.x][0].push_back(temp_pt);
+//			sorted_comparation[now_point.y][now_point.x][0].push_back(temp_pt);
+			direct[0].push_back(temp_pt);
 		}
+		
 
 		//全てのピースを組み合わせる	##down##
 		rank.clear();
@@ -276,7 +279,8 @@ void Murakami::sort_compare()
 			point_type temp_pt;
 			temp_pt.x = rank[c].x;
 			temp_pt.y = rank[c].y;
-			sorted_comparation[now_point.y][now_point.x][1].push_back(temp_pt);
+//			sorted_comparation[now_point.y][now_point.x][1].push_back(temp_pt);
+			direct[1].push_back(temp_pt);
 		}
 
 		//全てのピースを組み合わせる	##right##
@@ -294,7 +298,8 @@ void Murakami::sort_compare()
 			point_type temp_pt;
 			temp_pt.x = rank[c].x;
 			temp_pt.y = rank[c].y;
-			sorted_comparation[now_point.y][now_point.x][2].push_back(temp_pt);
+//			sorted_comparation[now_point.y][now_point.x][2].push_back(temp_pt);
+			direct[2].push_back(temp_pt);
 		}
 
 		//全てのピースを組み合わせる	##left##
@@ -312,11 +317,13 @@ void Murakami::sort_compare()
 			point_type temp_pt;
 			temp_pt.x = rank[c].x;
 			temp_pt.y = rank[c].y;
-			sorted_comparation[now_point.y][now_point.x][3].push_back(temp_pt);
+//			sorted_comparation[now_point.y][now_point.x][3].push_back(temp_pt);
+			direct[3].push_back(temp_pt);
 		}
+		sorted_comparation.insert(now_point, direct);
 	}
 
-
+#if 0
 	//ファイル書き出し
 	std::ofstream ofs("solusions.csv", std::ios::out | std::ios::app | std::ios::ate);
 	ofs << "point_type.y,point_type.x,direct,rank,point_type.y,point_type.x" << std::endl;
@@ -328,7 +335,7 @@ void Murakami::sort_compare()
 		}
 	}
 	std::cout << "Output solusions done." << std::endl;
-	
+#endif
 }
 
 Murakami::block_type Murakami::combine_block(block_combination block_comb){
