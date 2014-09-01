@@ -39,15 +39,15 @@ int main(int argc, char* argv[])
     // コマンドラインオプションの定義
     boost::program_options::options_description options(argv[0]);
     options.add_options()
-        ("input,i",             boost::program_options::value<std::vector<std::string>>(&input_filenames)   ->multitoken() ->required(),                "入力ファイル名")
-        ("output,o",            boost::program_options::value<std::string>(&output_filename_base),                                                      "出力ファイル名")
-        ("piece_width,x",       boost::program_options::value<int>(&piece_width)                            ->default_value(piece_width_default),       "断片画像の幅")
-        ("piece_height,y",      boost::program_options::value<int>(&piece_height)                           ->default_value(piece_height_default),      "断片画像の高さ")
-        ("horizontal_split,h",  boost::program_options::value<int>(&horizontal_split)                       ->default_value(horizontal_split_default),  "横分割数")
-        ("vertical_split,v",    boost::program_options::value<int>(&vertical_split)                         ->default_value(vertical_split_default),    "縦分割数")
-        ("selectable,n",        boost::program_options::value<int>(&selectable)                             ->default_value(selectable_default),        "選択可能回数")
-        ("select_cost,s",       boost::program_options::value<int>(&select_cost)                            ->default_value(select_cost_default),       "選択コスト変換レート")
-        ("change_cost,c",       boost::program_options::value<int>(&change_cost)                            ->default_value(change_cost_default),       "交換コスト変換レート")
+        ("i",   boost::program_options::value<std::vector<std::string>>(&input_filenames)   ->multitoken() ->required(),                "入力ファイル名")
+        ("o",   boost::program_options::value<std::string>(&output_filename_base),                                                      "出力ファイル名")
+        ("px",  boost::program_options::value<int>(&piece_width)                            ->default_value(piece_width_default),       "断片画像の幅")
+        ("py",  boost::program_options::value<int>(&piece_height)                           ->default_value(piece_height_default),      "断片画像の高さ")
+        ("sx",  boost::program_options::value<int>(&horizontal_split)                       ->default_value(horizontal_split_default),  "横分割数")
+        ("sy",  boost::program_options::value<int>(&vertical_split)                         ->default_value(vertical_split_default),    "縦分割数")
+        ("n",   boost::program_options::value<int>(&selectable)                             ->default_value(selectable_default),        "選択可能回数")
+        ("s",   boost::program_options::value<int>(&select_cost)                            ->default_value(select_cost_default),       "選択コスト変換レート")
+        ("c",   boost::program_options::value<int>(&change_cost)                            ->default_value(change_cost_default),       "交換コスト変換レート")
     ;
 
     // コマンドラインオプションのチェック
