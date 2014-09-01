@@ -10,8 +10,6 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 
-int hoge = 0;
-
 int constexpr piece_size_max = 128;
 int constexpr piece_size_min = 16;
 int constexpr split_max = 16;
