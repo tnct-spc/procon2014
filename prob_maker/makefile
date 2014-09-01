@@ -11,7 +11,7 @@ DEPS := $(SRCS:src/%.cpp=obj/$(buildtype)/%.d)
 CXXFLAGS +=
 CPPFLAGS +=
 LDFLAGS  +=
-LIBS     += -lopencv_core -lopencv_highgui -lboost_program_options
+LIBS     += -lopencv_core -lopencv_imgproc -lopencv_highgui -lboost_program_options
 
 .PHONY: all clean distclean
 
