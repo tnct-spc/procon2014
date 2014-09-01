@@ -1,11 +1,16 @@
-#include <iostream>
+#include <algorithm>
 #include <fstream>
+#include <iostream>
+#include <random>
+#include <vector>
 #include <cmath>
 #include <boost/program_options.hpp>
 #include <boost/format.hpp>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
+
+int hoge = 0;
 
 int constexpr piece_size_max = 128;
 int constexpr piece_size_min = 16;
@@ -59,6 +64,7 @@ int main(int argc, char* argv[])
     }
 
     cv::Mat input_image;  // 入力画像
+    cv::Mat temp_image;  // 作業場
     cv::Mat output_image;  // 出力画像
     std::string header;  // ヘッダ文字列
     std::vector<uchar> output_buffer;  // 出力画像バッファ
@@ -125,10 +131,10 @@ int main(int argc, char* argv[])
                     output_size.width = input_size.width * max_height / input_size.height;
                     output_size.height = max_height;
                 }
-                cv::resize(input_image, output_image, output_size);
+                cv::resize(input_image, temp_image, output_size);
             } else {
                 output_size = input_size;
-                output_image = input_image;
+                temp_image = input_image;
             }
 
             if (piece_size_valid) {
@@ -142,10 +148,30 @@ int main(int argc, char* argv[])
                 output_size.width -= output_size.width % horizontal_split;
                 output_size.height -= output_size.height % vertical_split;
             }
-            output_image = output_image.colRange(0, output_size.width).rowRange(0, output_size.height);
+            temp_image = temp_image.colRange(0, output_size.width).rowRange(0, output_size.height);
         } else {
             std::cerr << "Fatal: " << "分割数と断片画像サイズのどちらかを指定してください" << std::endl;
             return -1;
+        }
+
+        // 画像切り分け
+        std::vector<cv::Mat> pieces;
+        for (int y = 0; y < vertical_split; ++y) {
+            for (int x = 0; x < horizontal_split; ++x) {
+                pieces.push_back(temp_image.colRange(x * piece_width, (x + 1) * piece_width).rowRange(y * piece_height, (y + 1) * piece_height));
+            }
+        }
+
+        // シャッフル
+        std::shuffle(pieces.begin(), pieces.end(), std::mt19937());
+
+        // 画像貼り合わせ
+        cv::Mat temp_piece;
+        output_image = cv::Mat(output_size, input_image.type());
+        for (int y = 0, i = 0; y < vertical_split; ++y) {
+            for (int x = 0; x < horizontal_split; ++x, ++i) {
+                pieces[i].copyTo(output_image(cv::Rect(x * piece_width, y * piece_height, piece_width, piece_height)));
+            }
         }
 
         // ヘッダ文字列の設定
