@@ -2,6 +2,7 @@
 #include <fstream>
 #include <iostream>
 #include <random>
+#include <utility>
 #include <vector>
 #include <cmath>
 #include <boost/program_options.hpp>
@@ -9,6 +10,7 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
+#include "data_type.hpp"
 
 int constexpr piece_size_max = 128;
 int constexpr piece_size_min = 16;
@@ -24,7 +26,6 @@ int constexpr piece_width_default = -1;
 int constexpr piece_height_default = -1;
 int constexpr horizontal_split_default = -1;
 int constexpr vertical_split_default = -1;
-std::string const ext = ".ppm";
 
 int main(int argc, char* argv[])
 {
@@ -65,8 +66,11 @@ int main(int argc, char* argv[])
     cv::Mat temp_image;  // 作業場
     cv::Mat output_image;  // 出力画像
     std::string header;  // ヘッダ文字列
+    std::stringstream answer_stream;  // .ans ファイルの中身
     std::vector<uchar> output_buffer;  // 出力画像バッファ
     std::string output_filename;  // 出力ファイルの名前
+    std::string output_image_filename;  // 出力画像ファイルの名前
+    std::string output_answer_filename;  // 出力正答ファイルの名前
     std::ofstream output_file;  // 出力ファイルのストリーム
     cv::Size input_size;  // 入力画像のサイズ
     int count = 0;
@@ -89,7 +93,8 @@ int main(int argc, char* argv[])
         if (dotpos != std::string::npos) {
             output_filename.resize(dotpos);
         }
-        output_filename += ext;
+        output_image_filename = output_filename + ".ppm";
+        output_answer_filename = output_filename + ".ans";
 
         // 画像読み込み
         input_image = cv::imread(input_filename);
@@ -153,23 +158,30 @@ int main(int argc, char* argv[])
         }
 
         // 画像切り分け
-        std::vector<cv::Mat> pieces;
+        std::vector<std::pair<point_type, cv::Mat>> pieces;
         for (int y = 0; y < vertical_split; ++y) {
             for (int x = 0; x < horizontal_split; ++x) {
-                pieces.push_back(temp_image.colRange(x * piece_width, (x + 1) * piece_width).rowRange(y * piece_height, (y + 1) * piece_height));
+                pieces.push_back(
+                    std::pair<point_type, cv::Mat>(
+                        point_type{x, y},
+                        temp_image.colRange(x * piece_width, (x + 1) * piece_width).rowRange(y * piece_height, (y + 1) * piece_height)
+                    )
+                );
             }
         }
 
         // シャッフル
         std::shuffle(pieces.begin(), pieces.end(), std::mt19937());
 
-        // 画像貼り合わせ
-        cv::Mat temp_piece;
+        // 画像貼り合わせと .ans ファイル文字列の作成
         output_image = cv::Mat(output_size, input_image.type());
+        answer_stream.str("");
         for (int y = 0, i = 0; y < vertical_split; ++y) {
             for (int x = 0; x < horizontal_split; ++x, ++i) {
-                pieces[i].copyTo(output_image(cv::Rect(x * piece_width, y * piece_height, piece_width, piece_height)));
+                pieces[i].second.copyTo(output_image(cv::Rect(x * piece_width, y * piece_height, piece_width, piece_height)));
+                answer_stream << boost::format("(%1%,%2%) ") % pieces[i].first.x % pieces[i].first.y;
             }
+            answer_stream << std::endl;
         }
 
         // ヘッダ文字列の設定
@@ -179,7 +191,7 @@ int main(int argc, char* argv[])
         header += (boost::format("# %1% %2%\n") % select_cost % change_cost).str();
 
         // バッファへ書き込み
-        cv::imencode(ext, output_image, output_buffer, std::vector<int>(CV_IMWRITE_PXM_BINARY));
+        cv::imencode(".ppm", output_image, output_buffer, std::vector<int>(CV_IMWRITE_PXM_BINARY));
 
         // ヘッダ流し込み
         // 先頭の "P6\n" の後にヘッダ文字列を挿入する
@@ -187,8 +199,14 @@ int main(int argc, char* argv[])
 
         // ファイル書き出し
         try {
+            output_filename = output_image_filename;
             output_file.open(output_filename, std::ofstream::binary);
             std::copy(output_buffer.begin(), output_buffer.end(), std::ostream_iterator<uchar>(output_file));
+            output_file.close();
+
+            output_filename = output_answer_filename;
+            output_file.open(output_filename, std::ofstream::out);
+            output_file << answer_stream.str();
             output_file.close();
         } catch (std::ofstream::failure e) {
             std::cerr << "Fatal: " << output_filename << " へ書き込めません";
