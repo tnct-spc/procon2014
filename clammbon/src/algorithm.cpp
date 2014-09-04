@@ -14,6 +14,7 @@
 // 2 にすると速い
 #define BFS_NUM 3
 
+// class definition {{{1
 class algorithm::impl : boost::noncopyable
 {
 public:
@@ -65,6 +66,7 @@ private:
     int sorted_col;
 };
 
+// interfaces for Boost.Coroutine {{{1
 algorithm::algorithm()
     : pimpl_(new impl())
 {
@@ -104,6 +106,14 @@ void algorithm::impl::reset(question_data const& data)
                 );
 }
 
+void algorithm::impl::process(boost::coroutines::coroutine<return_type>::push_type& yield)
+{
+    // 訳ありで転送するだけの関数
+    (*this)(yield);
+}
+
+// implements {{{1
+// operator() {{{2
 void algorithm::impl::operator() (boost::coroutines::coroutine<return_type>::push_type& yield)
 {
     //
@@ -150,12 +160,7 @@ void algorithm::impl::operator() (boost::coroutines::coroutine<return_type>::pus
     yield(solve());
 }
 
-void algorithm::impl::process(boost::coroutines::coroutine<return_type>::push_type& yield)
-{
-    // 訳ありで転送するだけの関数
-    (*this)(yield);
-}
-
+// move_selecting {{{2
 template <>
 void algorithm::impl::move_selecting<'U'>()
 {
@@ -204,6 +209,14 @@ void algorithm::impl::move_selecting<'L'>()
 #endif
 }
 
+template <char First, char Second, char... Rest>
+void algorithm::impl::move_selecting()
+{
+    move_selecting<First>();
+    move_selecting<Second, Rest...>();
+}
+
+// move_bf {{{2
 template <>
 const step_type algorithm::impl::move_bf<'U'>(step_type step) const
 {
@@ -240,13 +253,7 @@ const step_type algorithm::impl::move_bf<'L'>(step_type step) const
     return step;
 }
 
-template <char First, char Second, char... Rest>
-void algorithm::impl::move_selecting()
-{
-    move_selecting<First>();
-    move_selecting<Second, Rest...>();
-}
-
+// current_point {{{2
 const point_type algorithm::impl::current_point(point_type const& point) const
 {
     // point を原座標として持つ断片画像の現在の座標を返す
@@ -260,7 +267,8 @@ const point_type algorithm::impl::current_point(point_type const& point) const
     throw std::runtime_error("No Tile " + point.str());
 }
 
-const answer_list algorithm::impl::solve()
+// solve {{{2
+const answer_list algorithm::impl solve()
 {
     // Ian Parberry 氏のアルゴリズムを長方形に拡張したもの
     // とりあえず1回選択のみ
@@ -288,6 +296,7 @@ const answer_list algorithm::impl::solve()
     return answer;
 }
 
+// greedy {{{2
 void algorithm::impl::greedy()
 {
     // 貪欲法で解く 一番要の部分
@@ -425,6 +434,7 @@ void algorithm::impl::greedy()
     }
 }
 
+// brute_force {{{2
 void algorithm::impl::brute_force()
 {
     // Brute-Force Algorithm
@@ -516,6 +526,7 @@ void algorithm::impl::brute_force()
     return;
 }
 
+// move_target {{{2
 void algorithm::impl::move_target(point_type const& target, char const& direction)
 {
     // selecting の操作によって原座標が target である断片画像を指定の方向へ移動させる.
@@ -679,6 +690,8 @@ void algorithm::impl::move_target(point_type const& target, char const& directio
         }
     }
 }
+
+// move_to {{{2
 void algorithm::impl::move_to(point_type const& to)
 {
     // selecting を to まで移動させる
@@ -779,11 +792,13 @@ void algorithm::impl::move_to(point_type const& to)
     }
 }
 
+// is_sorted {{{2
 inline bool algorithm::impl::is_sorted(point_type const& point) const
 {
     return sorted_points.find(point) != sorted_points.end();
 }
 
+// is_finished {{{2
 bool algorithm::impl::is_finished(std::vector<std::vector<point_type>> const& mat) const
 {
     for (int y = 0; y < height; ++y) {
@@ -796,6 +811,7 @@ bool algorithm::impl::is_finished(std::vector<std::vector<point_type>> const& ma
     return true;
 }
 
+// print {{{2
 #ifdef algorithm_debug
 inline void algorithm::impl::print() const
 {
@@ -813,6 +829,7 @@ inline void algorithm::impl::print() const
 }
 #endif
 
+// main {{{1
 #ifdef algorithm_debug
 // 検証用main
 // clang++ -std=c++11 -I../include -lboost_system -lboost_coroutine algorithm.cpp
@@ -834,3 +851,5 @@ int main(int argc, char* argv[])
     return 0;
 }
 #endif
+
+// vim: set ts=4 sw=4 et fdm=marker:
