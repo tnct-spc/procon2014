@@ -11,7 +11,7 @@ DEPS := $(SRCS:src/%.cpp=obj/$(buildtype)/%.d)
 CXXFLAGS +=
 CPPFLAGS +=
 LDFLAGS  +=
-LIBS     += -lboost_system
+LIBS     += -lboost_system -lboost_coroutine
 
 .PHONY: all clean distclean
 
