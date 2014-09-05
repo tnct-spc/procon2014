@@ -399,33 +399,25 @@ void algorithm::impl::greedy()
             // ターゲットの真の原座標が右端の場合
             if (selecting_cur == waypoint.up().left()) {
                 // selecting が仮の原座標の左上にいる場合
-                move_selecting<'R'>();
-                move_selecting<'D'>();
+                move_selecting<'R', 'D'>();
             } else {
                 if (selecting_cur == waypoint.down()) {
                     // selecting が仮の原座標の直下にいる場合
-                    move_selecting<'L'>();
-                    move_selecting<'U'>();
+                    move_selecting<'L', 'U'>();
                 }
-                move_selecting<'U'>();
-                move_selecting<'R'>();
-                move_selecting<'D'>();
+                move_selecting<'U', 'R', 'D'>();
             }
         } else if (target.y == height - 1) {
             // ターゲットの真の原座標が下端の場合
             if (selecting_cur == waypoint.left().up()) {
                 // selecting が仮の原座標の左上にいる場合
-                move_selecting<'D'>();
-                move_selecting<'R'>();
+                move_selecting<'D', 'R'>();
             } else {
                 if (selecting_cur == waypoint.right()) {
                     // selecting が仮の原座標の直右にいる場合
-                    move_selecting<'U'>();
-                    move_selecting<'L'>();
+                    move_selecting<'U', 'L'>();
                 }
-                move_selecting<'L'>();
-                move_selecting<'D'>();
-                move_selecting<'R'>();
+                move_selecting<'L', 'D', 'R'>();
             }
         }
 
