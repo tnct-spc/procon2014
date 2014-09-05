@@ -317,11 +317,9 @@ void algorithm::impl::greedy()
     // 仮のターゲット座標, これは原座標ではなく実際の座標
     point_type waypoint;
 
-    bool f = false;
-    for (point_type target : target_queue) {
+    for (point_type const& target : target_queue) {
         // 端の部分の処理
-        if ((target.x == width - 2 && current_point(target) == target && current_point(target.right()) == target.right()) || (target.y == height - 2 && current_point(target) == target && current_point(target.down()) == target.down()) || f) {
-            f = true;
+        if (sorted_points.find(target) != sorted_points.end()) {
             continue;
         }
         if (target.x == width - 2 || target.y == height - 1) {
@@ -815,8 +813,8 @@ inline void algorithm::impl::print() const
     std::cout << std::endl;
     std::cout << "-----------------------------------------------" << std::endl;
     std::cout << std::endl;
-    for (std::vector<point_type> row : matrix) {
-        for (point_type tile : row) {
+    for (std::vector<point_type> const& row : matrix) {
+        for (point_type const& tile : row) {
             std::cout << boost::format("%1$02X ") % tile.num();
         }
         std::cout << std::endl;
