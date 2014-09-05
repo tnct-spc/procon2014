@@ -421,7 +421,7 @@ void algorithm::impl::greedy()
             }
             move_selecting<'D', 'R'>();
         } else if (target.x == width - 2 && matrix[selecting_cur.y - 1][selecting_cur.x - 1] == target.right()) {
-            move_selecting<'R', 'U', 'L', 'D', 'R', 'D', 'L', 'U', 'U', 'R', 'D', 'L', 'D'>();
+            move_selecting<'L', 'U', 'R', 'D', 'L', 'D', 'R', 'U', 'U', 'L', 'D', 'R', 'D'>();
         } else if (target.y == height - 2 && matrix[selecting_cur.y - 1][selecting_cur.x - 1] == target.down()) {
             move_selecting<'U', 'L', 'D', 'R', 'U', 'R', 'D', 'L', 'L', 'U', 'R', 'D', 'R'>();
         }
