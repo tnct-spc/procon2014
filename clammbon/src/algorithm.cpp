@@ -268,7 +268,7 @@ const point_type algorithm::impl::current_point(point_type const& point) const
 }
 
 // solve {{{2
-const answer_list algorithm::impl solve()
+const answer_list algorithm::impl::solve()
 {
     // Ian Parberry 氏のアルゴリズムを長方形に拡張したもの
     // とりあえず1回選択のみ
@@ -397,28 +397,24 @@ void algorithm::impl::greedy()
         // 端の部分の処理
         if (target.x == width - 1) {
             // ターゲットの真の原座標が右端の場合
-            if (selecting_cur == waypoint.up().left()) {
-                // selecting が仮の原座標の左上にいる場合
-                move_selecting<'R', 'D'>();
-            } else {
+            if (!(selecting_cur == waypoint.up().left())) {
                 if (selecting_cur == waypoint.down()) {
                     // selecting が仮の原座標の直下にいる場合
                     move_selecting<'L', 'U'>();
                 }
-                move_selecting<'U', 'R', 'D'>();
+                move_selecting<'U'>();
             }
+            move_selecting<'R', 'D'>();
         } else if (target.y == height - 1) {
             // ターゲットの真の原座標が下端の場合
-            if (selecting_cur == waypoint.left().up()) {
-                // selecting が仮の原座標の左上にいる場合
-                move_selecting<'D', 'R'>();
-            } else {
+            if (!(selecting_cur == waypoint.left().up())) {
                 if (selecting_cur == waypoint.right()) {
                     // selecting が仮の原座標の直右にいる場合
                     move_selecting<'U', 'L'>();
                 }
-                move_selecting<'L', 'D', 'R'>();
+                move_selecting<'L'>();
             }
+            move_selecting<'D', 'R'>();
         }
 
         // ソート済みとする
@@ -809,7 +805,7 @@ inline void algorithm::impl::print() const
 {
     // 具合をいい感じに表示
     std::cout << std::endl;
-    std::cout << "--------------------------------------------------------------------------------" << std::endl;
+    std::cout << "-----------------------------------------------" << std::endl;
     std::cout << std::endl;
     for (std::vector<point_type> row : matrix) {
         for (point_type tile : row) {
@@ -840,6 +836,13 @@ int main(int argc, char* argv[])
     algorithm algo;
     algo.reset(qdata);
     const auto answer = algo.get();
+    for (auto const& line : *answer) {
+        std::cout << boost::format("%1$02X") % line.position.num() << std::endl;
+        for (auto const& action : line.actions) {
+            std::cout << action;
+        }
+        std::cout << std::endl;
+    }
     return 0;
 }
 #endif
