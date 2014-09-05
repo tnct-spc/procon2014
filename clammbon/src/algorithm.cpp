@@ -304,10 +304,10 @@ void algorithm::impl::greedy()
     // ターゲットをキューに入れる
     // 中身は原座標
     std::vector<point_type> target_queue;
-    for (int i = sorted_col; i < width; i++) {
+    for (int i = sorted_col; i < width; ++i) {
         target_queue.push_back(point_type{i, sorted_row});
     }
-    for (int i = sorted_row + 1; i < height; i++) {
+    for (int i = sorted_row + 1; i < height; ++i{
         target_queue.push_back(point_type{sorted_col, i});
     }
 
@@ -825,7 +825,7 @@ inline void algorithm::impl::print() const
 // main {{{1
 #ifdef algorithm_debug
 // 検証用main
-// clang++ -std=c++11 -I../include -lboost_system -lboost_coroutine algorithm.cpp
+// clang++ -std=c++11 -g -W -Wall -I../include -lboost_system -lboost_coroutine algorithm.cpp
 int main(int argc, char* argv[])
 {
     const std::vector<std::vector<point_type>> matrix = {
