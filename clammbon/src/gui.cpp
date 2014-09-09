@@ -55,7 +55,7 @@ namespace gui
         );
     }
 
-	void show_image(question_raw_data const& data_, compared_type const& comp_, std::vector<std::vector<std::vector<point_type>>>const & matrix)
+	void combine_show_image(question_raw_data const& data_, compared_type const& comp_, std::vector<std::vector<std::vector<point_type>>>const & matrix)
 	{
 		cv::Mat comb_pic(cv::Size(data_.size.first, data_.size.second), CV_8UC3);
 		cv::Rect roi_rect;
@@ -79,6 +79,18 @@ namespace gui
 			cv::namedWindow(outname.str(), CV_WINDOW_AUTOSIZE);
 			cv::imshow(outname.str(), comb_pic);
 
+		}
+		cvWaitKey(0);
+	}
+
+	void show_image(question_raw_data const& data_, compared_type const& comp_, std::vector<cv::Mat>const & matrix)
+	{
+		for (auto arr : matrix){
+			std::ostringstream outname;
+			outname.str("");
+			outname << "num score=" << form_evaluate(comp_, arr);
+			cv::namedWindow(outname.str(), CV_WINDOW_AUTOSIZE);
+			cv::imshow(outname.str(), arr);
 		}
 		cvWaitKey(0);
 	}

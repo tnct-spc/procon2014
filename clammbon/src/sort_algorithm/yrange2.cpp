@@ -5,6 +5,8 @@
 
 #include <vector>
 #include <algorithm>
+#include "opencv2/highgui/highgui.hpp"
+#include "opencv2/imgproc/imgproc.hpp"
 #include <data_type.hpp>
 #include <sort_algorithm/compare.hpp>
 #include <sort_algorithm/adjacent.hpp>
@@ -81,6 +83,32 @@ void yrange2::row_replacement(return_type& matrix)
 	matrix = good_matrix;
 }
 
+//cv::matの塊にする
+std::vector<cv::Mat> yrange2::combine_image(std::vector<std::vector<std::vector<point_type>>>const & matrix)
+{
+	std::vector<cv::Mat> answer;
+	cv::Mat comb_pic(cv::Size(data_.size.first, data_.size.second), CV_8UC3);
+	cv::Rect roi_rect;
+	roi_rect.height = (data_.size.second / data_.split_num.second);// picy/sepy
+	roi_rect.width = (data_.size.first / data_.split_num.first);// picx/sepx
+	splitter sp;//どこからか持ってきてたsplitter
+	split_image_type splitted = sp.split_image(data_);
+	for (auto arr : matrix){
+		for (int i = 0; i < data_.split_num.second; i++){
+			for (int j = 0; j < data_.split_num.first; j++){
+				cv::Mat roi(comb_pic, roi_rect);
+				splitted[arr[i][j].y][arr[i][j].x].copyTo(roi);
+				roi_rect.x += (data_.size.first / data_.split_num.first);
+			}
+			roi_rect.x = 0;
+			roi_rect.y += (data_.size.second / data_.split_num.second);
+		}
+		answer.push_back(comb_pic);
+	}
+	return answer;
+}
+
+
 yrange2::yrange2(question_raw_data const& data, compared_type const& comp)
     : data_(data), comp_(comp), adjacent_data_(select_minimum(comp))
 {
@@ -104,7 +132,13 @@ std::vector<std::vector<std::vector<point_type>>> yrange2::operator() ()
 		)
 		);
 
-	std::vector<std::vector<std::vector<point_type>>> answer;
+	struct answer_type{
+		std::vector<std::vector<std::vector<point_type>>> point_type;
+		std::vector<double> score;
+		std::vector<cv::Mat> cv_Mat;
+	};
+	answer_type answer;
+	
 
 	//すべてのピースから並べ始めるためのループ
 	for (int c_y = 0; c_y < height; ++c_y) for (int c_x = 0; c_x < width; ++c_x)
@@ -198,33 +232,48 @@ std::vector<std::vector<std::vector<point_type>>> yrange2::operator() ()
 				{
 					one_answer[i][j] = sorted_matrix[y + i][x + j];
 				}
-				answer.push_back(std::move(one_answer));
+				answer.point_type.push_back(std::move(one_answer));
 			}
 		}
 	}
 
 	//現段階で重複しているものは1つに絞る
 	// unique()を使う準備としてソートが必要
-	std::sort(answer.begin(), answer.end());
+	std::sort(answer.point_type.begin(), answer.point_type.end());
 	// unique()をしただけでは後ろにゴミが残るので、eraseで削除する
-	answer.erase(std::unique(answer.begin(), answer.end()), answer.end());
+	answer.point_type.erase(std::unique(answer.point_type.begin(), answer.point_type.end()), answer.point_type.end());
 
 	
 	//#########################################################yrange2.5#########################################################//
 
 	//縦入れ替え，横入れ替え
-	for (auto matrix : answer){
+	for (auto matrix : answer.point_type){
 		row_replacement(matrix);
 		column_replacement(matrix);
 	}
 
 	//もっかいやっとく
-	std::sort(answer.begin(), answer.end());
-	answer.erase(std::unique(answer.begin(), answer.end()), answer.end());
+	std::sort(answer.point_type.begin(), answer.point_type.end());
+	answer.point_type.erase(std::unique(answer.point_type.begin(), answer.point_type.end()), answer.point_type.end());
+
+	//一枚のcv::Matにする
+	answer.cv_Mat = combine_image(answer.point_type);
+
+/*	int i = 0;
+	for (auto matrix : answer.cv_Mat){
+		double temp = cv::arcLength(matrix, false);
+		answer.score.push_back(temp);
+		std::cout << answer.score[i] << std::endl;
+		i++;
+	}
+	*/
+//	std::cout << cv::arcLength(answer.cv_Mat[0], true) << std::endl;
+//	std::cout << cv::arcLength(answer.cv_Mat[0], false) << std::endl;
+
 
 #ifdef _DEBUG
-    std::cout << "There are " << answer.size() << " solutions" << std::endl;
-    for(auto const& one_answer : answer)
+    std::cout << "There are " << answer.point_type.size() << " solutions" << std::endl;
+    for(auto const& one_answer : answer.point_type)
     {
         for(int i=0; i<one_answer.size(); ++i)
         {
@@ -239,7 +288,7 @@ std::vector<std::vector<std::vector<point_type>>> yrange2::operator() ()
     }
 #endif
 
-	gui::show_image(data_, comp_, answer);
+	gui::show_image(data_, comp_, answer.cv_Mat);
 
-    return answer;
+    return answer.point_type;
 }

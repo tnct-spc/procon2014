@@ -21,6 +21,8 @@ private:
 	void yrange2::column_replacement(return_type& matrix);
 	//横入れ替え
 	void yrange2::row_replacement(return_type& matrix);
+	//cv::Matの塊にする
+	std::vector<cv::Mat> yrange2::combine_image(std::vector<std::vector<std::vector<point_type>>>const & matrix);
 	
 public:
     // 泣きのポインタ渡し
