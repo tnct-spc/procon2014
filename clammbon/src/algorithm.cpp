@@ -307,7 +307,7 @@ void algorithm::impl::greedy()
     for (int i = sorted_col; i < width; ++i) {
         target_queue.push_back(point_type{i, sorted_row});
     }
-    for (int i = sorted_row + 1; i < height; ++i{
+    for (int i = sorted_row + 1; i < height; ++i) {
         target_queue.push_back(point_type{sorted_col, i});
     }
 
