@@ -39,7 +39,7 @@ void yrange2::column_replacement(return_type& matrix)const
 {
 	const int sepx = data_.split_num.first;
 	const int sepy = data_.split_num.second;
-	uint64_t good_val;
+	uint_fast64_t good_val;
 	std::vector<std::vector<point_type> > good_matrix(sepx, (sepx, std::vector<point_type>(sepy)));
 	std::vector<point_type> temp_vec;
 
