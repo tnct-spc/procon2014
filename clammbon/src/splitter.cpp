@@ -95,64 +95,57 @@ image_type splitter::fold_image(unfold_image_type const& unfold_image, int const
     return fold_image;
 }
 
-//column_set作成関数
-cv::Mat splitter::make_column_set(question_raw_data const& data_) const
+//column_row_set作成関数
+cr_set splitter::make_column_row_set(question_raw_data const& data_) const
 {
+	cr_set answer;
 	int const parts_width = data_.size.first / data_.split_num.first;
 	int const parts_height = data_.size.second / data_.split_num.second;
 	int const sepx = data_.split_num.first;
 	int const sepy = data_.split_num.second;
 
-	cv::Rect roi_rect(0, 0, 1, parts_height);
-	cv::Mat combined_img(cv::Size(sepx*sepy * 2, parts_height), CV_8UC3);
 	splitter sp;//どこからか持ってきてたsplitter
 	split_image_type splitted = sp.split_image(data_);
 
-	for (int i = 0; i < sepy; i++){
-		for (int j = 0; j < sepx; j++){
-			cv::Rect left_roi(0, 0, 1, parts_height);
-			cv::Mat roi(combined_img, roi_rect);
-
-			cv::Mat left(splitted[i][j], left_roi);
-			left.copyTo(roi);
-			roi_rect.x += 1;
-
-			cv::Rect right_roi(parts_width - 1, 0, 1, parts_height);
-			cv::Mat right(splitted[i][j], right_roi);
-			right.copyTo(roi);
-			roi_rect.x += 1;		
-		}
-	}
-	return combined_img;
-}
-
-//row_set作成関数
-cv::Mat splitter::make_row_set(question_raw_data const& data_) const
-{
-	int const parts_width = data_.size.first / data_.split_num.first;
-	int const parts_height = data_.size.second / data_.split_num.second;
-	int const sepx = data_.split_num.first;
-	int const sepy = data_.split_num.second;
-
-	cv::Rect roi_rect(0, 0, parts_width, 1);
-	cv::Mat combined_img(cv::Size(parts_width, sepx*sepy * 2), CV_8UC3);
-	splitter sp;//どこからか持ってきてたsplitter
-	split_image_type splitted = sp.split_image(data_);
+	cv::Rect roi_row_rect(0, 0, parts_width, 1);
+	cv::Mat combined_row_img(cv::Size(parts_width, sepx*sepy * 2), CV_8UC3);
 
 	for (int i = 0; i < sepy; i++){
 		for (int j = 0; j < sepx; j++){
 			cv::Rect up_roi(0, 0, parts_width, 1);
-			cv::Mat roi(combined_img, roi_rect);
+			cv::Mat roi(combined_row_img, roi_row_rect);
 
 			cv::Mat up(splitted[i][j], up_roi);
 			up.copyTo(roi);
-			roi_rect.y += 1;
+			roi_row_rect.y += 1;
 
 			cv::Rect down_roi(0, parts_height - 1, parts_width, 1);
 			cv::Mat down(splitted[i][j], down_roi);
 			down.copyTo(roi);
-			roi_rect.y += 1;
+			roi_row_rect.y += 1;
 		}
 	}
-	return combined_img;
+	answer.row = combined_row_img;
+
+	cv::Rect roi_column_rect(0, 0, 1, parts_height);
+	cv::Mat combined_column_img(cv::Size(sepx*sepy * 2, parts_height), CV_8UC3);
+	for (int i = 0; i < sepy; i++){
+		for (int j = 0; j < sepx; j++){
+			cv::Rect left_roi(0, 0, 1, parts_height);
+			cv::Mat roi(combined_column_img, roi_column_rect);
+
+			cv::Mat left(splitted[i][j], left_roi);
+			left.copyTo(roi);
+			roi_column_rect.x += 1;
+
+			cv::Rect right_roi(parts_width - 1, 0, 1, parts_height);
+			cv::Mat right(splitted[i][j], right_roi);
+			right.copyTo(roi);
+			roi_column_rect.x += 1;
+		}
+	}
+	answer.column = combined_column_img;
+
+	
+	return answer;
 }

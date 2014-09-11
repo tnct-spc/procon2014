@@ -157,5 +157,11 @@ struct answer_type_y{
 	std::vector<double> score;
 	std::vector<cv::Mat> cv_Mat;
 };
+struct cr_set{
+	cv::Mat row;
+	cv::Mat column;
+	std::vector<cv::Mat> each_row;
+	std::vector<cv::Mat> each_column;
+};
 
 #endif

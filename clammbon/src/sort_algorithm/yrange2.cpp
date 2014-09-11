@@ -133,6 +133,10 @@ std::vector<std::vector<std::vector<point_type>>> yrange2::operator() ()
 		);
 
 	answer_type_y answer;
+	cr_set cr;
+	splitter sp;
+	cr = sp.make_column_row_set(data_);
+
 
 	//すべてのピースから並べ始めるためのループ
 	for (int c_y = 0; c_y < height; ++c_y) for (int c_x = 0; c_x < width; ++c_x)
@@ -283,9 +287,6 @@ std::vector<std::vector<std::vector<point_type>>> yrange2::operator() ()
 	gui::show_image(data_, comp_, answer);
 #endif
 	
-	splitter sp;
-	sp.make_column_set(data_);
-	sp.make_row_set(data_);
 
     return answer.point_type;
 }
