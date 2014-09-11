@@ -132,13 +132,7 @@ std::vector<std::vector<std::vector<point_type>>> yrange2::operator() ()
 		)
 		);
 
-	struct answer_type{
-		std::vector<std::vector<std::vector<point_type>>> point_type;
-		std::vector<double> score;
-		std::vector<cv::Mat> cv_Mat;
-	};
-	answer_type answer;
-	
+	answer_type_y answer;
 
 	//すべてのピースから並べ始めるためのループ
 	for (int c_y = 0; c_y < height; ++c_y) for (int c_x = 0; c_x < width; ++c_x)
