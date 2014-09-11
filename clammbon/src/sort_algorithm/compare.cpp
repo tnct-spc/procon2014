@@ -87,7 +87,6 @@ uint64_t form_evaluate(compared_type const& comp_, std::vector<std::vector<point
 		if (i != height - 1) s += comp_[matrix[i][j].y][matrix[i][j].x][matrix[i + 1][j].y][matrix[i + 1][j].x].down;
 		if (j != width - 1) s += comp_[matrix[i][j].y][matrix[i][j].x][matrix[i][j + 1].y][matrix[i][j + 1].x].right;
 	}
-
 	return s;
 }
 

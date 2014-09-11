@@ -282,7 +282,9 @@ std::vector<std::vector<std::vector<point_type>>> yrange2::operator() ()
     }
 #endif
 
-	gui::show_image(data_, comp_, answer.cv_Mat);
+	std::cout << form_evaluate(comp_, answer.point_type[0]) << std::endl;
+
+	gui::show_image(data_, comp_, answer);
 
     return answer.point_type;
 }
