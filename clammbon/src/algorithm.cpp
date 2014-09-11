@@ -42,6 +42,7 @@ private:
     bool is_finished(std::vector<std::vector<point_type>> const& mat) const;
     void move_target(point_type const& target, char const& direction);
     void move_to(point_type const& to);
+    bool must_chagne_select(std::vector<std::vector<point_type>> const& mat, point_type const& select) const;
 
     template <char T>
     void move_selecting();
@@ -433,7 +434,6 @@ void algorithm::impl::greedy()
 void algorithm::impl::brute_force()
 {
     // Brute-Force Algorithm
-    // 選択画像を変更しない幅優先探索
 
     // メモリの超無駄遣い！
     std::queue<step_type> open;
@@ -441,6 +441,8 @@ void algorithm::impl::brute_force()
 
     // 毎度ポップするやつ
     step_type current;
+
+    // 選択画像を変更するかどうか判定
 
     // 根ノードをキューに追加
     open.push(step_type{answer, selecting_cur, matrix});
@@ -806,6 +808,52 @@ bool algorithm::impl::is_finished(std::vector<std::vector<point_type>> const& ma
     return true;
 }
 
+// must_chagne_select {{{2
+bool algorithm::impl::must_chagne_select(std::vector<std::vector<point_type>> const& mat, point_type const& select) const
+{
+    // 偶置換, 奇置換の判定を行い, 奇置換ならば true を返す
+    // http://www.aji.sakura.ne.jp/algorithm/slide_goal.html
+
+    int change = 0;
+    std::vector<point_type> linear_matrix;
+    std::vector<point_type> original_linear_matrix;
+
+    // mat の中身を 1 列にする
+    int x = mat.size() % 2 == 0 ? mat.front().size() : -1;
+    for (int y = 0; y < mat.size(); ++y) {
+        if (x == -1) {
+            for (++x; x < mat[y].size(); ++x) {
+                if (mat[y][x] != select) {
+                    linear_matrix.push_back(mat[y][x]);
+                }
+                if (point_type{x, y} != select) {
+                    original_linear_matrix.push_back(point_type{x, y});
+                }
+            }
+        } else {
+            for (--x; x >= 0; --x) {
+                if (mat[y][x] != select) {
+                    linear_matrix.push_back(mat[y][x]);
+                }
+                if (point_type{x, y} != select) {
+                    original_linear_matrix.push_back(point_type{x, y});
+                }
+            }
+        }
+    }
+
+    // original_linear_matrix の配置になるように linear_matrix を並び替え
+    for (int i = 0; i < linear_matrix.size(); ++i) {
+        if (linear_matrix[i] != original_linear_matrix[i]) {
+            change += std::distance(original_linear_matrix.begin(), std::find(original_linear_matrix.begin(), original_linear_matrix.end(), linear_matrix[i])) - i;
+            linear_matrix.erase(std::remove(linear_matrix.begin(), linear_matrix.end(), original_linear_matrix[i]), linear_matrix.end());
+            linear_matrix.insert(linear_matrix.begin() + i, original_linear_matrix[i]);
+        }
+    }
+
+    return change % 2 == 1;
+}
+
 // print {{{2
 inline void algorithm::impl::print() const
 {
@@ -826,20 +874,13 @@ inline void algorithm::impl::print() const
 #ifdef algorithm_debug
 // 検証用main
 // clang++ -std=c++11 -g -W -Wall -I../include -lboost_system -lboost_coroutine algorithm.cpp
-int main(int argc, char* argv[])
+int main(void)
 {
     const std::vector<std::vector<point_type>> matrix = {
-        {point_type{ 2,  6}, point_type{ 1, 10}, point_type{ 0,  6}},
-        {point_type{ 0,  4}, point_type{ 1,  5}, point_type{ 2,  8}},
-        {point_type{ 0,  7}, point_type{ 0, 10}, point_type{ 2,  5}},
-        {point_type{ 1,  0}, point_type{ 0,  2}, point_type{ 1,  1}},
-        {point_type{ 2,  1}, point_type{ 1,  4}, point_type{ 2, 10}},
-        {point_type{ 1,  6}, point_type{ 2,  3}, point_type{ 0,  3}},
-        {point_type{ 0,  8}, point_type{ 2,  7}, point_type{ 2,  0}},
-        {point_type{ 1,  8}, point_type{ 0,  0}, point_type{ 2,  2}},
-        {point_type{ 0,  1}, point_type{ 1,  2}, point_type{ 2,  9}},
-        {point_type{ 0,  9}, point_type{ 2,  4}, point_type{ 1,  7}},
-        {point_type{ 1,  9}, point_type{ 1,  3}, point_type{ 0,  5}}
+        {{ 1,  2}, { 9,  3}, { 7,  1}, {10,  3}, { 2,  0}, { 4,  3}, {12,  1}, { 3,  3}, { 5,  3}, { 6,  2}, {11,  2}, { 0,  1}, {10,  1}, { 5,  0}},
+        {{ 9,  0}, { 7,  0}, {13,  3}, {12,  2}, { 9,  1}, { 2,  2}, { 5,  1}, { 3,  0}, { 7,  2}, {13,  1}, { 1,  3}, { 4,  2}, {11,  3}, {13,  2}},
+        {{ 5,  2}, { 6,  3}, { 4,  0}, { 1,  0}, { 8,  1}, { 6,  1}, { 3,  2}, {13,  0}, {10,  2}, { 3,  1}, { 4,  1}, {11,  1}, { 8,  2}, { 9,  2}},
+        {{ 0,  2}, {10,  0}, { 2,  1}, {12,  3}, { 0,  3}, { 1,  1}, { 8,  3}, { 7,  3}, {11,  0}, { 2,  3}, { 6,  0}, { 8,  0}, {12,  0}, { 0,  0}}
     };
     const auto size = std::pair<int, int>(matrix[0].size(), matrix.size());
     constexpr int problem_id = 1;
