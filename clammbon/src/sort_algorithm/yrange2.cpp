@@ -35,7 +35,7 @@ int yrange2::array_sum(return_type const& array_, int const x, int const y, int 
 }
 
 /*縦入れ替え*/
-void yrange2::column_replacement(return_type& matrix)
+void yrange2::column_replacement(return_type& matrix)const
 {
 	const int sepx = data_.split_num.first;
 	const int sepy = data_.split_num.second;
@@ -61,7 +61,7 @@ void yrange2::column_replacement(return_type& matrix)
 }
 
 /*横入れ替え*/
-void yrange2::row_replacement(return_type& matrix)
+void yrange2::row_replacement(return_type& matrix)const
 {
 	const int sepx = data_.split_num.first;
 	const int sepy = data_.split_num.second;
