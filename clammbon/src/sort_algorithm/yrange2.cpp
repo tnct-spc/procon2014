@@ -257,14 +257,6 @@ std::vector<std::vector<std::vector<point_type>>> yrange2::operator() ()
 	//一枚のcv::Matにする
 	answer.cv_Mat = combine_image(answer.point_type);
 
-/*	int i = 0;
-	for (auto matrix : answer.cv_Mat){
-		double temp = cv::arcLength(matrix, false);
-		answer.score.push_back(temp);
-		std::cout << answer.score[i] << std::endl;
-		i++;
-	}
-	*/
 //	std::cout << cv::arcLength(answer.cv_Mat[0], true) << std::endl;
 //	std::cout << cv::arcLength(answer.cv_Mat[0], false) << std::endl;
 
@@ -287,6 +279,11 @@ std::vector<std::vector<std::vector<point_type>>> yrange2::operator() ()
 	gui::show_image(data_, comp_, answer);
 #endif
 	
+	point_type a = { 0, 0 };
+	point_type b = { 0, 1 };
+	point_type c = { 0, 2 };
+
+	//ur_choose(comp_, cr, CV_TM_SQDIFF, a, b, c);
 
     return answer.point_type;
 }
