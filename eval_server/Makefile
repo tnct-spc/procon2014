@@ -3,7 +3,7 @@ include ../makefile.in
 OUTDIR :=../bin/$(buildtype)
 TARGET := server
 
-SRCS := src/answer.cpp src/problem.cpp src/server.cpp src/tools.cpp src/http.cpp
+SRCS := src/answer.cpp src/problem.cpp src/server.cpp src/tools.cpp src/http-mongoose.cpp
 PROG := $(OUTDIR)/$(TARGET)
 OBJS := $(SRCS:src/%.cpp=obj/$(buildtype)/%.o)
 DEPS := $(SRCS:src/%.cpp=obj/$(buildtype)/%.d)
@@ -16,7 +16,7 @@ TEST_OBJS := $(TEST_SRCS:src/%.cpp=obj/$(buildtype)/%.o)
 CXXFLAGS += -march=native -ffast-math
 CPPFLAGS +=
 LDFLAGS  +=
-LIBS     += -lpthread -lboost_system -lboost_thread -lcppnetlib-uri -lcppnetlib-client-connections -lssl -lcrypto
+LIBS     += -lpthread -l_mongoose
 
 .PHONY: all clean distclean
 

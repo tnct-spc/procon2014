@@ -4,7 +4,7 @@
 #include "server.hpp"
 #include <boost/lexical_cast.hpp>
 
-class problem
+class Problem
 {
 private:
     std::ostringstream outerr;
@@ -12,11 +12,11 @@ private:
     question_data question;
     bool sane;
 public:
-    problem(std::string const problem_set) : problem_set(problem_set)
+    Problem(std::string const problem_set) : problem_set(problem_set)
     {
         sane = false;
     }
-    problem() : problem_set("default")
+    Problem() : problem_set("default")
     {
         sane = false;
     }

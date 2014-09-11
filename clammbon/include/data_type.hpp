@@ -99,6 +99,11 @@ struct question_data : private boost::noncopyable
     {
         *this = std::move(other);
     }
+
+    question_data()
+    {
+    }
+
     question_data& operator=(question_data&& other)
     {
         this->problem_id  = other.problem_id;

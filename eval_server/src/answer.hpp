@@ -3,7 +3,7 @@
 
 #include "server.hpp"
 
-class answer
+class Answer
 {
 private:
     std::ostringstream outerr;
@@ -11,7 +11,7 @@ private:
     void convert(std::string const& s);
     bool sane;
 public:
-    answer(std::string s)
+    Answer(std::string s)
     {
         convert(s);
         sane = false;

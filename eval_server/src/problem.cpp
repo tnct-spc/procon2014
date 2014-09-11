@@ -1,7 +1,7 @@
 #include "problem.hpp"
 
 //  🍣🍣🍣  問題ローダ 🍣🍣🍣
-void problem::load(std::string const& problemid, std::string const& playerid)
+void Problem::load(std::string const& problemid, std::string const& playerid)
 {
     std::ifstream pos(path_to_pos(problem_set, problemid)), ppm(path_to_ppm(problem_set, problemid));
     std::string ppm_header, hash;

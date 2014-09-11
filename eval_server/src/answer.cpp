@@ -1,7 +1,7 @@
 #include "answer.hpp"
 
 // 🍣🍣🍣  解答変換  🍣🍣🍣
-void answer::convert(std::string const& s)
+void Answer::convert(std::string const& s)
 {
     answer_list al;
     answer_type a;
