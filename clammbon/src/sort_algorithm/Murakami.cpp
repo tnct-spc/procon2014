@@ -44,19 +44,25 @@ std::vector<std::vector<std::vector<point_type>>> Murakami::operator() (){
 				block_list[i * width + j][0][0].x = j;
 			}
 		}
-
+		int a;
 		while (block_list.size() != 1){//メインループ
+			a = block_list.size();
+
 			block_combination best_block_combination;//一番いいblockの組み合わせいれるところ
 			best_block_combination.score = std::numeric_limits<int_fast64_t>::min();
 			for (auto i : block_list){//ブロック同士を比較するループ
 				for (auto j : block_list){
 					if (i == j) continue;
+					bool momo = false;
+					if ((i[0][0].x == 2 && i[0][0].y == 2 && j[0][0].x == 0 && j[0][0].y == 1) || (j[0][0].x == 2 && j[0][0].y == 2 && i[0][0].x == 0 && i[0][0].y == 1))momo = true;
+
 					block_combination b = eval_block(i, j);
 					if (best_block_combination.score < b.score){
 						best_block_combination = b; //TODO 同じ値があったらどうしよ
 					}
 				}
 			}
+
 			if (best_block_combination.score == std::numeric_limits<int_fast64_t>::min())throw std::runtime_error("ブロック評価構造体が空です");
 			block_type combined_block = combine_block(best_block_combination);//ブロックを結合する
 			boost::remove_erase_if(block_list, [best_block_combination](block_type it){//block_listから結合する前のブロックを消す
@@ -65,13 +71,15 @@ std::vector<std::vector<std::vector<point_type>>> Murakami::operator() (){
 			block_list.push_back(combined_block);//結合したのを入れる
 			std::cout << block_list.size() << std::endl;
 		}
+
 		for (int i = 0; i < height; i++){
 			for (int j = 0; j < width; j++){
-				std::cout << block_list[0][i][j].y << "," << block_list[0][i][j].y;
+				std::cout << block_list[0][i][j].x << "," << block_list[0][i][j].y << "|";
 			}
 			std::cout << "\n";
 		}
 		return block_list;
+
 }
 Murakami::block_combination Murakami::eval_block(block_type block1, block_type block2){
 	auto const width = data_.split_num.first;
@@ -105,6 +113,7 @@ Murakami::block_combination Murakami::eval_block(block_type block1, block_type b
 		for (int j = -width; j < width * 2 - 1; j++){
 			bool confliction = false;
 			int_fast64_t block_c = 0;
+			bool empty_block_c = true;
 			int_fast64_t rank1_num = 0;//キャストが面倒くさいからint_fast64_tで
 			for (int k = 0; k < height; k++){
 				for (int l = 0; l < width; l++){
@@ -118,18 +127,22 @@ Murakami::block_combination Murakami::eval_block(block_type block1, block_type b
 						int_fast64_t piece_c = 0;
 						if (exists(k + i - 1, l + j, block2)){//上
 							piece_c += eval_piece(block1[k][l], block2[k + i - 1][l + j], up);
+							empty_block_c = false;
 							if (sorted_comparation[block1[k][l]][up][1] == block2[k + i - 1][l + j]) rank1_num++;
 						}
 						if (exists(k + i, l + j - 1, block2)){//左
 							piece_c += eval_piece(block1[k][l], block2[k + i][l + j - 1], left);
+							empty_block_c = false;
 							if (sorted_comparation[block1[k][l]][left][1] == block2[k + i][l + j - 1]) rank1_num++;
 						}
 						if (exists(k + i + 1, l + j, block2)){//下
 							piece_c += eval_piece(block1[k][l], block2[k + i + 1][l + j], down);
+							empty_block_c = false;
 							if (sorted_comparation[block1[k][l]][down][1] == block2[k + i + 1][l + j]) rank1_num++;
 						}
 						if (exists(k + i, l + j + 1, block2)){//右
 							piece_c += eval_piece(block1[k][l], block2[k + i][l + j + 1], right);
+							empty_block_c = false;
 							if (sorted_comparation[block1[k][l]][right][1] == block2[k + i][l + j + 1]) rank1_num++;
 						}
 						//pow(piece_c, rank1_num);
@@ -138,8 +151,8 @@ Murakami::block_combination Murakami::eval_block(block_type block1, block_type b
 				}
 				if (confliction)break;
 			}
-			if (!confliction){
-				if (best_block_c != 0){};
+			if (!confliction && empty_block_c == false){
+				//if (best_block_c != 0){};
 				rank1_num++;
 				block_c *= rank1_num; //0を掛けるのは怖い
 				if (block_c > best_block_c){
@@ -161,19 +174,38 @@ Murakami::block_combination Murakami::eval_block(block_type block1, block_type b
 }
 std::int_fast64_t Murakami::eval_piece(point_type p1, point_type p2, direction dir){
 	int_fast64_t score = 0;
+	Murakami::direction dir2;
+	switch (dir)
+	{
+	case Murakami::up:
+		dir2 = Murakami::down;
+		break;
+	case Murakami::right:
+		dir2 = Murakami::left;
+		break;
+	case Murakami::down:
+		dir2 = Murakami::up;
+		break;
+	case Murakami::left:
+		dir2 = Murakami::right;
+		break;
+	default:
+		break;
+	}
 	score += eval_comp_(p1, p2, dir);
-	score += eval_comp_(p2, p1, dir);
+	score += eval_comp_(p2, p1, dir2);
 	return score;
 }
 std::int_fast64_t Murakami::eval_comp_(point_type p1, point_type p2, direction dir){
-	int pos = 0;
+	int rank = 0;
 	std::int_fast64_t score = 0;
-	for (auto it : sorted_comparation[p1][dir]){
+	for (auto it : sorted_comparation.at(p1)[dir]){
 		if (it == p2)break;
-		pos++;
+		rank++;
 	}
-	if (pos == 0)throw std::runtime_error("断片画像が重複しています");
-	if (pos == 1){
+
+	if (rank == 0)throw std::runtime_error("断片画像が重複しています");
+	if (rank == 1){
 		switch (dir)
 		{
 		case Murakami::up:
@@ -192,7 +224,7 @@ std::int_fast64_t Murakami::eval_comp_(point_type p1, point_type p2, direction d
 			break;
 		}
 	}
-	else if (pos > 1){
+	else if (rank > 1){
 		switch (dir)
 		{
 		case Murakami::up:
@@ -236,7 +268,7 @@ void Murakami::sort_compare()
 	//全てのピースに対して（一番外側のループ）
 	for (int i = 0; i < height; ++i)for (int j = 0; j < width; ++j){
 		point_type now_point{ j, i };
-		
+
 		//全てのピースを組み合わせる	##up##
 		rank.clear();
 		for (int k = 0; k < height; ++k)for (int l = 0; l < width; ++l){
@@ -246,14 +278,14 @@ void Murakami::sort_compare()
 			rank.push_back(temp_pts);
 		}
 		std::sort(rank.begin(), rank.end());
-		direct[0][0]=init_pt;//0番目には(-1,-1)を
+		direct[0][0] = init_pt;//0番目には(-1,-1)を
 		for (int c = 0; c < 10 && c < rank.size(); ++c){
 			point_type temp_pt;
 			temp_pt.x = rank[c].x;
 			temp_pt.y = rank[c].y;
 			direct[0].push_back(temp_pt);
 		}
-		
+
 
 		//全てのピースを組み合わせる	##down##
 		rank.clear();
@@ -309,19 +341,19 @@ void Murakami::sort_compare()
 	}
 
 	//ファイル書き出し
-	/*
+	
 	std::ofstream ofs("solusions.csv", std::ios::out | std::ios::app | std::ios::ate);
 	ofs << "point_type.y,point_type.x,direct,rank,point_type.y,point_type.x" << std::endl;
 	for (int i = 0; i < height; ++i)for (int j = 0; j < width; ++j){
 		point_type now_point{ i, j };
 		for (int k = 0; k < 4; ++k){
 			for (int l = 0; l < width*height - 1; ++l){
-				ofs << now_point.x << "," << now_point.y << "," << k << "," << l << "," << sorted_comparation[now_point][k][l].x << "," << sorted_comparation[now_point][k][l].x << std::endl;
+				ofs << now_point.y << "," << now_point.x << "," << k << "," << l << "," << sorted_comparation[now_point][k][l].y << "," << sorted_comparation[now_point][k][l].x << std::endl;
 			}
 		}
 	}
 	std::cout << "Output solusions done." << std::endl;
-	*/
+	
 }
 
 void Murakami::make_sorted_comparation(){
@@ -335,10 +367,10 @@ void Murakami::make_sorted_comparation(){
 		}
 	};
 
-	std::map<point_type,std::vector<std::vector<point_type>>> sorted_point_score_dir_point;
+	std::map<point_type, std::vector<std::vector<point_type>>> sorted_point_score_dir_point;
 	for (int k = 0; k < height; k++){
 		for (int l = 0; l < width; l++){
-			point_type point_k_l{ l, k};
+			point_type point_k_l{ l, k };
 			std::vector<std::vector<point_type>> sorted_point_score_dir;
 			for (int dir_l = 0; dir_l < 4; dir_l++){
 				std::vector<point_type_score> sorted_point_score;
@@ -368,7 +400,7 @@ void Murakami::make_sorted_comparation(){
 				std::sort(sorted_point_score.begin(), sorted_point_score.end());
 				std::vector<point_type> p_vec;
 				for (int a = 0; a < height * width; a++){
-						p_vec.push_back(sorted_point_score[a].point);
+					p_vec.push_back(sorted_point_score[a].point);
 				}
 				sorted_point_score_dir.push_back(p_vec);
 			}
@@ -378,19 +410,19 @@ void Murakami::make_sorted_comparation(){
 	}
 
 	sorted_comparation = sorted_point_score_dir_point;
-	/*
+	
 	std::ofstream ofs("solusions.csv", std::ios::out | std::ios::app | std::ios::ate);
-	ofs << "point_type.y,point_type.x,direct,rank,point_type.y,point_type.x" << std::endl;
+	ofs << "point_type.x,point_type.y,direct,rank,point_type.x,point_type.y" << std::endl;
 	for (int i = 0; i < height; ++i)for (int j = 0; j < width; ++j){
 		point_type now_point{ i, j };
 		for (int k = 0; k < 4; ++k){
-			for (int l = 0; l < width*height - 1; ++l){
-				ofs << now_point.y << "," << now_point.x << "," << k << "," << l << "," << sorted_comparation[now_point][k][l].y << "," << sorted_comparation[now_point][k][l].x << std::endl;
+			for (int l = 0; l < width*height ; ++l){
+				ofs << now_point.x << "," << now_point.y << "," << k << "," << l << "," << sorted_comparation[now_point][k][l].x << "," << sorted_comparation[now_point][k][l].y << std::endl;
 			}
 		}
 	}
 	std::cout << "Output solusions done." << std::endl;
-	*/
+	
 }
 Murakami::block_type Murakami::combine_block(block_combination block_comb){
 	if (block_comb.block1.size() == 0)throw std::runtime_error("結合予定ブロックのサイズが0です,block1");
@@ -423,23 +455,23 @@ Murakami::block_type Murakami::combine_block(block_combination block_comb){
 	int min_y = -height;
 	int max_y = height * 2 - 1;
 	for (int i = -height; i < height * 2 - 1; i ++){
-		for (int j = -width; j < width * 2 - 1; j++){
-			//TODO exsist?
-			//if ((block_comb.block1[i][j].x != -1 && block_comb.block1[i][j].y != -1) || (block_comb.block2[i + block_comb.shift_y][j + block_comb.shift_x].x != -1 && block_comb.block2[i + block_comb.shift_y][j + block_comb.shift_x].y != -1)){
-			if (exists(i, j, block_comb.block1) || exists(i + block_comb.shift_y, j + block_comb.shift_x, block_comb.block2)){
-				if (min_x > j)min_x = j;
-				if (max_x < j)max_x = j;
-				if (min_y > i)min_y = i;
-				if (max_y < i)max_y = i;
-			}
-		}
+	for (int j = -width; j < width * 2 - 1; j++){
+	//TODO exsist?
+	//if ((block_comb.block1[i][j].x != -1 && block_comb.block1[i][j].y != -1) || (block_comb.block2[i + block_comb.shift_y][j + block_comb.shift_x].x != -1 && block_comb.block2[i + block_comb.shift_y][j + block_comb.shift_x].y != -1)){
+	if (exists(i, j, block_comb.block1) || exists(i + block_comb.shift_y, j + block_comb.shift_x, block_comb.block2)){
+	if (min_x > j)min_x = j;
+	if (max_x < j)max_x = j;
+	if (min_y > i)min_y = i;
+	if (max_y < i)max_y = i;
+	}
+	}
 	}
 	*/
-	std::vector<std::vector<point_type>> return_combined_block(height, std::vector<point_type>(width, {-1,-1}));
+	std::vector<std::vector<point_type>> return_combined_block(height, std::vector<point_type>(width, { -1, -1 }));
 	for (int i = -l_y; i < height * 2 - 1; i++){
 		for (int j = -l_x; j < width * 2 - 1; j++){
-			if (exists(i, j, block_comb.block1) ){
-				return_combined_block[i +l_y][j + l_x] = block_comb.block1[i][j];
+			if (exists(i, j, block_comb.block1)){
+				return_combined_block[i + l_y][j + l_x] = block_comb.block1[i][j];
 			}
 			else if (exists(i - block_comb.shift_y, j - block_comb.shift_x, block_comb.block2)){
 				return_combined_block[i + l_y][j + l_x] = block_comb.block2[i - block_comb.shift_y][j - block_comb.shift_x];
