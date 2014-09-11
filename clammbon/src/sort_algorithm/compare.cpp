@@ -84,7 +84,7 @@ point_type dl_choose(compared_type const& comp, point_type const ul, point_type 
 /*
 point_type ur_choose(compared_type const& comp,cr_set const& cr, point_type const ul, point_type const dl, point_type const dr)
 {
-	cv::Mat column_ccoeff = cvCreateImage(cvSize(cr.column->width - cr.each_column[ul] ->width + 1, cr.column->hight - img_obj->height + 1), IPL_DEPTH_32F, 1);
+	cv::Mat column_ccoeff = cvCreateImage(cvSize(cr.column.rows - cr.each_column[ul].cols + 1, cr.column->hight - img_obj->height + 1), IPL_DEPTH_32F, 1);
 	cv::Mat column_frame = cvLoadImage(cr.column);
 	point_type possition;
 	uint64_t sum = std::numeric_limits<uint64_t>::max();

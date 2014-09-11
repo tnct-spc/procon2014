@@ -160,8 +160,11 @@ struct answer_type_y{
 struct cr_set{
 	cv::Mat row;
 	cv::Mat column;
-	std::vector<cv::Mat> each_row;
-	std::vector<cv::Mat> each_column;
+	std::vector<std::map<point_type, cv::Mat>> each_direction;
+};
+
+enum direction{
+	up, right, down, left
 };
 
 #endif
