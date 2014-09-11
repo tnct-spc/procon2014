@@ -8,12 +8,7 @@ PROG := $(OUTDIR)/$(TARGET)
 OBJS := $(SRCS:src/%.cpp=obj/$(buildtype)/%.o)
 DEPS := $(SRCS:src/%.cpp=obj/$(buildtype)/%.d)
 
-TEST_SRCS := src/test.cpp src/tools.cpp
-TEST_TARGET := server_test
-TEST_PROG := $(OUTDIR)/$(TEST_TARGET)
-TEST_OBJS := $(TEST_SRCS:src/%.cpp=obj/$(buildtype)/%.o)
-
-CXXFLAGS += -march=native -ffast-math
+CXXFLAGS += -march=native -I./include
 CPPFLAGS +=
 LDFLAGS  +=
 LIBS     += -lpthread -l_mongoose
@@ -34,12 +29,6 @@ $(PROG) : $(OBJS) clammbon
 obj/$(buildtype)/%.o : src/%.cpp
 	@if [ ! -e `dirname $@` ]; then mkdir -p `dirname $@`; fi
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) $(DEFS) -o $@ -c -MMD -MP -MF $(@:%.o=%.d) $<
-
-test: $(TEST_PROG)
-
-$(TEST_PROG) : $(TEST_OBJS)
-	@if [ ! -e `dirname $@` ]; then mkdir -p `dirname $@`; fi
-	$(CXX) -o $@ $(TEST_OBJS) $(LIBS) $(LDFLAGS)
 
 clean:
 	rm -rf $(OUTDIR) obj
