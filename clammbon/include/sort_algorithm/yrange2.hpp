@@ -18,7 +18,7 @@ private:
     int array_sum(return_type const& array_, int const x, int const y, int const height, int const width) const;
 
 	//縦入れ替え
-	void column_replacement(return_type& matrix);
+	void yrange2::column_replacement(return_type& matrix);
 	//横入れ替え
 	void yrange2::row_replacement(return_type& matrix);
 	//cv::Matの塊にする
