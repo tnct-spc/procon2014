@@ -285,6 +285,7 @@ std::vector<std::vector<std::vector<point_type>>> yrange2::operator() ()
 	
 	splitter sp;
 	sp.make_column_set(data_);
+	sp.make_row_set(data_);
 
     return answer.point_type;
 }
