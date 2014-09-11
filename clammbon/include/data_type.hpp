@@ -125,7 +125,7 @@ typedef cv::Mat_<cv::Vec3b>                  image_type;
 // [i][j]の位置に分割された画像(cv::Mat_<cv::Vec3b>)が入っている．
 typedef std::vector<std::vector<image_type>> split_image_type;
 
-struct question_data
+struct question_data : private boost::noncopyable
 {
     int problem_id;
     std::string player_id;
@@ -147,6 +147,22 @@ struct question_data
         )
         : problem_id(problem_id), player_id(player_id), size(size), selectable(selectable), cost_select(cost_select), cost_change(cost_change), block(block)
     {
+    }
+
+    question_data(question_data&& other)
+    {
+        *this = std::move(other);
+    }
+    question_data& operator=(question_data&& other)
+    {
+        this->problem_id = other.problem_id;
+        this->player_id = other.player_id;
+        this->size = std::move(other.size);
+        this->selectable = other.selectable;
+        this->cost_select = other.cost_select;
+        this->cost_change = other.cost_change;
+        this->block = std::move(other.block);
+        return *this;
     }
 
     question_data clone() const
