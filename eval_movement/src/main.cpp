@@ -10,9 +10,9 @@ int main(int argc, char* argv[])
     // スコープ長いけれど……
     std::string const output_filename = "report_movement";
 
-    if(argc != 2 || argc != 4)\
+    if(argc != 2 && argc != 4)
     {
-        std::cout << "Usage: " << argv[0] << "試行回数 [分割数タテ 分割数ヨコ]" << std::endl;
+        std::cout << "Usage: " << argv[0] << " 試行回数 [分割数タテ 分割数ヨコ]" << std::endl;
         //std::quick_exit(-1);
         return -1;
     }
