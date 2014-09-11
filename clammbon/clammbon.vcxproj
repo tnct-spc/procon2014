@@ -155,6 +155,7 @@
     <ClCompile Include="src\sort_algorithm\adjacent.cpp" />
     <ClCompile Include="src\sort_algorithm\compare.cpp" />
     <ClCompile Include="src\sort_algorithm\genetic.cpp" />
+    <ClCompile Include="src\sort_algorithm\Murakami.cpp" />
     <ClCompile Include="src\sort_algorithm\yrange2.cpp" />
     <ClCompile Include="src\splitter.cpp" />
     <ClCompile Include="src\test_tool.cpp" />

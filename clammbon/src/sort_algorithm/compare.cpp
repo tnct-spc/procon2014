@@ -193,7 +193,7 @@ point_type dl_choose(compared_type const& comp, point_type const ul, point_type 
 
 
 /*場を評価する関数*/
-uint64_t form_evaluate(compared_type const& comp_, std::vector<std::vector<point_type> > matrix)
+uint64_t form_evaluate(compared_type const& comp_, std::vector<std::vector<point_type> > const& matrix)
 {
 	uint64_t s = 0;
 	const int width = matrix[0].size();
@@ -207,14 +207,14 @@ uint64_t form_evaluate(compared_type const& comp_, std::vector<std::vector<point
 }
 
 /*指定された範囲内の問題画像の種類を返す関数*/
-int get_kind_num(question_raw_data const& data_,std::vector<std::vector<point_type>> matrix, int x, int y){
+int get_kind_num(question_raw_data const& data_,std::vector<std::vector<point_type>> const& matrix, int const x, int const y){
 	int const sepx = data_.split_num.first;
 	int const sepy = data_.split_num.second;
 
 	std::vector<point_type> temp;
 	for (int i = 0; i < sepy; i++){
 		for (int j = 0; j < sepx; j++){
-			temp.push_back(matrix[x + j][y + i]);
+			temp.push_back(matrix[y + i][x + j]);
 		}
 	}
 	std::sort(temp.begin(), temp.end());
