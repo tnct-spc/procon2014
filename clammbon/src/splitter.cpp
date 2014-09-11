@@ -1,4 +1,8 @@
 ﻿#include <limits>
+#include <iostream>
+#include <opencv2/core/core.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/highgui/highgui.hpp>
 #include "splitter.hpp"
 
 split_image_type splitter::split_image(question_raw_data const& raw) const
@@ -91,3 +95,33 @@ image_type splitter::fold_image(unfold_image_type const& unfold_image, int const
     return fold_image;
 }
 
+//column_set作成関数
+cv::Mat splitter::make_column_set(question_raw_data const& data_) const
+{
+	int const parts_width = data_.size.first / data_.split_num.first;
+	int const parts_height = data_.size.second / data_.split_num.second;
+	int const sepx = data_.split_num.first;
+	int const sepy = data_.split_num.second;
+
+	cv::Rect roi_rect(0, 0, 1, parts_height);
+	cv::Mat combined_img(cv::Size(sepx*sepy * 2, parts_height), CV_8UC3);
+	splitter sp;//どこからか持ってきてたsplitter
+	split_image_type splitted = sp.split_image(data_);
+
+	for (int i = 0; i < sepy; i++){
+		for (int j = 0; j < sepx; j++){
+			cv::Rect left_roi(0, 0, 1, parts_height);
+			cv::Mat roi(combined_img, roi_rect);
+
+			cv::Mat left(splitted[i][j], left_roi);
+			left.copyTo(roi);
+			roi_rect.x += 1;
+
+			cv::Rect right_roi(parts_width - 1, 0, 1, parts_height);
+			cv::Mat right(splitted[i][j], right_roi);
+			right.copyTo(roi);
+			roi_rect.x += 1;		
+		}
+	}
+	return combined_img;
+}

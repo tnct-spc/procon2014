@@ -267,24 +267,24 @@ std::vector<std::vector<std::vector<point_type>>> yrange2::operator() ()
 
 #ifdef _DEBUG
     std::cout << "There are " << answer.point_type.size() << " solutions" << std::endl;
-    for(auto const& one_answer : answer.point_type)
-    {
-        for(int i=0; i<one_answer.size(); ++i)
-        {
-            for(int j=0; j<one_answer.at(0).size(); ++j)
-            {
-                auto const& data = one_answer[i][j];
-                std::cout << boost::format("(%2d,%2d) ") % data.x % data.y;
-            }
-            std::cout << "\n";
-        }
-        std::cout << "\n";
-    }
-#endif
-
-	std::cout << form_evaluate(comp_, answer.point_type[0]) << std::endl;
-
+	for (auto const& one_answer : answer.point_type)
+	{
+		for (int i = 0; i < one_answer.size(); ++i)
+		{
+			for (int j = 0; j < one_answer.at(0).size(); ++j)
+			{
+				auto const& data = one_answer[i][j];
+				std::cout << boost::format("(%2d,%2d) ") % data.x % data.y;
+			}
+			std::cout << "\n";
+		}
+		std::cout << "score = " << form_evaluate(comp_, one_answer) << std::endl;
+	}
 	gui::show_image(data_, comp_, answer);
+#endif
+	
+	splitter sp;
+	sp.make_column_set(data_);
 
     return answer.point_type;
 }
