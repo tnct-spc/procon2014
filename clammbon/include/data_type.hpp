@@ -276,9 +276,6 @@ namespace std
         }
     };
 
-enum direction{
-	up, right, down, left
-};
     template <>
     struct hash<point_type>
     {
@@ -288,5 +285,9 @@ enum direction{
         }
     };
 }
+
+enum direction {
+    up, right, down, left
+};
 
 #endif
