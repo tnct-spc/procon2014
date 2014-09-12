@@ -419,10 +419,12 @@ void algorithm::impl::greedy()
                 move_selecting<'L'>();
             }
             move_selecting<'D', 'R'>();
-        } else if (target.x == width - 2 && matrix[selecting_cur.y - 1][selecting_cur.x - 1] == target.right()) {
-            move_selecting<'L', 'U', 'R', 'D', 'L', 'D', 'R', 'U', 'U', 'L', 'D', 'R', 'D'>();
-        } else if (target.y == height - 2 && matrix[selecting_cur.y - 1][selecting_cur.x - 1] == target.down()) {
-            move_selecting<'U', 'L', 'D', 'R', 'U', 'R', 'D', 'L', 'L', 'U', 'R', 'D', 'R'>();
+        } else if (selecting_cur.x > 1 && selecting_cur.y > 1) {
+            if (target.x == width - 2 && matrix[selecting_cur.y - 1][selecting_cur.x - 1] == target.right()) {
+                move_selecting<'L', 'U', 'R', 'D', 'L', 'D', 'R', 'U', 'U', 'L', 'D', 'R', 'D'>();
+            } else if (target.y == height - 2 && matrix[selecting_cur.y - 1][selecting_cur.x - 1] == target.down()) {
+                move_selecting<'U', 'L', 'D', 'R', 'U', 'R', 'D', 'L', 'L', 'U', 'R', 'D', 'R'>();
+            }
         }
 
         // ソート済みとする
@@ -947,10 +949,10 @@ inline void algorithm::impl::print() const
 int main(void)
 {
     const std::vector<std::vector<point_type>> matrix = {
-        {{ 1,  2}, { 9,  3}, { 7,  1}, {10,  3}, { 2,  0}, { 4,  3}, {12,  1}, { 3,  3}, { 5,  3}, { 6,  2}, {11,  2}, { 0,  1}, {10,  1}, { 5,  0}},
-        {{ 9,  0}, { 7,  0}, {13,  3}, {12,  2}, { 9,  1}, { 2,  2}, { 5,  1}, { 3,  0}, { 7,  2}, {13,  1}, { 1,  3}, { 4,  2}, {11,  3}, {13,  2}},
-        {{ 5,  2}, { 6,  3}, { 4,  0}, { 1,  0}, { 8,  1}, { 6,  1}, { 3,  2}, {13,  0}, {10,  2}, { 3,  1}, { 4,  1}, {11,  1}, { 8,  2}, { 9,  2}},
-        {{ 0,  2}, {10,  0}, { 2,  1}, {12,  3}, { 0,  3}, { 1,  1}, { 8,  3}, { 7,  3}, {11,  0}, { 2,  3}, { 6,  0}, { 8,  0}, {12,  0}, { 0,  0}}
+        {{ 1,  2}, { 0,  1}, { 2,  2}, { 1,  1}},
+        {{ 2,  0}, { 0,  0}, { 3,  0}, { 3,  3}},
+        {{ 2,  3}, { 0,  2}, { 1,  3}, { 0,  3}},
+        {{ 1,  0}, { 3,  1}, { 2,  1}, { 3,  2}}
     };
     const auto size = std::pair<int, int>(matrix[0].size(), matrix.size());
     constexpr int problem_id = 1;
