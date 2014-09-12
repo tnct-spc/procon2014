@@ -14,6 +14,10 @@ namespace gui
         std::string const& window_name = ""
         );
 
+	void combine_show_image(question_raw_data const& data_, compared_type const& comp_, answer_type_y const& answer);
+
+	void show_image(question_raw_data const& data_, compared_type const& comp_, answer_type_y const& answer);
+
 } // namespace gui
 
 #endif

@@ -248,6 +248,18 @@ operator<< (std::basic_ostream<CharT, Traits>& os, point_type const& point)
 typedef std::vector<std::vector<std::vector<std::vector<direction_type<uint64_t>>>>> compared_type;
 typedef std::vector<std::vector<direction_type<point_type>>> adjacent_type;
 
+//yrange2
+struct answer_type_y{
+	std::vector<std::vector<std::vector<point_type>>> point_type;
+	std::vector<double> score;
+	std::vector<cv::Mat> cv_Mat;
+};
+struct cr_set{
+	cv::Mat row;
+	cv::Mat column;
+	std::vector<std::map<point_type, cv::Mat>> each_direction;
+};
+
 namespace std
 {
     template <>
@@ -274,5 +286,9 @@ namespace std
         }
     };
 }
+
+enum direction {
+    up, right, down, left
+};
 
 #endif
