@@ -450,70 +450,140 @@ void algorithm::impl::brute_force()
     // 解答発見フラグ
     bool finished = false;
 
+    step_type tmp;
+
     while (open.size() > 0) {
-        if (is_finished(open.back().matrix)) {
+        current = open.front();
+        open.pop();
+        if (is_finished(current.matrix)) {
             // 終了
-            answer = open.back().answer;
+            answer = current.answer;
             finished = true;
             break;
-        } else {
-            current = open.front();
-            open.pop();
-            if (closed.find(current) != closed.end()) {
-                continue;
-            }
+        }
 
-            if (current.selecting_cur.y == height - BFS_NUM) {
-                if (current.selecting_cur.x == width - BFS_NUM) {
-                    // 右と下
-                    open.push(move_bf<'R'>(current));
-                    open.push(move_bf<'D'>(current));
-                } else if (current.selecting_cur.x == width - 1) {
-                    // 左と下
-                    open.push(move_bf<'L'>(current));
-                    open.push(move_bf<'D'>(current));
-                } else {
-                    // 左右下
-                    open.push(move_bf<'L'>(current));
-                    open.push(move_bf<'R'>(current));
-                    open.push(move_bf<'D'>(current));
+        if (current.selecting_cur.y == height - BFS_NUM) {
+            if (current.selecting_cur.x == width - BFS_NUM) {
+                // 右と下
+                tmp = move_bf<'R'>(current);
+                if (!closed.count(tmp)) {
+                    open.push(tmp);
                 }
-            } else if (current.selecting_cur.y == height - 1) {
-                if (current.selecting_cur.x == width - BFS_NUM) {
-                    // 右と上
-                    open.push(move_bf<'R'>(current));
-                    open.push(move_bf<'U'>(current));
-                } else if (current.selecting_cur.x == width - 1) {
-                    // 左と上
-                    open.push(move_bf<'L'>(current));
-                    open.push(move_bf<'U'>(current));
-                } else {
-                    // 左右上
-                    open.push(move_bf<'L'>(current));
-                    open.push(move_bf<'R'>(current));
-                    open.push(move_bf<'U'>(current));
+                tmp = move_bf<'D'>(current);
+                if (!closed.count(tmp)) {
+                    open.push(tmp);
+                }
+            } else if (current.selecting_cur.x == width - 1) {
+                // 左と下
+                tmp = move_bf<'L'>(current);
+                if (!closed.count(tmp)) {
+                    open.push(tmp);
+                }
+                tmp = move_bf<'D'>(current);
+                if (!closed.count(tmp)) {
+                    open.push(tmp);
                 }
             } else {
-                if (current.selecting_cur.x == width - BFS_NUM) {
-                    // 右上下
-                    open.push(move_bf<'R'>(current));
-                    open.push(move_bf<'U'>(current));
-                    open.push(move_bf<'D'>(current));
-                } else if (current.selecting_cur.x == width - 1) {
-                    // 左上下
-                    open.push(move_bf<'L'>(current));
-                    open.push(move_bf<'U'>(current));
-                    open.push(move_bf<'D'>(current));
-                } else {
-                    // 四方
-                    open.push(move_bf<'U'>(current));
-                    open.push(move_bf<'R'>(current));
-                    open.push(move_bf<'D'>(current));
-                    open.push(move_bf<'L'>(current));
+                // 左右下
+                tmp = move_bf<'L'>(current);
+                if (!closed.count(tmp)) {
+                    open.push(tmp);
+                }
+                tmp = move_bf<'R'>(current);
+                if (!closed.count(tmp)) {
+                    open.push(tmp);
+                }
+                tmp = move_bf<'D'>(current);
+                if (!closed.count(tmp)) {
+                    open.push(tmp);
                 }
             }
-            closed.insert(current);
+        } else if (current.selecting_cur.y == height - 1) {
+            if (current.selecting_cur.x == width - BFS_NUM) {
+                // 右と上
+                tmp = move_bf<'R'>(current);
+                if (!closed.count(tmp)) {
+                    open.push(tmp);
+                }
+                tmp = move_bf<'U'>(current);
+                if (!closed.count(tmp)) {
+                    open.push(tmp);
+                }
+            } else if (current.selecting_cur.x == width - 1) {
+                // 左と上
+                tmp = move_bf<'L'>(current);
+                if (!closed.count(tmp)) {
+                    open.push(tmp);
+                }
+                tmp = move_bf<'U'>(current);
+                if (!closed.count(tmp)) {
+                    open.push(tmp);
+                }
+            } else {
+                // 左右上
+                tmp = move_bf<'L'>(current);
+                if (!closed.count(tmp)) {
+                    open.push(tmp);
+                }
+                tmp = move_bf<'R'>(current);
+                if (!closed.count(tmp)) {
+                    open.push(tmp);
+                }
+                tmp = move_bf<'U'>(current);
+                if (!closed.count(tmp)) {
+                    open.push(tmp);
+                }
+            }
+        } else {
+            if (current.selecting_cur.x == width - BFS_NUM) {
+                // 右上下
+                tmp = move_bf<'R'>(current);
+                if (!closed.count(tmp)) {
+                    open.push(tmp);
+                }
+                tmp = move_bf<'U'>(current);
+                if (!closed.count(tmp)) {
+                    open.push(tmp);
+                }
+                tmp = move_bf<'D'>(current);
+                if (!closed.count(tmp)) {
+                    open.push(tmp);
+                }
+            } else if (current.selecting_cur.x == width - 1) {
+                // 左上下
+                tmp = move_bf<'L'>(current);
+                if (!closed.count(tmp)) {
+                    open.push(tmp);
+                }
+                tmp = move_bf<'U'>(current);
+                if (!closed.count(tmp)) {
+                    open.push(tmp);
+                }
+                tmp = move_bf<'D'>(current);
+                if (!closed.count(tmp)) {
+                    open.push(tmp);
+                }
+            } else {
+                // 四方
+                tmp = move_bf<'U'>(current);
+                if (!closed.count(tmp)) {
+                    open.push(tmp);
+                }
+                tmp = move_bf<'R'>(current);
+                if (!closed.count(tmp)) {
+                    open.push(tmp);
+                }
+                tmp = move_bf<'D'>(current);
+                if (!closed.count(tmp)) {
+                    open.push(tmp);
+                }
+                tmp = move_bf<'L'>(current);
+                if (!closed.count(tmp)) {
+                    open.push(tmp);
+                }
+            }
         }
+        closed.insert(current);
     }
 
     if (!finished) {
