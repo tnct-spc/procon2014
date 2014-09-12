@@ -20,7 +20,7 @@ private:
 	//std::vector<block_type> block_list; //std::mapで一緒に評価値を持たせてもいいかも////cppに移動
 	//[point_type][UDRL][Rank]の順でアクセスする,中身は分割画像
 	std::map <point_type, std::vector < std::vector<point_type>>> sorted_comparation;//これのラッパー関数があったほうがいい?
-	void Murakami::sort_compare();
+	void sort_compare();
 	//eval_blockの返り値のための構造体
 	struct block_combination{
 		//ここでブロックへの参照を保持しないと結合後のブロックを消せない
