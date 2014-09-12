@@ -158,7 +158,9 @@ void algorithm::impl::operator() (boost::coroutines::coroutine<return_type>::pus
 #ifdef algorithm_debug
     print();
 #endif
-    yield(solve());
+    try {
+        yield(solve());
+    } catch (std::runtime_error const& e) { }
 }
 
 // move_selecting {{{2
@@ -589,7 +591,7 @@ void algorithm::impl::brute_force()
     }
 
     if (!finished) {
-        std::cout << "NOT FOUND" << std::endl;
+        throw std::runtime_error("Couldn't solve the problem.");
     }
 
     return;
@@ -964,12 +966,18 @@ int main(void)
     algorithm algo;
     algo.reset(qdata);
     const auto answer = algo.get();
-    for (auto const& line : *answer) {
-        std::cout << boost::format("%1$02X") % line.position.num() << std::endl;
-        for (auto const& action : line.actions) {
-            std::cout << action;
+    if (answer) {
+        std::cout << answer->size() << std::endl;
+        for (auto const& line : *answer) {
+            std::cout << boost::format("%1$02X") % line.position.num() << std::endl;
+            std::cout << line.actions.size() << std::endl;
+            for (auto const& action : line.actions) {
+                std::cout << action;
+            }
+            std::cout << std::endl;
         }
-        std::cout << std::endl;
+    } else {
+        std::cerr << "Couldn't solve the problem." << std::endl;
     }
     return 0;
 }
