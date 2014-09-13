@@ -322,7 +322,7 @@ void algorithm::impl::greedy()
 
     for (point_type const& target : target_queue) {
         // 端の部分の処理
-        if (sorted_points.find(target) != sorted_points.end()) {
+        if (sorted_points.count(target)) {
             continue;
         }
         if (target.x == width - 2 || target.y == height - 1) {
@@ -866,7 +866,7 @@ void algorithm::impl::move_to(point_type const& to)
 // is_sorted {{{2
 inline bool algorithm::impl::is_sorted(point_type const& point) const
 {
-    return sorted_points.find(point) != sorted_points.end();
+    return sorted_points.count(point) > 0;
 }
 
 // is_finished {{{2
