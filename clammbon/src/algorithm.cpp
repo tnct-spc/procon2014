@@ -36,9 +36,9 @@ private:
     const answer_list solve();
     void greedy();
     void brute_force();
-    inline void print() const;
+    void print() const;
     const point_type current_point(point_type const& point) const;
-    inline bool is_sorted(point_type const& point) const;
+    bool is_sorted(point_type const& point) const;
     bool is_finished(std::vector<std::vector<point_type>> const& mat) const;
     void move_target(point_type const& target, char const& direction);
     void move_to(point_type const& to);
@@ -864,7 +864,7 @@ void algorithm::impl::move_to(point_type const& to)
 }
 
 // is_sorted {{{2
-inline bool algorithm::impl::is_sorted(point_type const& point) const
+bool algorithm::impl::is_sorted(point_type const& point) const
 {
     return sorted_points.count(point) > 0;
 }
@@ -929,7 +929,7 @@ bool algorithm::impl::must_chagne_select(std::vector<std::vector<point_type>> co
 }
 
 // print {{{2
-inline void algorithm::impl::print() const
+void algorithm::impl::print() const
 {
     // 具合をいい感じに表示
     std::cout << std::endl;
