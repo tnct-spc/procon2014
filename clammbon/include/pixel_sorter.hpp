@@ -17,23 +17,22 @@ public:
     pixel_sorter<Algorithm>() : split_(){}
     virtual ~pixel_sorter<Algorithm>() = default;
 
-    return_type operator() (question_raw_data const& raw) const
+    return_type operator() (question_raw_data const& raw, split_image_type const& splited_image) const
     {
-        auto const& proposed = proposed_answer(raw);
+        auto const& proposed = proposed_answer(raw, splited_image);
 
         // TODO: ここで返却されたデータのうち，適しているものを選択してreturn
     
         return proposed[0];
     }
 
-    std::vector<return_type> proposed_answer(question_raw_data const& raw) const
+    std::vector<return_type> proposed_answer(question_raw_data const& raw, split_image_type const& splited_image) const
     {
         //
         // Sub Algorithm
         // 正しい位置に並べた時に左上から，1~nまでの番号をふり，それが今どこにあるのかという情報をreturn
         //
 
-        split_image_type const& splited_image = split_.split_image(raw);
         compared_type const& comp = this->image_comp(splited_image);
 
         Algorithm algo(raw, comp);

@@ -35,13 +35,10 @@ namespace gui
     }
     
     std::future<std::vector<std::vector<point_type>>> make_mansort_window(
-        question_raw_data const& data,
+        split_image_type const& splitted,
         std::string const& window_name
         )
     {
-        splitter sp;
-        auto splitted = sp.split_image(data);
-
         return std::async(
             std::launch::async,
             [=/*, splitted=std::move(splitted)*/]() -> std::vector<std::vector<point_type>>

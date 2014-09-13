@@ -8,6 +8,7 @@
 #include "data_type.hpp"
 #include "pixel_sorter.hpp"
 #include "ppm_reader.hpp"
+#include "splitter.hpp"
 #include "algorithm.hpp"
 #include "gui.hpp"
 #include "network.hpp"
@@ -36,9 +37,11 @@ public:
         std::string const data = netclient_.get_problem(01).get();
         raw = reader_.from_data(data);
 #endif
+        splitter sp;
+        auto splitted = sp.split_image(raw);
 
         // 手作業用のウィンドウの作成
-        auto future = gui::make_mansort_window(raw, "test");
+        auto future = gui::make_mansort_window(splitted, "test");
 
         // yrangeなどの実行
         question_data formed = {
@@ -48,7 +51,7 @@ public:
             raw.selectable_num,
             raw.cost.first,
             raw.cost.second,
-            sorter_(raw)
+            sorter_(raw, splitted)
         };
 
         //手作業のデータはこっちで受ける
