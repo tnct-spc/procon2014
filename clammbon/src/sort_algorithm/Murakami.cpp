@@ -5,7 +5,7 @@
 #include <fstream>
 #include <string>
 #include <algorithm>
-#include <map>
+#include <unordered_map>
 #include <data_type.hpp>
 #include <sort_algorithm/compare.hpp>
 #include <sort_algorithm/adjacent.hpp>
@@ -261,7 +261,7 @@ void Murakami::sort_compare()
 			return score == right.score ? x < right.x : score < right.score;
 		}
 	};
-	std::map <point_type, std::vector < std::vector<point_type>>> sorted_comparation;
+	std::unordered_map <point_type, std::vector < std::vector<point_type>>> sorted_comparation;
 	std::vector<point_type_score> rank;
 	std::vector<std::vector<point_type>> direct(4, (std::vector<point_type>(1)));
 
@@ -367,7 +367,7 @@ void Murakami::make_sorted_comparation(){
 		}
 	};
 
-	std::map<point_type, std::vector<std::vector<point_type>>> sorted_point_score_dir_point;
+	std::unordered_map<point_type, std::vector<std::vector<point_type>>> sorted_point_score_dir_point;
 	for (int k = 0; k < height; k++){
 		for (int l = 0; l < width; l++){
 			point_type point_k_l{ l, k };
