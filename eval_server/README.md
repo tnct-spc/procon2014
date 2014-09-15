@@ -1,8 +1,16 @@
 # 練習用HTTPサーバ仕様
 
-## 注意
-現在Windows非対応  
-boost, cpp-netlibに依存  
+## mongooseのインストール
+このプログラムはmongoose-cppに依存しています。 
+次の手順でインストールしてください。 
+    $ git clone http://github.com/Gregwar/mongoose-cpp
+    $ cd mongoose-cpp
+    $ cmake -DENABLE_REGEX_URL=ON -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ .
+    $ make
+    # cp lib_mongoose.a /usr/local/lib/
+    # cp mongoose.h /usr/local/include/
+    # mkdir /usr/local/include/mongoose
+    # cp mongoose/*.h /usr/local/include/mongoose/
 
 ## 使い方
 makeするとserverという実行ファイルができる  
