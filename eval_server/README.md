@@ -22,12 +22,14 @@
      #endif
 
     --- mongoose/Request.h.old	2014-09-16 04:46:40.393843325 +0900
-    +++ mongoose/Request.h	2014-09-16 04:46:51.618854072 +0900
-    @@ -81,6 +81,7 @@
+    +++ mongoose/Request.h	2014-09-16 06:05:36.212643078 +0900
+    @@ -81,6 +81,9 @@
                  string getData();
      
      #ifdef ENABLE_REGEX_URL
+    +        protected:
     +            smatch matches;
+    +        public:
                  smatch getMatches();
                  bool match(string pattern);
      #endif
