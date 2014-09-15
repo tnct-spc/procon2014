@@ -7,6 +7,7 @@
 #include <vector>
 #include <queue>
 #include <unordered_set>
+#include <unordered_map>
 #include <boost/noncopyable.hpp>
 #include <boost/format.hpp>
 #include <boost/functional/hash/extensions.hpp>
@@ -257,7 +258,7 @@ struct answer_type_y{
 struct cr_set{
 	cv::Mat row;
 	cv::Mat column;
-	std::vector<std::map<point_type, cv::Mat>> each_direction;
+	std::vector<std::unordered_map<point_type, cv::Mat>> each_direction;
 };
 namespace std
 {

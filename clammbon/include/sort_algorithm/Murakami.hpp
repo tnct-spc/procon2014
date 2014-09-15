@@ -1,7 +1,7 @@
 #include <vector>
 #include <data_type.hpp>
 #include <boost/multiprecision/cpp_int.hpp>
-#include <map>
+#include <unordered_map>
 //人名(村上剛基)なのでキャメルケースです
 class Murakami
 {
@@ -17,9 +17,9 @@ private:
 		up,right,down,left
 	};
 	//作ったブロックをしまっておくlist,この要素が1になったら復元画像完成(ただしはみ出ないものとする)
-	//std::vector<block_type> block_list; //std::mapで一緒に評価値を持たせてもいいかも////cppに移動
+	//std::vector<block_type> block_list; //std::unordered_mapで一緒に評価値を持たせてもいいかも////cppに移動
 	//[point_type][UDRL][Rank]の順でアクセスする,中身は分割画像
-	std::map <point_type, std::vector < std::vector<point_type>>> sorted_comparation;//これのラッパー関数があったほうがいい?
+	std::unordered_map <point_type, std::vector < std::vector<point_type>>> sorted_comparation;//これのラッパー関数があったほうがいい?
 	void sort_compare();
 	//eval_blockの返り値のための構造体
 	struct block_combination{
