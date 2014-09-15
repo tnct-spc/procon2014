@@ -4,7 +4,7 @@
 このプログラムはmongoose-cppに依存しています。  
 次の手順でインストールしてください。  
 
-$ git clone http://github.com/Gregwar/mongoose-cpp
+    $ git clone http://github.com/Gregwar/mongoose-cpp
     $ cd mongoose-cpp
     $ cmake -DENABLE_REGEX_URL=ON -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ .
     $ make
