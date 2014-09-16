@@ -17,6 +17,13 @@ private:
     // 指定した範囲の配列の和を返す
     int array_sum(return_type const& array_, int const x, int const y, int const height, int const width) const;
 
+	//縦入れ替え
+	void column_replacement(return_type& matrix)const;
+	//横入れ替え
+	void row_replacement(return_type& matrix)const;
+	//cv::Matの塊にする
+	std::vector<cv::Mat> combine_image(std::vector<std::vector<std::vector<point_type>>>const & matrix);
+	
 public:
     // 泣きのポインタ渡し
     yrange2(question_raw_data const& data, compared_type const& comp);

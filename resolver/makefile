@@ -3,7 +3,7 @@ include ../makefile.in
 OUTDIR := ../bin/$(buildtype)
 TARGET = procon
 
-SRCS := src/main.cpp src/network.cpp
+SRCS := src/main.cpp
 PROG := $(OUTDIR)/$(TARGET)
 OBJS := $(SRCS:src/%.cpp=obj/$(buildtype)/%.o)
 DEPS := $(SRCS:src/%.cpp=obj/$(buildtype)/%.d)
@@ -11,7 +11,7 @@ DEPS := $(SRCS:src/%.cpp=obj/$(buildtype)/%.d)
 CXXFLAGS +=
 CPPFLAGS += -Iinclude
 LDFLAGS  +=
-LIBS     += -lboost_system -lboost_thread -lpthread -lcppnetlib-server-parsers -lcppnetlib-client-connections -lcppnetlib-uri -lcrypto -lssl
+LIBS     += -lboost_system -lboost_thread -lboost_coroutine -lpthread -lcppnetlib-server-parsers -lcppnetlib-client-connections -lcppnetlib-uri -lcrypto -lssl
 
 .PHONY: all clean distclean
 

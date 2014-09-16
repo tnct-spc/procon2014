@@ -37,13 +37,13 @@ public:
     {
         return sane;
     }
-    inline std::string const& get_error()
+    inline std::string && get_error()
     {
-        return outerr.str();
+        return std::move(outerr.str());
     }
-    inline std::string const& get_output()
+    inline std::string && get_output()
     {
-        return output.str();
+        return std::move(output.str());
     }
 };
 

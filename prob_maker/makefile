@@ -1,7 +1,7 @@
 include ../makefile.in
 
 OUTDIR := ../bin/$(buildtype)
-TARGET = eval_movement
+TARGET = prob_maker
 
 SRCS := src/main.cpp
 PROG := $(OUTDIR)/$(TARGET)
@@ -11,7 +11,7 @@ DEPS := $(SRCS:src/%.cpp=obj/$(buildtype)/%.d)
 CXXFLAGS +=
 CPPFLAGS +=
 LDFLAGS  +=
-LIBS     += -lboost_system -lboost_coroutine
+LIBS     += -lopencv_core -lopencv_imgproc -lopencv_highgui -lboost_program_options
 
 .PHONY: all clean distclean
 

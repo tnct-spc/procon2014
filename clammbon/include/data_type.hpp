@@ -1,26 +1,52 @@
-﻿#ifndef RESOLVER_DATA_TYPE_HPP
+#ifndef RESOLVER_DATA_TYPE_HPP
 #define RESOLVER_DATA_TYPE_HPP
 
 #include <cstdint>
 #include <cmath>
-#include <tuple>
 #include <utility>
 #include <vector>
+#include <queue>
+#include <unordered_set>
 #include <boost/noncopyable.hpp>
+#include <boost/format.hpp>
+#include <boost/functional/hash/extensions.hpp>
 #include <opencv2/core/core.hpp>
+
+enum struct AllDirection { Same, Up, UpperRight, Right, DownerRight, Down, DownerLeft, Left, UpperLeft };
 
 struct point_type
 {
     int x;
     int y;
-    
+
+    inline std::string const str() const
+    {
+        return ( boost::format("(%1%,%2%)") % this->x % this->y ).str();
+    }
+    inline uint16_t num() const
+    {
+        return this->x * 16 + this->y;
+    }
+
     friend inline bool operator== (point_type const& lhs, point_type const& rhs)
     {
         return lhs.x == rhs.x && lhs.y == rhs.y;
     }
+    friend inline bool operator!= (point_type const& lhs, point_type const& rhs)
+    {
+        return lhs.x != rhs.x || lhs.y != rhs.y;
+    }
+    friend inline bool operator< (point_type const& lhs, point_type const& rhs)
+    {
+    return (lhs.x == rhs.x) ? lhs.y < rhs.y : lhs.x < rhs.x;
+    }
     friend inline point_type const operator- (point_type const& lhs, point_type const& rhs)
     {
         return point_type{lhs.x - rhs.x, lhs.y - rhs.y};
+    }
+    friend inline point_type const operator+ (point_type const& lhs, point_type const& rhs)
+    {
+        return point_type{lhs.x + rhs.x, lhs.y + rhs.y};
     }
 
     inline int manhattan(point_type const& other) const
@@ -61,6 +87,59 @@ struct point_type
             case 'R': return right(); break;
             default:  return point_type{-1, -1}; break;
         }
+    inline point_type const up() const
+    {
+        return point_type{this->x, this->y - 1};
+    }
+    inline point_type const right() const
+    {
+        return point_type{this->x + 1, this->y};
+    }
+    inline point_type const down() const
+    {
+        return point_type{this->x, this->y + 1};
+    }
+    inline point_type const left() const
+    {
+        return point_type{this->x - 1, this->y};
+    }
+
+    inline AllDirection direction(point_type const& point) const
+    {
+        point_type diff = *this - point;
+        if (diff.x < 0) {
+            if (diff.y < 0) {
+                return AllDirection::DownerRight;
+            } else if (diff.y > 0) {
+                return AllDirection::UpperRight;
+            } else {
+                return AllDirection::Right;
+            }
+        } else if (diff.x > 0) {
+            if (diff.y < 0) {
+                return AllDirection::DownerLeft;
+            } else if (diff.y > 0) {
+                return AllDirection::UpperLeft;
+            } else {
+                return AllDirection::Left;
+            }
+        } else {
+            if (diff.y < 0) {
+                return AllDirection::Down;
+            } else if (diff.y > 0) {
+                return AllDirection::Up;
+            } else {
+                return AllDirection::Same;
+            }
+        }
+    }
+
+    friend std::size_t hash_value(point_type const& point)
+    {
+        std::size_t seed = 0;
+        boost::hash_combine(seed, point.x);
+        boost::hash_combine(seed, point.y);
+        return seed;
     }
 };
 
@@ -115,6 +194,19 @@ struct question_data : private boost::noncopyable
         this->block       = std::move(other.block);
         return *this;
     }
+
+    question_data clone() const
+    {
+        return question_data{
+            problem_id,
+            player_id,
+            size,
+            selectable,
+            cost_select,
+            cost_change,
+            block
+        };
+    }
 };
 
 struct question_raw_data : private boost::noncopyable
@@ -125,7 +217,7 @@ struct question_raw_data : private boost::noncopyable
     std::pair<int,int> size; // x * y
     int max_brightness; // 最大輝度
     image_type pixels;
-    
+
     question_raw_data()
     {
     }
@@ -147,13 +239,21 @@ struct question_raw_data : private boost::noncopyable
 
 struct answer_type
 {
-    enum class action_type{ change, select };
-
-    action_type type;
     point_type position;
-    char direction;
+    std::vector<char> actions;
 };
 typedef std::vector<answer_type> answer_list;
+
+struct step_type {
+    answer_list answer;
+    point_type selecting_cur;
+    std::vector<std::vector<point_type>> matrix;
+
+    friend bool operator== (step_type const& lhs, step_type const& rhs)
+    {
+        return lhs.matrix == rhs.matrix;
+    }
+};
 
 template<class T>
 struct direction_type
@@ -165,8 +265,59 @@ struct direction_type
     T left;
 };
 
+// ostream に吐けると便利だよね
+template<typename CharT, typename Traits>
+std::basic_ostream<CharT, Traits>&
+operator<< (std::basic_ostream<CharT, Traits>& os, point_type const& point)
+{
+    os << point.str();
+    return os;
+}
+
 //sort_algorithm
 typedef std::vector<std::vector<std::vector<std::vector<direction_type<uint64_t>>>>> compared_type;
 typedef std::vector<std::vector<direction_type<point_type>>> adjacent_type;
+
+//yrange2
+struct answer_type_y{
+	std::vector<std::vector<std::vector<point_type>>> point_type;
+	std::vector<double> score;
+	std::vector<cv::Mat> cv_Mat;
+};
+struct cr_set{
+	cv::Mat row;
+	cv::Mat column;
+	std::vector<std::map<point_type, cv::Mat>> each_direction;
+};
+namespace std
+{
+    template <>
+    struct hash<step_type>
+    {
+        std::size_t operator() (step_type const& step) const
+        {
+            std::size_t result;
+            for (auto row : step.matrix) {
+                for (auto point : row) {
+                    boost::hash_combine(result, point);
+                }
+            }
+            return result;
+        }
+    };
+
+    template <>
+    struct hash<point_type>
+    {
+        std::size_t operator() (point_type const& point) const
+        {
+            return hash_value(point);
+        }
+    };
+}
+
+enum direction {
+    up, right, down, left
+};
 
 #endif

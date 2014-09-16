@@ -27,7 +27,7 @@ question_raw_data ppm_reader::from_data(std::string const& data)
 question_raw_data ppm_reader::from_file(std::string const& path)
 {
     // pathのオープン
-    std::ifstream ifs(path);
+    std::ifstream ifs(path, std::ios::binary | std::ios::in);
     if(!ifs.is_open())
     {
         std::string const message = "Not found: " + path + "\n";
