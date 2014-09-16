@@ -42,22 +42,25 @@
     # cp mongoose/*.h /usr/local/include/mongoose/
 
 ## 使い方
-makeするとserverという実行ファイルができる  
-そのディレクトリで何も引数を付けずに実行するとサーバーが立ち上がる  
-ポートは80番を使うのでsudoが必要かも  
+makeするとserverという実行ファイルができます  
+実行するとサーバーが立ち上がります  
 
-`http://localhost/SubmitForm`にアクセスするとフォームが出てくる  
-そこからPOSTで`/SubmitAnswer`に解答を投げる感じ  
-リクエストの中身はplayerid, problemid, answer  
+    $ ./server          # port 8080
+    # PORT=80 ./server  # port 80
+
+`http://localhost/SubmitForm`にアクセスするとフォームが出てきます  
+そこからPOSTで`/SubmitAnswer`に解答を投げる感じです  
+リクエストの中身はplayerid, problemid, answer, (options)  
 playeridは練習ではあまり関係ない  
-problemidはたぶん2桁の数字  
+problemidはたぶん2桁の10進数  
 answerは移動手順の文字列  
-解答を投げるとすぐに処理結果が返ってくる  
+optionsはオプション(現時点で有効なのはquietのみ)(独自仕様)  
+解答を投げるとすぐに処理結果が返ってきます(text/plain)  
 フォーマットに問題がなければ返答は"ACCEPTED XX"(XXは不一致の数)  
 
-`/problem/probXX.ppm`(XXはproblemidと同じ2桁の数字)にアクセスすると問題が降ってくる(未実装)  
+`/problem/probXX.ppm`(XXはproblemid)にアクセスすると問題が降ってきます  
 
-`/position/probXX.pos`にアクセスすると位置ファイルが降ってくる(独自仕様)  
-位置ファイルの中身はプレーンテキストで、スペース区切りで2桁の16進数(1桁目が列、2桁目が行)(暫定)  
+`/position/probXX.pos`にアクセスすると位置定義ファイルが降ってきます(独自仕様)  
+位置定義ファイルの中身はプレーンテキストで、スペース区切りで2桁の16進数(1桁目が列、2桁目が行)(暫定)  
 
 
