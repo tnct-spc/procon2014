@@ -17,28 +17,18 @@ void Answer::convert(std::string const& s)
         if(ipos.x == -1 || ipos.y == -1) {
             outerr << "ERROR: illegal position: \"" + pos + "\"\n";
             return;
-        } else {
-            a.type = answer_type::action_type::select;
+        } else
             a.position = ipos;
-            a.direction = '\0';
-            al.push_back(a);
-        }
+
         int nx; // 交換回数
         ss >> nx;
         std::string move;
         ss >> move;
         for(int j = 0; j < nx; j++) {
-            a.type = answer_type::action_type::change;
-            a.position = ipos;
-            a.direction = move[j];
-            ipos = ipos.move_to(move[j]);
-            if(ipos.x == -1 || ipos.y == -1) {
-                outerr << "ERROR: illegal move: \'" << move[j] << "\'\n";
-                return;
-            } else {
-                al.push_back(a);
-            }
+            a.actions.push_back(move[j]);
         }
+
+        al.push_back(a);
     }
     final_answer = al;
     outerr << "STATUS: answer loaded successfully\n" << std::endl;
