@@ -34,7 +34,7 @@ std::map<std::string, std::string> const post_req_to_map(std::string req)
     std::map<std::string, std::string> m;
     std::vector<std::string> sep;
     boost::algorithm::split(sep, req, boost::is_any_of("&"));
-    for(int i = 0; i < sep.size(); i++) {
+    for(size_t i = 0; i < sep.size(); i++) {
         std::vector<std::string> tmp;
         boost::algorithm::split(tmp, sep[i], boost::is_any_of("="));
         m[tmp[0]] = tmp[1];
