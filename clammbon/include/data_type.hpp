@@ -156,13 +156,13 @@ struct question_data : private boost::noncopyable
     }
     question_data& operator=(question_data&& other)
     {
-        this->problem_id  = other.problem_id;
-        this->player_id   = other.player_id;
-        this->size        = std::move(other.size);
-        this->selectable  = other.selectable;
+        this->problem_id = other.problem_id;
+        this->player_id = other.player_id;
+        this->size = std::move(other.size);
+        this->selectable = other.selectable;
         this->cost_select = other.cost_select;
         this->cost_change = other.cost_change;
-        this->block       = std::move(other.block);
+        this->block = std::move(other.block);
         return *this;
     }
 
@@ -260,6 +260,7 @@ struct cr_set{
 	cv::Mat column;
 	std::vector<std::unordered_map<point_type, cv::Mat>> each_direction;
 };
+
 namespace std
 {
     template <>
