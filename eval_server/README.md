@@ -34,7 +34,7 @@
                  bool match(string pattern);
      #endif
 
-    $ cmake -DENABLE_REGEX_URL=ON
+    $ cmake -DENABLE_REGEX_URL=ON .
     $ make
     # cp lib_mongoose.a /usr/local/lib/
     # cp mongoose.h /usr/local/include/
