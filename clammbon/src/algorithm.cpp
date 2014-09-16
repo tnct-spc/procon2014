@@ -50,13 +50,16 @@ private:
     void move_selecting();
 
     template <char T>
-    const step_type move_bf(step_type step) const;
+    void add_step();
 
     std::vector<std::vector<point_type>> matrix;
     std::unordered_set<point_type> sorted_points;
     answer_list answer;
     point_type selecting;
     point_type selecting_cur;
+    std::queue<step_type> open;
+    std::unordered_set<step_type> closed;
+    step_type current;
     int width;
     int height;
     int cost_select;
@@ -160,7 +163,9 @@ void algorithm::impl::operator() (boost::coroutines::coroutine<return_type>::pus
 #endif
     try {
         yield(solve());
-    } catch (std::runtime_error const& e) { }
+    } catch (std::runtime_error const& e) {
+        std::cerr << "Couldn't solve the problem." << std::endl;
+    }
 }
 
 // move_selecting {{{2
@@ -219,41 +224,53 @@ void algorithm::impl::move_selecting()
     move_selecting<Second, Rest...>();
 }
 
-// move_bf {{{2
+// add_step {{{2
 template <>
-const step_type algorithm::impl::move_bf<'U'>(step_type step) const
+void algorithm::impl::add_step<'U'>()
 {
+    step_type step = current;
     std::swap(step.matrix[step.selecting_cur.y][step.selecting_cur.x], step.matrix[step.selecting_cur.y - 1][step.selecting_cur.x]);
     step.selecting_cur.y -= 1;
     step.answer.back().actions.push_back('U');
-    return step;
+    if (!closed.count(step)) {
+        open.push(step);
+    }
 }
 
 template <>
-const step_type algorithm::impl::move_bf<'R'>(step_type step) const
+void algorithm::impl::add_step<'R'>()
 {
+    step_type step = current;
     std::swap(step.matrix[step.selecting_cur.y][step.selecting_cur.x], step.matrix[step.selecting_cur.y][step.selecting_cur.x + 1]);
     step.selecting_cur.x += 1;
     step.answer.back().actions.push_back('R');
-    return step;
+    if (!closed.count(step)) {
+        open.push(step);
+    }
 }
 
 template <>
-const step_type algorithm::impl::move_bf<'D'>(step_type step) const
+void algorithm::impl::add_step<'D'>()
 {
+    step_type step = current;
     std::swap(step.matrix[step.selecting_cur.y][step.selecting_cur.x], step.matrix[step.selecting_cur.y + 1][step.selecting_cur.x]);
     step.selecting_cur.y += 1;
     step.answer.back().actions.push_back('D');
-    return step;
+    if (!closed.count(step)) {
+        open.push(step);
+    }
 }
 
 template <>
-const step_type algorithm::impl::move_bf<'L'>(step_type step) const
+void algorithm::impl::add_step<'L'>()
 {
+    step_type step = current;
     std::swap(step.matrix[step.selecting_cur.y][step.selecting_cur.x], step.matrix[step.selecting_cur.y][step.selecting_cur.x - 1]);
     step.selecting_cur.x -= 1;
     step.answer.back().actions.push_back('L');
-    return step;
+    if (!closed.count(step)) {
+        open.push(step);
+    }
 }
 
 // current_point {{{2
@@ -439,13 +456,6 @@ void algorithm::impl::brute_force()
 {
     // Brute-Force Algorithm
 
-    // メモリの超無駄遣い！
-    std::queue<step_type> open;
-    std::unordered_set<step_type> closed;
-
-    // 毎度ポップするやつ
-    step_type current;
-
     // 選択画像を変更するかどうか判定
 
     // 根ノードをキューに追加
@@ -453,8 +463,6 @@ void algorithm::impl::brute_force()
 
     // 解答発見フラグ
     bool finished = false;
-
-    step_type tmp;
 
     while (open.size() > 0) {
         current = open.front();
@@ -469,122 +477,50 @@ void algorithm::impl::brute_force()
         if (current.selecting_cur.y == height - BFS_NUM) {
             if (current.selecting_cur.x == width - BFS_NUM) {
                 // 右と下
-                tmp = move_bf<'R'>(current);
-                if (!closed.count(tmp)) {
-                    open.push(tmp);
-                }
-                tmp = move_bf<'D'>(current);
-                if (!closed.count(tmp)) {
-                    open.push(tmp);
-                }
+                add_step<'R'>();
+                add_step<'D'>();
             } else if (current.selecting_cur.x == width - 1) {
                 // 左と下
-                tmp = move_bf<'L'>(current);
-                if (!closed.count(tmp)) {
-                    open.push(tmp);
-                }
-                tmp = move_bf<'D'>(current);
-                if (!closed.count(tmp)) {
-                    open.push(tmp);
-                }
+                add_step<'L'>();
+                add_step<'D'>();
             } else {
                 // 左右下
-                tmp = move_bf<'L'>(current);
-                if (!closed.count(tmp)) {
-                    open.push(tmp);
-                }
-                tmp = move_bf<'R'>(current);
-                if (!closed.count(tmp)) {
-                    open.push(tmp);
-                }
-                tmp = move_bf<'D'>(current);
-                if (!closed.count(tmp)) {
-                    open.push(tmp);
-                }
+                add_step<'L'>();
+                add_step<'R'>();
+                add_step<'D'>();
             }
         } else if (current.selecting_cur.y == height - 1) {
             if (current.selecting_cur.x == width - BFS_NUM) {
                 // 右と上
-                tmp = move_bf<'R'>(current);
-                if (!closed.count(tmp)) {
-                    open.push(tmp);
-                }
-                tmp = move_bf<'U'>(current);
-                if (!closed.count(tmp)) {
-                    open.push(tmp);
-                }
+                add_step<'R'>();
+                add_step<'U'>();
             } else if (current.selecting_cur.x == width - 1) {
                 // 左と上
-                tmp = move_bf<'L'>(current);
-                if (!closed.count(tmp)) {
-                    open.push(tmp);
-                }
-                tmp = move_bf<'U'>(current);
-                if (!closed.count(tmp)) {
-                    open.push(tmp);
-                }
+                add_step<'L'>();
+                add_step<'U'>();
             } else {
                 // 左右上
-                tmp = move_bf<'L'>(current);
-                if (!closed.count(tmp)) {
-                    open.push(tmp);
-                }
-                tmp = move_bf<'R'>(current);
-                if (!closed.count(tmp)) {
-                    open.push(tmp);
-                }
-                tmp = move_bf<'U'>(current);
-                if (!closed.count(tmp)) {
-                    open.push(tmp);
-                }
+                add_step<'L'>();
+                add_step<'R'>();
+                add_step<'U'>();
             }
         } else {
             if (current.selecting_cur.x == width - BFS_NUM) {
                 // 右上下
-                tmp = move_bf<'R'>(current);
-                if (!closed.count(tmp)) {
-                    open.push(tmp);
-                }
-                tmp = move_bf<'U'>(current);
-                if (!closed.count(tmp)) {
-                    open.push(tmp);
-                }
-                tmp = move_bf<'D'>(current);
-                if (!closed.count(tmp)) {
-                    open.push(tmp);
-                }
+                add_step<'R'>();
+                add_step<'U'>();
+                add_step<'D'>();
             } else if (current.selecting_cur.x == width - 1) {
                 // 左上下
-                tmp = move_bf<'L'>(current);
-                if (!closed.count(tmp)) {
-                    open.push(tmp);
-                }
-                tmp = move_bf<'U'>(current);
-                if (!closed.count(tmp)) {
-                    open.push(tmp);
-                }
-                tmp = move_bf<'D'>(current);
-                if (!closed.count(tmp)) {
-                    open.push(tmp);
-                }
+                add_step<'L'>();
+                add_step<'U'>();
+                add_step<'D'>();
             } else {
                 // 四方
-                tmp = move_bf<'U'>(current);
-                if (!closed.count(tmp)) {
-                    open.push(tmp);
-                }
-                tmp = move_bf<'R'>(current);
-                if (!closed.count(tmp)) {
-                    open.push(tmp);
-                }
-                tmp = move_bf<'D'>(current);
-                if (!closed.count(tmp)) {
-                    open.push(tmp);
-                }
-                tmp = move_bf<'L'>(current);
-                if (!closed.count(tmp)) {
-                    open.push(tmp);
-                }
+                add_step<'U'>();
+                add_step<'R'>();
+                add_step<'D'>();
+                add_step<'L'>();
             }
         }
         closed.insert(current);
