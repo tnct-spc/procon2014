@@ -81,19 +81,29 @@ point_type dl_choose(compared_type const& comp, point_type const ul, point_type 
 //#########################################################################################
 //新しい<s>ipad</s>
 
+//method = CV_TM_SQDIFF, CV_TM_CCORR_NORMED, CV_TM_CCORR, CV_TM_CCOEFF_NORMED, CV_TM_CCOEF, CV_TM_CCOEFF_NORMED
 point_type ur_choose(compared_type const& comp,cr_set const& cr,int method, point_type const ul, point_type const dl, point_type const dr)
 {
+	/*
 	//column
-	cv::Point column_mp;
-	double column_mv;
+	cv::Point column_max_p,column_min_p;
+	double column_max_v,column_min_v;
 	//結果を格納する画像リソースを確保
 	cv::Mat column_ccoeff = cvCreateImage(cvSize(cr.column.rows, 1), IPL_DEPTH_32F, 1);
 	//テンプレート・マッチングにより計算
 	cv::matchTemplate(cr.column, cr.each_direction[right].at(ul),column_ccoeff,method);
 	//最小値・最大値とその座標を抽出
-	cv::minMaxLoc(column_ccoeff, NULL, &column_mv, NULL, &column_mp, NULL);
-	std::cout << "x = " << column_mp.x << " y = " << column_mp.y << " score = " << column_mp << std::endl;
-	
+	cv::minMaxLoc(column_ccoeff, &column_min_v, &column_max_v, &column_max_p, &column_min_p, NULL);
+
+	std::cout << "Hello, world!" << std::endl;
+	*/
+	/*
+	std::cout << "x = " << column_max_p 
+			  << " y = " << column_min_p
+			  << " score = " << column_max_v 
+			  << std::endl;
+
+
 	//row
 	cv::Point row_mp;
 	double row_mv;
@@ -102,23 +112,21 @@ point_type ur_choose(compared_type const& comp,cr_set const& cr,int method, poin
 	//テンプレート・マッチングにより計算
 	cv::matchTemplate(cr.row, cr.each_direction[up].at(dr), row_ccoeff, method);
 	//最小値・最大値とその座標を抽出
-	cv::minMaxLoc(row_ccoeff, NULL, &column_mv, NULL, &column_mp, NULL);
-	std::cout << "x = " << row_mp.x << " y = " << row_mp.y << " score = " << row_mp << std::endl;
+	cv::minMaxLoc(row_ccoeff, &column_min_v, &column_max_v, &column_min_p, &column_max_p, NULL);
+	std::cout << "x = " << row_mp.x << " y = " << row_mp.y << " score = " << &row_mv << std::endl;
 
 
 
 
 
 
+*/
 
 
 
 
 
 
-
-	point_type possition;
-	possition = { 0, 0 };
 	/*
 	uint64_t sum = std::numeric_limits<uint64_t>::max();
 
@@ -132,7 +140,7 @@ point_type ur_choose(compared_type const& comp,cr_set const& cr,int method, poin
 		}
 	}
 	*/
-	return possition;
+	return{ 0, 0 };
 }
 /*
 point_type ul_choose(compared_type const& comp, point_type const ur, point_type const dl, point_type const dr)

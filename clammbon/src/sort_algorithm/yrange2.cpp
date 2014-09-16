@@ -40,7 +40,7 @@ void yrange2::column_replacement(return_type& matrix)
 	const int sepx = data_.split_num.first;
 	const int sepy = data_.split_num.second;
 	uint64_t good_val;
-	std::vector<std::vector<point_type> > good_matrix(sepx, (sepx, std::vector<point_type>(sepy)));
+	std::vector<std::vector<point_type> > good_matrix(sepy, std::vector<point_type>(sepx));
 	std::vector<point_type> temp_vec;
 
 	good_matrix = matrix;
@@ -66,7 +66,7 @@ void yrange2::row_replacement(return_type& matrix)
 	const int sepx = data_.split_num.first;
 	const int sepy = data_.split_num.second;
 	uint64_t good_val;
-	std::vector<std::vector<point_type> > good_matrix(sepx, (sepx, std::vector<point_type>(sepy)));
+	std::vector<std::vector<point_type> > good_matrix(sepy, std::vector<point_type>(sepx));
 	std::vector<point_type> temp_vec;
 
 	good_matrix = matrix;
@@ -283,7 +283,7 @@ std::vector<std::vector<std::vector<point_type>>> yrange2::operator() ()
 	point_type b = { 0, 1 };
 	point_type c = { 0, 2 };
 
-	//ur_choose(comp_, cr, CV_TM_SQDIFF, a, b, c);
+	ur_choose(comp_, cr, CV_TM_SQDIFF, a, b, c);
 
     return answer.point_type;
 }
