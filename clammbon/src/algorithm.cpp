@@ -1,4 +1,4 @@
-//#define algorithm_debug
+//#define NDEBUG
 #include <algorithm>
 #include <cassert>
 #include <iostream>
@@ -158,7 +158,7 @@ void algorithm::impl::operator() (boost::coroutines::coroutine<return_type>::pus
     answer.push_back(answer_type{current_point(selecting), std::vector<char>()});
 
     // GO
-#ifdef algorithm_debug
+#ifndef NDEBUG
     print();
 #endif
     try {
@@ -176,7 +176,7 @@ void algorithm::impl::move_selecting<'U'>()
     std::swap(matrix[selecting_cur.y][selecting_cur.x], matrix[selecting_cur.y - 1][selecting_cur.x]);
     --selecting_cur.y;
     answer.back().actions.push_back('U');
-#ifdef algorithm_debug
+#ifndef NDEBUG
     print();
 #endif
 }
@@ -188,7 +188,7 @@ void algorithm::impl::move_selecting<'R'>()
     std::swap(matrix[selecting_cur.y][selecting_cur.x], matrix[selecting_cur.y][selecting_cur.x + 1]);
     ++selecting_cur.x;
     answer.back().actions.push_back('R');
-#ifdef algorithm_debug
+#ifndef NDEBUG
     print();
 #endif
 }
@@ -200,7 +200,7 @@ void algorithm::impl::move_selecting<'D'>()
     std::swap(matrix[selecting_cur.y][selecting_cur.x], matrix[selecting_cur.y + 1][selecting_cur.x]);
     ++selecting_cur.y;
     answer.back().actions.push_back('D');
-#ifdef algorithm_debug
+#ifndef NDEBUG
     print();
 #endif
 }
@@ -212,7 +212,7 @@ void algorithm::impl::move_selecting<'L'>()
     std::swap(matrix[selecting_cur.y][selecting_cur.x], matrix[selecting_cur.y][selecting_cur.x - 1]);
     --selecting_cur.x;
     answer.back().actions.push_back('L');
-#ifdef algorithm_debug
+#ifndef NDEBUG
     print();
 #endif
 }
@@ -879,44 +879,5 @@ void algorithm::impl::print() const
     }
     //std::cin.ignore();
 }
-
-// main {{{1
-#ifdef algorithm_debug
-// 検証用main
-// clang++ -std=c++11 -g -W -Wall -I../include -lboost_system -lboost_coroutine algorithm.cpp
-int main(void)
-{
-    const std::vector<std::vector<point_type>> matrix = {
-        {{ 1,  2}, { 0,  1}, { 2,  2}, { 1,  1}},
-        {{ 2,  0}, { 0,  0}, { 3,  0}, { 3,  3}},
-        {{ 2,  3}, { 0,  2}, { 1,  3}, { 0,  3}},
-        {{ 1,  0}, { 3,  1}, { 2,  1}, { 3,  2}}
-    };
-    const auto size = std::pair<int, int>(matrix[0].size(), matrix.size());
-    constexpr int problem_id = 1;
-    const std::string player_id = "player_id";
-    constexpr int selectable = 16;
-    constexpr int cost_select = 10;
-    constexpr int cost_change = 10;
-    const auto qdata = question_data(problem_id, player_id, size, selectable, cost_select, cost_change, matrix);
-    algorithm algo;
-    algo.reset(qdata);
-    const auto answer = algo.get();
-    if (answer) {
-        std::cout << answer->size() << std::endl;
-        for (auto const& line : *answer) {
-            std::cout << boost::format("%1$02X") % line.position.num() << std::endl;
-            std::cout << line.actions.size() << std::endl;
-            for (auto const& action : line.actions) {
-                std::cout << action;
-            }
-            std::cout << std::endl;
-        }
-    } else {
-        std::cerr << "Couldn't solve the problem." << std::endl;
-    }
-    return 0;
-}
-#endif
 
 // vim: set ts=4 sw=4 et fdm=marker:
