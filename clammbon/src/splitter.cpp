@@ -120,9 +120,10 @@ cr_set splitter::make_column_row_set(question_raw_data const& data_) const
 	for (int i = 0; i < sepy; i++){
 		for (int j = 0; j < sepx; j++){
 			point_type const now_point = { j, i };
-			cv::Rect up_roi(0, 0, parts_width, 1);
+
 			cv::Mat roi_1(combined_row_img, roi_row_rect);
 
+			cv::Rect up_roi(0, 0, parts_width, 1);
 			cv::Mat up_mat(splitted[i][j], up_roi);
 			each_direction[up].insert(std::make_pair(now_point, up_mat));
 			up_mat.copyTo(roi_1);
@@ -134,9 +135,9 @@ cr_set splitter::make_column_row_set(question_raw_data const& data_) const
 			down_mat.copyTo(roi_1);
 			roi_row_rect.y += 1;
 
-			cv::Rect left_roi(0, 0, 1, parts_height);
 			cv::Mat roi_2(combined_column_img, roi_column_rect);
 
+			cv::Rect left_roi(0, 0, 1, parts_height);
 			cv::Mat left_mat(splitted[i][j], left_roi);
 			each_direction[left].insert(std::make_pair(now_point, left_mat));
 			left_mat.copyTo(roi_2);

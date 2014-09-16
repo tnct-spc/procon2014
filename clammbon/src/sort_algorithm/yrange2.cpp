@@ -279,11 +279,8 @@ std::vector<std::vector<std::vector<point_type>>> yrange2::operator() ()
 	gui::show_image(data_, comp_, answer);
 #endif
 	
-	point_type a = { 0, 0 };
-	point_type b = { 0, 1 };
-	point_type c = { 0, 2 };
-
-	ur_choose(comp_, cr, CV_TM_SQDIFF, a, b, c);
+	ur_choose(comp_, cr, CV_TM_CCOEFF_NORMED, { 1, 2 }, { 2, 1 }, { 2, 2 });
+	ur_choose(comp_, cr, CV_TM_CCOEFF_NORMED, { 2, 1 }, { 0, 1 }, { 1, 0 });
 
     return answer.point_type;
 }
