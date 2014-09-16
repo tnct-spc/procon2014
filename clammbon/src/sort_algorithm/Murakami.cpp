@@ -5,7 +5,7 @@
 #include <fstream>
 #include <string>
 #include <algorithm>
-#include <map>
+#include <unordered_map>
 #include <data_type.hpp>
 #include <sort_algorithm/compare.hpp>
 #include <sort_algorithm/adjacent.hpp>
@@ -19,10 +19,10 @@ Murakami::Murakami(question_raw_data const& data, compared_type const& comp)
 std::vector<std::vector<std::vector<point_type>>> Murakami::operator() (){
 	auto const width = data_.split_num.first;
 	auto const height = data_.split_num.second;
-	//sort_compare();//sorted_comparationì¬
+	//sort_compare();//sorted_comparationä½œæˆ
 	make_sorted_comparation();
 	//block_type block(height, std::vector<point_type>(width, { -1, -1 }));
-	//‘å‚«‚³‚ª[height * width][height][width]‚Å’†g‚ªx,y = -1‚Å‰Šú‰»
+	//å¤§ãã•ãŒ[height * width][height][width]ã§ä¸­èº«ãŒx,y = -1ã§åˆæœŸåŒ–
 	std::vector<std::vector<std::vector<point_type>>> block_list(
 		height * width,
 		std::vector<std::vector<point_type>>(
@@ -37,7 +37,7 @@ std::vector<std::vector<std::vector<point_type>>> Murakami::operator() (){
 		)
 		);
 
-		//ƒuƒƒbƒN‚Ì¶ã‚É•ªŠ„‰æ‘œ‚ğ”z’u‚·‚éƒ‹[ƒv
+		//ãƒ–ãƒ­ãƒƒã‚¯ã®å·¦ä¸Šã«åˆ†å‰²ç”»åƒã‚’é…ç½®ã™ã‚‹ãƒ«ãƒ¼ãƒ—
 		for (int i = 0; i < height; i++){
 			for (int j = 0; j < width; j++){
 				block_list[i * width + j][0][0].y = i;
@@ -45,12 +45,12 @@ std::vector<std::vector<std::vector<point_type>>> Murakami::operator() (){
 			}
 		}
 		int a;
-		while (block_list.size() != 1){//ƒƒCƒ“ƒ‹[ƒv
+		while (block_list.size() != 1){//ãƒ¡ã‚¤ãƒ³ãƒ«ãƒ¼ãƒ—
 			a = block_list.size();
 
-			block_combination best_block_combination;//ˆê”Ô‚¢‚¢block‚Ì‘g‚İ‡‚í‚¹‚¢‚ê‚é‚Æ‚±‚ë
+			block_combination best_block_combination;//ä¸€ç•ªã„ã„blockã®çµ„ã¿åˆã‚ã›ã„ã‚Œã‚‹ã¨ã“ã‚
 			best_block_combination.score = std::numeric_limits<int_fast64_t>::min();
-			for (auto i : block_list){//ƒuƒƒbƒN“¯m‚ğ”äŠr‚·‚éƒ‹[ƒv
+			for (auto i : block_list){//ãƒ–ãƒ­ãƒƒã‚¯åŒå£«ã‚’æ¯”è¼ƒã™ã‚‹ãƒ«ãƒ¼ãƒ—
 				for (auto j : block_list){
 					if (i == j) continue;
 					bool momo = false;
@@ -58,17 +58,17 @@ std::vector<std::vector<std::vector<point_type>>> Murakami::operator() (){
 
 					block_combination b = eval_block(i, j);
 					if (best_block_combination.score < b.score){
-						best_block_combination = b; //TODO “¯‚¶’l‚ª‚ ‚Á‚½‚ç‚Ç‚¤‚µ‚æ
+						best_block_combination = b; //TODO åŒã˜å€¤ãŒã‚ã£ãŸã‚‰ã©ã†ã—ã‚ˆ
 					}
 				}
 			}
 
-			if (best_block_combination.score == std::numeric_limits<int_fast64_t>::min())throw std::runtime_error("ƒuƒƒbƒN•]‰¿\‘¢‘Ì‚ª‹ó‚Å‚·");
-			block_type combined_block = combine_block(best_block_combination);//ƒuƒƒbƒN‚ğŒ‹‡‚·‚é
-			boost::remove_erase_if(block_list, [best_block_combination](block_type it){//block_list‚©‚çŒ‹‡‚·‚é‘O‚ÌƒuƒƒbƒN‚ğÁ‚·
+			if (best_block_combination.score == std::numeric_limits<int_fast64_t>::min())throw std::runtime_error("ãƒ–ãƒ­ãƒƒã‚¯è©•ä¾¡æ§‹é€ ä½“ãŒç©ºã§ã™");
+			block_type combined_block = combine_block(best_block_combination);//ãƒ–ãƒ­ãƒƒã‚¯ã‚’çµåˆã™ã‚‹
+			boost::remove_erase_if(block_list, [best_block_combination](block_type it){//block_listã‹ã‚‰çµåˆã™ã‚‹å‰ã®ãƒ–ãƒ­ãƒƒã‚¯ã‚’æ¶ˆã™
 				return (it == best_block_combination.block1 || it == best_block_combination.block2);
 			});
-			block_list.push_back(combined_block);//Œ‹‡‚µ‚½‚Ì‚ğ“ü‚ê‚é
+			block_list.push_back(combined_block);//çµåˆã—ãŸã®ã‚’å…¥ã‚Œã‚‹
 			std::cout << block_list.size() << std::endl;
 		}
 
@@ -114,7 +114,7 @@ Murakami::block_combination Murakami::eval_block(block_type block1, block_type b
 			bool confliction = false;
 			int_fast64_t block_c = 0;
 			bool empty_block_c = true;
-			int_fast64_t rank1_num = 0;//ƒLƒƒƒXƒg‚ª–Ê“|‚­‚³‚¢‚©‚çint_fast64_t‚Å
+			int_fast64_t rank1_num = 0;//ã‚­ãƒ£ã‚¹ãƒˆãŒé¢å€’ãã•ã„ã‹ã‚‰int_fast64_tã§
 			for (int k = 0; k < height; k++){
 				for (int l = 0; l < width; l++){
 					if (exists(k - i, l - j, block2)){
@@ -125,22 +125,22 @@ Murakami::block_combination Murakami::eval_block(block_type block1, block_type b
 					}
 					if (exists(k, l, block1) && !exists(k + i, l + j, block2)){
 						int_fast64_t piece_c = 0;
-						if (exists(k + i - 1, l + j, block2)){//ã
+						if (exists(k + i - 1, l + j, block2)){//ä¸Š
 							piece_c += eval_piece(block1[k][l], block2[k + i - 1][l + j], up);
 							empty_block_c = false;
 							if (sorted_comparation[block1[k][l]][up][1] == block2[k + i - 1][l + j]) rank1_num++;
 						}
-						if (exists(k + i, l + j - 1, block2)){//¶
+						if (exists(k + i, l + j - 1, block2)){//å·¦
 							piece_c += eval_piece(block1[k][l], block2[k + i][l + j - 1], left);
 							empty_block_c = false;
 							if (sorted_comparation[block1[k][l]][left][1] == block2[k + i][l + j - 1]) rank1_num++;
 						}
-						if (exists(k + i + 1, l + j, block2)){//‰º
+						if (exists(k + i + 1, l + j, block2)){//ä¸‹
 							piece_c += eval_piece(block1[k][l], block2[k + i + 1][l + j], down);
 							empty_block_c = false;
 							if (sorted_comparation[block1[k][l]][down][1] == block2[k + i + 1][l + j]) rank1_num++;
 						}
-						if (exists(k + i, l + j + 1, block2)){//‰E
+						if (exists(k + i, l + j + 1, block2)){//å³
 							piece_c += eval_piece(block1[k][l], block2[k + i][l + j + 1], right);
 							empty_block_c = false;
 							if (sorted_comparation[block1[k][l]][right][1] == block2[k + i][l + j + 1]) rank1_num++;
@@ -154,7 +154,7 @@ Murakami::block_combination Murakami::eval_block(block_type block1, block_type b
 			if (!confliction && empty_block_c == false){
 				//if (best_block_c != 0){};
 				rank1_num++;
-				block_c *= rank1_num; //0‚ğŠ|‚¯‚é‚Ì‚Í•|‚¢
+				block_c *= rank1_num; //0ã‚’æ›ã‘ã‚‹ã®ã¯æ€–ã„
 				if (block_c > best_block_c){
 					best_block_c = block_c;
 					best_shift_i = -i;
@@ -204,7 +204,7 @@ std::int_fast64_t Murakami::eval_comp_(point_type p1, point_type p2, direction d
 		rank++;
 	}
 
-	if (rank == 0)throw std::runtime_error("’f•Ğ‰æ‘œ‚ªd•¡‚µ‚Ä‚¢‚Ü‚·");
+	if (rank == 0)throw std::runtime_error("æ–­ç‰‡ç”»åƒãŒé‡è¤‡ã—ã¦ã„ã¾ã™");
 	if (rank == 1){
 		switch (dir)
 		{
@@ -261,15 +261,15 @@ void Murakami::sort_compare()
 			return score == right.score ? x < right.x : score < right.score;
 		}
 	};
-	std::map <point_type, std::vector < std::vector<point_type>>> sorted_comparation;
+	std::unordered_map <point_type, std::vector < std::vector<point_type>>> sorted_comparation;
 	std::vector<point_type_score> rank;
 	std::vector<std::vector<point_type>> direct(4, (std::vector<point_type>(1)));
 
-	//‘S‚Ä‚Ìƒs[ƒX‚É‘Î‚µ‚Äiˆê”ÔŠO‘¤‚Ìƒ‹[ƒvj
+	//å…¨ã¦ã®ãƒ”ãƒ¼ã‚¹ã«å¯¾ã—ã¦ï¼ˆä¸€ç•ªå¤–å´ã®ãƒ«ãƒ¼ãƒ—ï¼‰
 	for (int i = 0; i < height; ++i)for (int j = 0; j < width; ++j){
 		point_type now_point{ j, i };
 
-		//‘S‚Ä‚Ìƒs[ƒX‚ğ‘g‚İ‡‚í‚¹‚é	##up##
+		//å…¨ã¦ã®ãƒ”ãƒ¼ã‚¹ã‚’çµ„ã¿åˆã‚ã›ã‚‹	##up##
 		rank.clear();
 		for (int k = 0; k < height; ++k)for (int l = 0; l < width; ++l){
 			point_type_score temp_pts{ k, l };
@@ -278,7 +278,7 @@ void Murakami::sort_compare()
 			rank.push_back(temp_pts);
 		}
 		std::sort(rank.begin(), rank.end());
-		direct[0][0] = init_pt;//0”Ô–Ú‚É‚Í(-1,-1)‚ğ
+		direct[0][0] = init_pt;//0ç•ªç›®ã«ã¯(-1,-1)ã‚’
 		for (int c = 0; c < 10 && c < rank.size(); ++c){
 			point_type temp_pt;
 			temp_pt.x = rank[c].x;
@@ -287,7 +287,7 @@ void Murakami::sort_compare()
 		}
 
 
-		//‘S‚Ä‚Ìƒs[ƒX‚ğ‘g‚İ‡‚í‚¹‚é	##down##
+		//å…¨ã¦ã®ãƒ”ãƒ¼ã‚¹ã‚’çµ„ã¿åˆã‚ã›ã‚‹	##down##
 		rank.clear();
 		for (int k = 0; k < height; ++k)for (int l = 0; l < width; ++l){
 			point_type_score temp_pts{ k, l };
@@ -296,7 +296,7 @@ void Murakami::sort_compare()
 			rank.push_back(temp_pts);
 		}
 		std::sort(rank.begin(), rank.end());
-		direct[1][0] = init_pt;//0”Ô–Ú‚É‚Í(-1,-1)‚ğ
+		direct[1][0] = init_pt;//0ç•ªç›®ã«ã¯(-1,-1)ã‚’
 		for (int c = 0; c < 10 && c < rank.size(); ++c){
 			point_type temp_pt;
 			temp_pt.x = rank[c].x;
@@ -304,7 +304,7 @@ void Murakami::sort_compare()
 			direct[1].push_back(temp_pt);
 		}
 
-		//‘S‚Ä‚Ìƒs[ƒX‚ğ‘g‚İ‡‚í‚¹‚é	##right##
+		//å…¨ã¦ã®ãƒ”ãƒ¼ã‚¹ã‚’çµ„ã¿åˆã‚ã›ã‚‹	##right##
 		rank.clear();
 		for (int k = 0; k < height; ++k)for (int l = 0; l < width; ++l){
 			point_type_score temp_pts{ k, l };
@@ -313,7 +313,7 @@ void Murakami::sort_compare()
 			rank.push_back(temp_pts);
 		}
 		std::sort(rank.begin(), rank.end());
-		direct[2][0] = init_pt;//0”Ô–Ú‚É‚Í(-1,-1)‚ğ
+		direct[2][0] = init_pt;//0ç•ªç›®ã«ã¯(-1,-1)ã‚’
 		for (int c = 0; c < 10 && c < rank.size(); ++c){
 			point_type temp_pt;
 			temp_pt.x = rank[c].x;
@@ -321,7 +321,7 @@ void Murakami::sort_compare()
 			direct[2].push_back(temp_pt);
 		}
 
-		//‘S‚Ä‚Ìƒs[ƒX‚ğ‘g‚İ‡‚í‚¹‚é	##left##
+		//å…¨ã¦ã®ãƒ”ãƒ¼ã‚¹ã‚’çµ„ã¿åˆã‚ã›ã‚‹	##left##
 		rank.clear();
 		for (int k = 0; k < height; ++k)for (int l = 0; l < width; ++l){
 			point_type_score temp_pts{ k, l };
@@ -330,7 +330,7 @@ void Murakami::sort_compare()
 			rank.push_back(temp_pts);
 		}
 		std::sort(rank.begin(), rank.end());
-		direct[3][0] = init_pt;//0”Ô–Ú‚É‚Í(-1,-1)‚ğ
+		direct[3][0] = init_pt;//0ç•ªç›®ã«ã¯(-1,-1)ã‚’
 		for (int c = 0; c < 10 && c < rank.size(); ++c){
 			point_type temp_pt;
 			temp_pt.x = rank[c].x;
@@ -340,7 +340,7 @@ void Murakami::sort_compare()
 		sorted_comparation.insert(std::make_pair(now_point, direct));
 	}
 
-	//ƒtƒ@ƒCƒ‹‘‚«o‚µ
+	//ãƒ•ã‚¡ã‚¤ãƒ«æ›¸ãå‡ºã—
 	
 	std::ofstream ofs("solusions.csv", std::ios::out | std::ios::app | std::ios::ate);
 	ofs << "point_type.y,point_type.x,direct,rank,point_type.y,point_type.x" << std::endl;
@@ -367,7 +367,7 @@ void Murakami::make_sorted_comparation(){
 		}
 	};
 
-	std::map<point_type, std::vector<std::vector<point_type>>> sorted_point_score_dir_point;
+	std::unordered_map<point_type, std::vector<std::vector<point_type>>> sorted_point_score_dir_point;
 	for (int k = 0; k < height; k++){
 		for (int l = 0; l < width; l++){
 			point_type point_k_l{ l, k };
@@ -425,8 +425,8 @@ void Murakami::make_sorted_comparation(){
 	
 }
 Murakami::block_type Murakami::combine_block(block_combination block_comb){
-	if (block_comb.block1.size() == 0)throw std::runtime_error("Œ‹‡—\’èƒuƒƒbƒN‚ÌƒTƒCƒY‚ª0‚Å‚·,block1");
-	if (block_comb.block2.size() == 0)throw std::runtime_error("Œ‹‡—\’èƒuƒƒbƒN‚ÌƒTƒCƒY‚ª0‚Å‚·,block1");
+	if (block_comb.block1.size() == 0)throw std::runtime_error("çµåˆäºˆå®šãƒ–ãƒ­ãƒƒã‚¯ã®ã‚µã‚¤ã‚ºãŒ0ã§ã™,block1");
+	if (block_comb.block2.size() == 0)throw std::runtime_error("çµåˆäºˆå®šãƒ–ãƒ­ãƒƒã‚¯ã®ã‚µã‚¤ã‚ºãŒ0ã§ã™,block1");
 	auto const width = data_.split_num.first;
 	auto const height = data_.split_num.second;
 	auto const exists = [height, width](int y, int x, block_type b){

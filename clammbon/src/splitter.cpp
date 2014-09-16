@@ -1,7 +1,7 @@
 ﻿#include <limits>
 #include <iostream>
 #include <vector>
-#include <map>
+#include <unordered_map>
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
@@ -107,7 +107,7 @@ cr_set splitter::make_column_row_set(question_raw_data const& data_) const
 	int const sepx = data_.split_num.first;
 	int const sepy = data_.split_num.second;
 
-	std::vector<std::map<point_type, cv::Mat>> each_direction(4);
+	std::vector<std::unordered_map<point_type, cv::Mat>> each_direction(4);
 
 	splitter sp;//どこからか持ってきてたsplitter
 	split_image_type splitted = sp.split_image(data_);

@@ -1,8 +1,8 @@
 #include <vector>
 #include <data_type.hpp>
 #include <boost/multiprecision/cpp_int.hpp>
-#include <map>
-//l–¼(‘ºã„Šî)‚È‚Ì‚ÅƒLƒƒƒƒ‹ƒP[ƒX‚Å‚·
+#include <unordered_map>
+//äººå(æ‘ä¸Šå‰›åŸº)ãªã®ã§ã‚­ãƒ£ãƒ¡ãƒ«ã‚±ãƒ¼ã‚¹ã§ã™
 class Murakami
 {
 private:
@@ -11,29 +11,29 @@ private:
 	question_raw_data const& data_;
 	compared_type const& comp_;
 
-	//ƒuƒƒbƒN(•ªŠ„‰æ‘œ‚Ì‚©‚½‚Ü‚è),ƒTƒCƒY‚Í•ªŠ„”(m,n)‚ÅŒÅ’è,‹ó”’(•ªŠ„‰æ‘œ‚Ì“ü‚ç‚È‚¢•”•ª)‚É‚Ípoint_type(x = -1,y = -1)‚ª“ü‚é
-	typedef std::vector<std::vector<point_type>> block_type;//ƒTƒCƒY‚ğŒÅ’è‚µ,point_type‚ğ‰Šú‰»‚·‚é
+	//ãƒ–ãƒ­ãƒƒã‚¯(åˆ†å‰²ç”»åƒã®ã‹ãŸã¾ã‚Š),ã‚µã‚¤ã‚ºã¯åˆ†å‰²æ•°(m,n)ã§å›ºå®š,ç©ºç™½(åˆ†å‰²ç”»åƒã®å…¥ã‚‰ãªã„éƒ¨åˆ†)ã«ã¯point_type(x = -1,y = -1)ãŒå…¥ã‚‹
+	typedef std::vector<std::vector<point_type>> block_type;//ã‚µã‚¤ã‚ºã‚’å›ºå®šã—,point_typeã‚’åˆæœŸåŒ–ã™ã‚‹
 	enum direction{
 		up,right,down,left
 	};
-	//ì‚Á‚½ƒuƒƒbƒN‚ğ‚µ‚Ü‚Á‚Ä‚¨‚­list,‚±‚Ì—v‘f‚ª1‚É‚È‚Á‚½‚ç•œŒ³‰æ‘œŠ®¬(‚½‚¾‚µ‚Í‚İo‚È‚¢‚à‚Ì‚Æ‚·‚é)
-	//std::vector<block_type> block_list; //std::map‚Åˆê‚É•]‰¿’l‚ğ‚½‚¹‚Ä‚à‚¢‚¢‚©‚à////cpp‚ÉˆÚ“®
-	//[point_type][UDRL][Rank]‚Ì‡‚ÅƒAƒNƒZƒX‚·‚é,’†g‚Í•ªŠ„‰æ‘œ
-	std::map <point_type, std::vector < std::vector<point_type>>> sorted_comparation;//‚±‚ê‚Ìƒ‰ƒbƒp[ŠÖ”‚ª‚ ‚Á‚½‚Ù‚¤‚ª‚¢‚¢?
+	//ä½œã£ãŸãƒ–ãƒ­ãƒƒã‚¯ã‚’ã—ã¾ã£ã¦ãŠãlist,ã“ã®è¦ç´ ãŒ1ã«ãªã£ãŸã‚‰å¾©å…ƒç”»åƒå®Œæˆ(ãŸã ã—ã¯ã¿å‡ºãªã„ã‚‚ã®ã¨ã™ã‚‹)
+	//std::vector<block_type> block_list; //std::unordered_mapã§ä¸€ç·’ã«è©•ä¾¡å€¤ã‚’æŒãŸã›ã¦ã‚‚ã„ã„ã‹ã‚‚////cppã«ç§»å‹•
+	//[point_type][UDRL][Rank]ã®é †ã§ã‚¢ã‚¯ã‚»ã‚¹ã™ã‚‹,ä¸­èº«ã¯åˆ†å‰²ç”»åƒ
+	std::unordered_map <point_type, std::vector < std::vector<point_type>>> sorted_comparation;//ã“ã‚Œã®ãƒ©ãƒƒãƒ‘ãƒ¼é–¢æ•°ãŒã‚ã£ãŸã»ã†ãŒã„ã„?
 	void sort_compare();
-	//eval_block‚Ì•Ô‚è’l‚Ì‚½‚ß‚Ì\‘¢‘Ì
+	//eval_blockã®è¿”ã‚Šå€¤ã®ãŸã‚ã®æ§‹é€ ä½“
 	struct block_combination{
-		//‚±‚±‚ÅƒuƒƒbƒN‚Ö‚ÌQÆ‚ğ•Û‚µ‚È‚¢‚ÆŒ‹‡Œã‚ÌƒuƒƒbƒN‚ğÁ‚¹‚È‚¢
+		//ã“ã“ã§ãƒ–ãƒ­ãƒƒã‚¯ã¸ã®å‚ç…§ã‚’ä¿æŒã—ãªã„ã¨çµåˆå¾Œã®ãƒ–ãƒ­ãƒƒã‚¯ã‚’æ¶ˆã›ãªã„
 		block_type block1;
 		block_type block2;
 		int shift_x;
 		int shift_y;
-		//‚ ‚éƒuƒƒbƒN‚Æ‚ÌŒ‹‡‚·‚é‚Æ‚«(Œ‹‡‚µ‚½‚ ‚Æ)‚Ì•]‰¿’l
-		std::int_fast64_t score; //•]‰¿’l‚ÍŒ‹\‘å‚«‚¢‚Ì‚Å32bit‚¾‚ÆƒI[ƒo[ƒtƒ[‚·‚é‚©‚à?
+		//ã‚ã‚‹ãƒ–ãƒ­ãƒƒã‚¯ã¨ã®çµåˆã™ã‚‹ã¨ã(çµåˆã—ãŸã‚ã¨)ã®è©•ä¾¡å€¤
+		std::int_fast64_t score; //è©•ä¾¡å€¤ã¯çµæ§‹å¤§ãã„ã®ã§32bitã ã¨ã‚ªãƒ¼ãƒãƒ¼ãƒ•ãƒ­ãƒ¼ã™ã‚‹ã‹ã‚‚?
 	};
-	//ƒuƒƒbƒN‘ÎƒuƒƒbƒN‚Ì•]‰¿,ƒuƒƒbƒN‚É‚½‚¹‚é‚×‚«?
+	//ãƒ–ãƒ­ãƒƒã‚¯å¯¾ãƒ–ãƒ­ãƒƒã‚¯ã®è©•ä¾¡,ãƒ–ãƒ­ãƒƒã‚¯ã«æŒãŸã›ã‚‹ã¹ã?
 	block_combination eval_block(block_type, block_type);
-	//ƒs[ƒX‘Îƒs[ƒX‚Ì•]‰¿,d—l‚ğ‚æ‚­—‰ğ‚µ‚È‚¢‚Æ‘‚­‚Ì‚ªh‚¢
+	//ãƒ”ãƒ¼ã‚¹å¯¾ãƒ”ãƒ¼ã‚¹ã®è©•ä¾¡,ä»•æ§˜ã‚’ã‚ˆãç†è§£ã—ãªã„ã¨æ›¸ãã®ãŒè¾›ã„
 	std::int_fast64_t eval_piece(point_type, point_type,direction);
 	std::int_fast64_t eval_comp_(point_type, point_type,direction);
 	block_type combine_block(block_combination);
