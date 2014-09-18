@@ -1,4 +1,4 @@
-//#define algorithm_debug
+﻿//#define algorithm_debug
 #include <algorithm>
 #include <cassert>
 #include <iostream>

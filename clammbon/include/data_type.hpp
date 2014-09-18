@@ -1,4 +1,4 @@
-#ifndef RESOLVER_DATA_TYPE_HPP
+﻿#ifndef RESOLVER_DATA_TYPE_HPP
 #define RESOLVER_DATA_TYPE_HPP
 
 #include <cstdint>

@@ -1,4 +1,4 @@
-#include <vector>
+﻿#include <vector>
 #include <data_type.hpp>
 #include <boost/multiprecision/cpp_int.hpp>
 #include <unordered_map>
