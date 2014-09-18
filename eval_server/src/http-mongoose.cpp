@@ -3,8 +3,6 @@
 #include <mongoose/Controller.h>
 #include <mongoose/Utils.h>
 
-#include <unistd.h>
-
 #include <sstream>
 #include <iomanip>
 
