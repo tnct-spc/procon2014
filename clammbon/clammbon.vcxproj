@@ -170,6 +170,7 @@
     <ClInclude Include="include\sort_algorithm\adjacent.hpp" />
     <ClInclude Include="include\sort_algorithm\compare.hpp" />
     <ClInclude Include="include\sort_algorithm\genetic.hpp" />
+    <ClInclude Include="include\sort_algorithm\Murakami.hpp" />
     <ClInclude Include="include\sort_algorithm\yrange2.hpp" />
     <ClInclude Include="include\splitter.hpp" />
     <ClInclude Include="include\test_tool.hpp" />
