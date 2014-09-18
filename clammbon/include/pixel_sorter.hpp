@@ -22,8 +22,9 @@ public:
         auto const& proposed = proposed_answer(raw);
 
         // TODO: ここで返却されたデータのうち，適しているものを選択してreturn
-    
-        return proposed[0];
+
+		if (proposed.size() == 0) return std::vector < std::vector<point_type> > {};
+		else return proposed[0];
     }
 
     std::vector<return_type> proposed_answer(question_raw_data const& raw) const
@@ -34,7 +35,7 @@ public:
         //
 
         split_image_type const& splited_image = split_.split_image(raw);
-        compared_type const& comp = this->image_comp(splited_image);
+        compared_type const& comp = this->image_comp(raw,splited_image);
 
         Algorithm algo(raw, comp);
         auto const& proposed = algo();
@@ -89,7 +90,52 @@ private:
         return pixel_line_comparison(lhs.row(rhs.rows - 1), rhs.row(0));
     }
 
-    compared_type image_comp(split_image_type const& image) const
+	/*一枚目の右端と二枚目の左端を見る関数　一致が多いほど低いを返す*/
+	uint64_t rl_comparison(cv::Mat file1, cv::Mat file2)
+	{
+		uint64_t s = 0;
+		for (int i = 0; i < file1.rows; i++) {//縦ピクセル数ループ
+			for (int c = 0; c < file1.channels(); ++c){// 画像のチャネル数分だけループ。白黒の場合は1回、カラーの場合は3回
+				s += abs((file1.data[file1.step * (i + 1) - file1.channels() + c]) - (file2.data[file2.step * i + c]));
+			}
+		}
+		return s;
+	}
+
+	/*一枚目の左端と二枚目の右端を見る関数　一致が多いほど低いを返す*/
+	uint64_t lr_comparison(cv::Mat file1, cv::Mat file2)
+	{
+		uint64_t s = 0;
+		for (int i = 0; i < file1.rows; i++) {//縦ピクセル数ループ
+			for (int c = 0; c < file1.channels(); ++c){// 画像のチャネル数分だけループ。白黒の場合は1回、カラーの場合は3回
+				s += abs((file1.data[file1.step * i + c]) - (file2.data[file2.step * (i + 1) - file1.channels() + c]));
+
+			}
+		}
+		return s;
+	}
+
+	/*一枚目の上端と二枚目の下端を見る関数　一致が多いほど低いを返す*/
+	uint64_t ud_comparison(cv::Mat file1, cv::Mat file2)
+	{
+		uint64_t s = 0;
+		for (unsigned int i = 0; i < file1.step; i++) {//横ピクセル数ループ
+			s += abs((file1.data[i]) - (file2.data[(file2.rows - 1)* file2.step + i]));
+		}
+		return s;
+	}
+
+	/*一枚目の下端と二枚目の上端を見る関数　一致が多いほど低いを返す*/
+	uint64_t du_comparison(cv::Mat file1, cv::Mat file2)
+	{
+		uint64_t s = 0;
+		for (unsigned int i = 0; i < file1.step; i++) {//横ピクセル数ループ
+			s += abs((file1.data[(file2.rows - 1)*file2.step + i]) - (file2.data[i]));
+		}
+		return s;
+	}
+
+    compared_type image_comp(question_raw_data const& data_,split_image_type const& image) const
     {
         //返却用変数
         //"最大距離が収納されたtuple"の4次元配列になる
@@ -110,7 +156,10 @@ private:
                     )
                 )
             );
-
+		
+		splitter sp;
+		split_image_type splited = sp.split_image(data_);
+				
         for(int i=0; i<image.size(); ++i) for(int j=0; j<image[0].size(); ++j)
         {
             for(int k=0; k<image.size(); ++k) for(int l=0; l<image[0].size(); ++l)
@@ -119,10 +168,18 @@ private:
                 {
                     //順序を変えて逆の逆の組み合わせの相対評価は同じであることを使用して探索量を半分にする
                     //例えば，Aから見たBは上なら，Bから見たAは下．
+					/*
                     comp[i][j][k][l].up    = comp[k][l][i][j].down  = ud_comparison(image[i][j], image[k][l]);
                     comp[i][j][k][l].right = comp[k][l][i][j].left  = rl_comparison(image[i][j], image[k][l]);
                     comp[i][j][k][l].down  = comp[k][l][i][j].up    = du_comparison(image[i][j], image[k][l]);
                     comp[i][j][k][l].left  = comp[k][l][i][j].right = lr_comparison(image[i][j], image[k][l]);
+					*/
+
+					comp[i][j][k][l].up    = comp[k][l][i][j].down  = ud_comparison(splited[i][j], splited[k][l]);
+					comp[i][j][k][l].right = comp[k][l][i][j].left  = rl_comparison(splited[i][j], splited[k][l]);
+					comp[i][j][k][l].down  = comp[k][l][i][j].up    = du_comparison(splited[i][j], splited[k][l]);
+					comp[i][j][k][l].left  = comp[k][l][i][j].right = lr_comparison(splited[i][j], splited[k][l]);
+
                 }
             }
         }
