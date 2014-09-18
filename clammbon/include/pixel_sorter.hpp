@@ -1,6 +1,7 @@
 ﻿#ifndef RESOLVER_PIXEL_SORTER_HPP
 #define RESOLVER_PIXEL_SORTER_HPP
 
+#include <iostream>
 #include "data_type.hpp"
 #include "splitter.hpp"
 
@@ -179,6 +180,11 @@ private:
 					comp[i][j][k][l].right = comp[k][l][i][j].left  = rl_comparison(splited[i][j], splited[k][l]);
 					comp[i][j][k][l].down  = comp[k][l][i][j].up    = du_comparison(splited[i][j], splited[k][l]);
 					comp[i][j][k][l].left  = comp[k][l][i][j].right = lr_comparison(splited[i][j], splited[k][l]);
+
+					std::cout << i * 3 + j << "," << k * 3 + l << " " << ud_comparison(splited[i][j], splited[k][l]) << std::endl;
+					std::cout << i * 3 + j << "," << k * 3 + l << " " << rl_comparison(splited[i][j], splited[k][l]) << std::endl;
+					std::cout << i * 3 + j << "," << k * 3 + l << " " << du_comparison(splited[i][j], splited[k][l]) << std::endl;
+					std::cout << i * 3 + j << "," << k * 3 + l << " " << lr_comparison(splited[i][j], splited[k][l]) << std::endl;
 
                 }
             }
