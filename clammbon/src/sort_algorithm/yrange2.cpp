@@ -133,9 +133,7 @@ std::vector<std::vector<std::vector<point_type>>> yrange2::operator() ()
 		);
 
 	answer_type_y answer;
-	cr_set cr;
 	splitter sp;
-	cr = sp.make_column_row_set(data_);
 
 
 	//すべてのピースから並べ始めるためのループ
@@ -230,40 +228,40 @@ std::vector<std::vector<std::vector<point_type>>> yrange2::operator() ()
 				{
 					one_answer[i][j] = sorted_matrix[y + i][x + j];
 				}
-				answer.point_type.push_back(std::move(one_answer));
+				answer.points.push_back(std::move(one_answer));
 			}
 		}
 	}
 
 	//現段階で重複しているものは1つに絞る
 	// unique()を使う準備としてソートが必要
-	std::sort(answer.point_type.begin(), answer.point_type.end());
+	std::sort(answer.points.begin(), answer.points.end());
 	// unique()をしただけでは後ろにゴミが残るので、eraseで削除する
-	answer.point_type.erase(std::unique(answer.point_type.begin(), answer.point_type.end()), answer.point_type.end());
+	answer.points.erase(std::unique(answer.points.begin(), answer.points.end()), answer.points.end());
 
 	
 	//#########################################################yrange2.5#########################################################//
 
 	//縦入れ替え，横入れ替え
-	for (auto matrix : answer.point_type){
+	for (auto matrix : answer.points){
 		row_replacement(matrix);
 		column_replacement(matrix);
 	}
 
 	//もっかいやっとく
-	std::sort(answer.point_type.begin(), answer.point_type.end());
-	answer.point_type.erase(std::unique(answer.point_type.begin(), answer.point_type.end()), answer.point_type.end());
+	std::sort(answer.points.begin(), answer.points.end());
+	answer.points.erase(std::unique(answer.points.begin(), answer.points.end()), answer.points.end());
 
 	//一枚のcv::Matにする
-	answer.cv_Mat = combine_image(answer.point_type);
+	answer.mat_image = combine_image(answer.points);
 
 //	std::cout << cv::arcLength(answer.cv_Mat[0], true) << std::endl;
 //	std::cout << cv::arcLength(answer.cv_Mat[0], false) << std::endl;
 
 
 #ifdef _DEBUG
-    std::cout << "There are " << answer.point_type.size() << " solutions" << std::endl;
-	for (auto const& one_answer : answer.point_type)
+    std::cout << "There are " << answer.points.size() << " solutions" << std::endl;
+	for (auto const& one_answer : answer.points)
 	{
 		for (int i = 0; i < one_answer.size(); ++i)
 		{
@@ -278,9 +276,6 @@ std::vector<std::vector<std::vector<point_type>>> yrange2::operator() ()
 	}
 	gui::show_image(data_, comp_, answer);
 #endif
-	
-	ur_choose(comp_, cr, CV_TM_CCOEFF_NORMED, { 1, 2 }, { 2, 1 }, { 2, 2 });
-	ur_choose(comp_, cr, CV_TM_CCOEFF_NORMED, { 2, 1 }, { 0, 1 }, { 1, 0 });
 
-    return answer.point_type;
+	return answer.points;
 }

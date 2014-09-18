@@ -153,9 +153,9 @@ typedef std::vector<std::vector<direction_type<point_type>>> adjacent_type;
 
 //yrange2
 struct answer_type_y{
-	std::vector<std::vector<std::vector<point_type>>> point_type;
+	std::vector<std::vector<std::vector<point_type>>> points;
 	std::vector<double> score;
-	std::vector<cv::Mat> cv_Mat;
+	std::vector<cv::Mat> mat_image;
 };
 struct cr_set{
 	cv::Mat row;
