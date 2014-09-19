@@ -4,6 +4,9 @@
 #include <iostream>
 #include "data_type.hpp"
 #include "splitter.hpp"
+#include <opencv2/core/core.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/highgui/highgui.hpp>
 
 template<class Algorithm>
 class pixel_sorter
@@ -11,7 +14,7 @@ class pixel_sorter
 public:
     // 座標(j,i)と座標(l,k)の比較結果としては，compared_type[i][j][k][l]にtuple<上,右,下,左>で入る
     // compared_typeより，一番距離が近い断片画像をadjacent_typeに整理する
-    typedef std::vector<std::vector<std::vector<std::vector<direction_type<uint64_t>>>>> compared_type;
+    typedef std::vector<std::vector<std::vector<std::vector<direction_type<uint_fast64_t>>>>> compared_type;
     typedef std::vector<std::vector<direction_type<point_type>>> adjacent_type;
     typedef std::vector<std::vector<point_type>> return_type;
 
@@ -45,6 +48,7 @@ public:
     }
 
 private:
+
     //2つのピクセル間の距離を2乗した値を返却．result = r^2 + g^2 + b^2
     int pixel_comparison(pixel_type const& lhs, pixel_type const& rhs) const
     {
@@ -68,33 +72,33 @@ private:
     }
 
     //一枚目の右端と二枚目の左端を見る関数, 一致が多いほど低いを返す
-    uint64_t rl_comparison(image_type const& lhs, image_type const& rhs) const
+    uint_fast64_t rl_comparison(image_type const& lhs, image_type const& rhs) const
     {
         return pixel_line_comparison(lhs.col(lhs.cols - 1), rhs.col(0));
     }
 
     //一枚目の左端と二枚目の右端を見る関数, 一致が多いほど低いを返す
-    uint64_t lr_comparison(image_type const& lhs, image_type const& rhs) const
+    uint_fast64_t lr_comparison(image_type const& lhs, image_type const& rhs) const
     {
         return pixel_line_comparison(lhs.col(0), rhs.col(rhs.cols - 1));
     }
 
     //一枚目の上端と二枚目の下端を見る関数, 一致が多いほど低いを返す
-    uint64_t ud_comparison(image_type const& lhs, image_type const& rhs) const
+    uint_fast64_t ud_comparison(image_type const& lhs, image_type const& rhs) const
     {
         return pixel_line_comparison(lhs.row(0), rhs.row(rhs.rows - 1));
     }
 
     //一枚目の下端と二枚目の上端を見る関数, 一致が多いほど低いを返す
-    uint64_t du_comparison(image_type const& lhs, image_type const& rhs) const
+    uint_fast64_t du_comparison(image_type const& lhs, image_type const& rhs) const
     {
         return pixel_line_comparison(lhs.row(rhs.rows - 1), rhs.row(0));
     }
 
 	/*一枚目の右端と二枚目の左端を見る関数　一致が多いほど低いを返す*/
-	uint64_t rl_comparison(cv::Mat file1, cv::Mat file2)
+	uint_fast64_t rl_comparison(cv::Mat file1, cv::Mat file2)
 	{
-		uint64_t s = 0;
+		uint_fast64_t s = 0;
 		for (int i = 0; i < file1.rows; i++) {//縦ピクセル数ループ
 			for (int c = 0; c < file1.channels(); ++c){// 画像のチャネル数分だけループ。白黒の場合は1回、カラーの場合は3回
 				s += abs((file1.data[file1.step * (i + 1) - file1.channels() + c]) - (file2.data[file2.step * i + c]));
@@ -104,9 +108,9 @@ private:
 	}
 
 	/*一枚目の左端と二枚目の右端を見る関数　一致が多いほど低いを返す*/
-	uint64_t lr_comparison(cv::Mat file1, cv::Mat file2)
+	uint_fast64_t lr_comparison(cv::Mat file1, cv::Mat file2)
 	{
-		uint64_t s = 0;
+		uint_fast64_t s = 0;
 		for (int i = 0; i < file1.rows; i++) {//縦ピクセル数ループ
 			for (int c = 0; c < file1.channels(); ++c){// 画像のチャネル数分だけループ。白黒の場合は1回、カラーの場合は3回
 				s += abs((file1.data[file1.step * i + c]) - (file2.data[file2.step * (i + 1) - file1.channels() + c]));
@@ -117,9 +121,9 @@ private:
 	}
 
 	/*一枚目の上端と二枚目の下端を見る関数　一致が多いほど低いを返す*/
-	uint64_t ud_comparison(cv::Mat file1, cv::Mat file2)
+	uint_fast64_t ud_comparison(cv::Mat file1, cv::Mat file2)
 	{
-		uint64_t s = 0;
+		uint_fast64_t s = 0;
 		for (unsigned int i = 0; i < file1.step; i++) {//横ピクセル数ループ
 			s += abs((file1.data[i]) - (file2.data[(file2.rows - 1)* file2.step + i]));
 		}
@@ -127,9 +131,9 @@ private:
 	}
 
 	/*一枚目の下端と二枚目の上端を見る関数　一致が多いほど低いを返す*/
-	uint64_t du_comparison(cv::Mat file1, cv::Mat file2)
+	uint_fast64_t du_comparison(cv::Mat file1, cv::Mat file2)
 	{
-		uint64_t s = 0;
+		uint_fast64_t s = 0;
 		for (unsigned int i = 0; i < file1.step; i++) {//横ピクセル数ループ
 			s += abs((file1.data[(file2.rows - 1)*file2.step + i]) - (file2.data[i]));
 		}
@@ -142,21 +146,42 @@ private:
         //"最大距離が収納されたtuple"の4次元配列になる
         compared_type comp(
             image.size(),
-            std::vector<std::vector<std::vector<direction_type<uint64_t>>>>(
+            std::vector<std::vector<std::vector<direction_type<uint_fast64_t>>>>(
                 image[0].size(),
-                std::vector<std::vector<direction_type<uint64_t>>>(
+                std::vector<std::vector<direction_type<uint_fast64_t>>>(
                     image.size(),
-                    std::vector<direction_type<uint64_t>>(
+                    std::vector<direction_type<uint_fast64_t>>(
                         image[0].size(),
                         {
-                            std::numeric_limits<uint64_t>::max(),
-                            std::numeric_limits<uint64_t>::max(),
-                            std::numeric_limits<uint64_t>::max(),
-                            std::numeric_limits<uint64_t>::max()
+                            std::numeric_limits<uint_fast64_t>::max(),
+                            std::numeric_limits<uint_fast64_t>::max(),
+                            std::numeric_limits<uint_fast64_t>::max(),
+                            std::numeric_limits<uint_fast64_t>::max()
                         })
                     )
                 )
             );
+		
+
+		//################失礼します##########################//
+
+		int const sepx = image[0].size();
+		int const sepy = image.size();
+		int const one_picy = (data_.size.second / data_.split_num.second);// picy/sepy
+		int const one_picx = (data_.size.first / data_.split_num.first);// picx/sepx
+
+		cv::Mat prob_img = cv::imread("prob01.ppm", 1);
+
+		std::vector<std::vector<cv::Mat>>mat_vec(sepy, std::vector<cv::Mat>(sepx));
+		std::vector<cv::Mat> mat_vec1;
+		for (int i = 0; i < sepy; i++){
+			for (int j = 0; j < sepx; j++){
+				cv::Rect roi(j*one_picx, i*one_picy, one_picx, one_picy);//x, yからpicx / sepx, picy / sepyでROIを設定
+				mat_vec1.push_back(prob_img(roi).clone());
+				mat_vec[i][j] = prob_img(roi).clone();
+				//mat_vec[i][j] = data_.pixels(roi).clone();// 深いコピー
+			}
+		}
 		
 		splitter sp;
 		split_image_type splited = sp.split_image(data_);
@@ -180,16 +205,41 @@ private:
 					comp[i][j][k][l].right = comp[k][l][i][j].left  = rl_comparison(splited[i][j], splited[k][l]);
 					comp[i][j][k][l].down  = comp[k][l][i][j].up    = du_comparison(splited[i][j], splited[k][l]);
 					comp[i][j][k][l].left  = comp[k][l][i][j].right = lr_comparison(splited[i][j], splited[k][l]);
-
+					/*
 					std::cout << i * 3 + j << "," << k * 3 + l << " " << ud_comparison(splited[i][j], splited[k][l]) << std::endl;
 					std::cout << i * 3 + j << "," << k * 3 + l << " " << rl_comparison(splited[i][j], splited[k][l]) << std::endl;
 					std::cout << i * 3 + j << "," << k * 3 + l << " " << du_comparison(splited[i][j], splited[k][l]) << std::endl;
 					std::cout << i * 3 + j << "," << k * 3 + l << " " << lr_comparison(splited[i][j], splited[k][l]) << std::endl;
+					*/
+					std::cout << i * 3 + j << "," << k * 3 + l << " " << ud_comparison(mat_vec[i][j], mat_vec[k][l]) << std::endl;
+					std::cout << i * 3 + j << "," << k * 3 + l << " " << rl_comparison(mat_vec[i][j], mat_vec[k][l]) << std::endl;
+					std::cout << i * 3 + j << "," << k * 3 + l << " " << du_comparison(mat_vec[i][j], mat_vec[k][l]) << std::endl;
+					std::cout << i * 3 + j << "," << k * 3 + l << " " << lr_comparison(mat_vec[i][j], mat_vec[k][l]) << std::endl;
 
-                }
+				}
             }
         }
-        return comp;
+		/*
+		for (int i = 0; i < sepx*sepy; ++i){
+			for (int j = 0; j < sepx*sepy; ++j){
+				std::cout << i << "," << j << " " << ud_comparison(mat_vec1[i], mat_vec1[j]) << std::endl;
+				std::cout << i << "," << j << " " << rl_comparison(mat_vec1[i], mat_vec1[j]) << std::endl;
+				std::cout << i << "," << j << " " << du_comparison(mat_vec1[i], mat_vec1[j]) << std::endl;
+				std::cout << i << "," << j << " " << lr_comparison(mat_vec1[i], mat_vec1[j]) << std::endl;
+
+			}
+		}
+		*/
+
+		cv::Mat file1 = cv::imread("a.png", 1);
+		cv::Mat file2 = cv::imread("b.png", 1);
+		
+		std::cout << "file1 , file2 " << ud_comparison(file1, file2) << std::endl;
+		std::cout << "file1 , file2 " << rl_comparison(file1, file2) << std::endl;
+		std::cout << "file1 , file2 " << du_comparison(file1, file2) << std::endl;
+		std::cout << "file1 , file2 " << lr_comparison(file1, file2) << std::endl;
+       
+		return comp;
     }
 
     splitter const split_;

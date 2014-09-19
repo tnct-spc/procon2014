@@ -12,12 +12,12 @@ public:
     explicit ppm_reader();
     virtual ~ppm_reader();
 
-    question_raw_data from_data(std::string const& data);
+	question_raw_data from_data(std::string const& data, std::string const& path);
     question_raw_data from_file(std::string const& path);
 
 private:
     void read_header(question_raw_data& out, std::string const& src);
-    void read_body(question_raw_data& out, std::string const& src);
+    void read_body(question_raw_data& out, std::string const& src,std::string const& path);
 };
 
 #endif
