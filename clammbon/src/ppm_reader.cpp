@@ -14,12 +14,12 @@
 ppm_reader::ppm_reader() = default;
 ppm_reader::~ppm_reader() = default;
 
-question_raw_data ppm_reader::from_data(std::string const& data,std::string const& path)
+question_raw_data ppm_reader::from_data(std::string const& data)
 {
     question_raw_data out;
 
     read_header(out, data);
-    read_body  (out, data,path);
+    read_body  (out, data);
 
     return out;
 }
@@ -44,7 +44,7 @@ question_raw_data ppm_reader::from_file(std::string const& path)
         );
 
     // 委託
-    return from_data(data,path);
+    return from_data(data);
 }
 
 void ppm_reader::read_header(question_raw_data& out, std::string const& src)
@@ -107,12 +107,11 @@ void ppm_reader::read_header(question_raw_data& out, std::string const& src)
     return;
 }
 
-void ppm_reader::read_body(question_raw_data& out, std::string const& src,std::string const& path)
+void ppm_reader::read_body(question_raw_data& out, std::string const& src)
 {
     // std::string -> std::vector -> cv::Mat
     std::vector<unsigned char> data(src.cbegin(), src.cend());
-    //out.pixels = cv::imdecode(cv::Mat(data), 1);
-	out.pixels = cv::imread(path, 1);
+    out.pixels = cv::imdecode(cv::Mat(data), 1);
     return;
 }
 

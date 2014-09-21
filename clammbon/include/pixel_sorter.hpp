@@ -186,14 +186,6 @@ private:
 		}
 		*/
 
-		cv::Mat file1 = cv::imread("a.png", 1);
-		cv::Mat file2 = cv::imread("b.png", 1);
-		
-		std::cout << "file1 , file2 " << ud_comparison(file1, file2) << std::endl;
-		std::cout << "file1 , file2 " << rl_comparison(file1, file2) << std::endl;
-		std::cout << "file1 , file2 " << du_comparison(file1, file2) << std::endl;
-		std::cout << "file1 , file2 " << lr_comparison(file1, file2) << std::endl;
-       
 		return comp;
     }
 
