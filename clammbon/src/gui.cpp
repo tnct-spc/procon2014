@@ -60,11 +60,11 @@ namespace gui
 		roi_rect.width = (data_.size.first / data_.split_num.first);// picx/sepx
 		splitter sp;//どこからか持ってきてたsplitter
 		split_image_type splitted = sp.split_image(data_);
-		for (int c = 0; c < answer.point_type.size(); ++c){
+		for (int c = 0; c < answer.points.size(); ++c){
 			for (int i = 0; i < data_.split_num.second; ++i){
 				for (int j = 0; j < data_.split_num.first; ++j){
 					cv::Mat roi(comb_pic, roi_rect);
-					splitted[answer.point_type[c][i][j].y][answer.point_type[c][i][j].x].copyTo(roi);
+					splitted[answer.points[c][i][j].y][answer.points[c][i][j].x].copyTo(roi);
 					roi_rect.x += (data_.size.first / data_.split_num.first);
 				}
 				roi_rect.x = 0;
@@ -73,7 +73,7 @@ namespace gui
 			std::ostringstream outname;
 			outname.str("");
 			if (answer.score.size() > c && answer.score[c] != 0)outname << "score = " << answer.score[c];
-			else outname << "score = " << form_evaluate(comp_, answer.point_type[c]);
+			else outname << "score = " << form_evaluate(comp_, answer.points[c]);
 			cv::namedWindow(outname.str(), CV_WINDOW_AUTOSIZE);
 			cv::imshow(outname.str(), comb_pic);
 		}
@@ -82,13 +82,13 @@ namespace gui
 
 	void show_image(question_raw_data const& data_, compared_type const& comp_, answer_type_y const& answer)
 	{
-		for (int i = 0; i < answer.point_type.size(); ++i){
+		for (int i = 0; i < answer.points.size(); ++i){
 			std::ostringstream outname;
 			outname.str("");
 			if (answer.score.size() > i && answer.score[i] != 0)outname << "score = " << answer.score[i];
-			else outname << "score = " << form_evaluate(comp_, answer.point_type[i]);
+			else outname << "score = " << form_evaluate(comp_, answer.points[i]);
 			cv::namedWindow(outname.str(), CV_WINDOW_AUTOSIZE);
-			cv::imshow(outname.str(), answer.cv_Mat[i]);
+			cv::imshow(outname.str(), answer.mat_image[i]);
 		}
 		cvWaitKey(0);
 	}

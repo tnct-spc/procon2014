@@ -54,11 +54,15 @@ public:
             sorter_(raw, splitted)
         };
 
+        // TODO: ここで，sorter_(raw)の結果がイマイチなら，
+        // man_resolvedが結果を置き換える可能性を考慮．
+
+		if (formed.block.size() == 0){
         //手作業のデータはこっちで受ける
         auto man_resolved = future.get();
 
-        // TODO: ここで，sorter_(raw)の結果がイマイチなら，
-        // man_resolvedが結果を置き換える可能性を考慮．
+			formed.block = man_resolved;
+		}
 
         return std::move(formed);
     }
