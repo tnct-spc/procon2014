@@ -77,7 +77,7 @@ namespace gui
 			cv::namedWindow(outname.str(), CV_WINDOW_AUTOSIZE);
 			cv::imshow(outname.str(), comb_pic);
 		}
-		cvWaitKey(0);
+		cv::waitKey(10000);
 	}
 
 	void show_image(question_raw_data const& data_, compared_type const& comp_, answer_type_y const& answer)
@@ -90,7 +90,7 @@ namespace gui
 			cv::namedWindow(outname.str(), CV_WINDOW_AUTOSIZE);
 			cv::imshow(outname.str(), answer.mat_image[i]);
 		}
-		cvWaitKey(0);
+		cv::waitKey(10000);
 	}
 
 } // namespace gui
