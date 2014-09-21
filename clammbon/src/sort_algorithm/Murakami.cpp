@@ -10,7 +10,7 @@
 #include <sort_algorithm/compare.hpp>
 #include <sort_algorithm/adjacent.hpp>
 #include <sort_algorithm/Murakami.hpp>
-
+#include <./gui.hpp>
 Murakami::Murakami(question_raw_data const& data, compared_type const& comp)
 	: data_(data), comp_(comp)
 {
@@ -78,16 +78,19 @@ std::vector<std::vector<std::vector<point_type>>> Murakami::operator() (){
 			}
 			std::cout << "\n";
 		}
+		//answer_type_y show_image;
+		//show_image.point_type = block_list;
+		//gui::combine_show_image(data_, comp_, show_image);
 		return block_list;
 
 }
 Murakami::block_combination Murakami::eval_block(block_type block1, block_type block2){
 	auto const width = data_.split_num.first;
 	auto const height = data_.split_num.second;
-	int const b1_width = block1.size();
-	int const b1_height = block1[0].size();
-	int const b2_width = block2.size();
-	int const b2_height = block2[0].size();
+	int const b1_width = block1[0].size();
+	int const b1_height = block1.size();
+	int const b2_width = block2[0].size();
+	int const b2_height = block2.size();
 	auto const in_range = [height, width](int y, int x){
 		if (x >= 0 && x < width && y >= 0 && y < height){
 			return true;
@@ -458,10 +461,10 @@ void Murakami::make_sorted_comparation(){
 Murakami::block_type Murakami::combine_block(block_combination block_comb){
 	if (block_comb.block1.size() == 0)throw std::runtime_error("結合予定ブロックのサイズが0です,block1");
 	if (block_comb.block2.size() == 0)throw std::runtime_error("結合予定ブロックのサイズが0です,block2");
-	int const b1_width = block_comb.block1.size();
-	int const b1_height = block_comb.block1[0].size();
-	int const b2_width = block_comb.block2.size();
-	int const b2_height = block_comb.block2[0].size();
+	int const b1_width = block_comb.block1[0].size();
+	int const b1_height = block_comb.block1.size();
+	int const b2_width = block_comb.block2[0].size();
+	int const b2_height = block_comb.block2.size();
 	auto const block1_exists = [b1_height, b1_width, block_comb](int y, int x){
 		if (x >= 0 && x < b1_width && y >= 0 && y < b1_height){
 			if (block_comb.block1[y][x].x != -1 || block_comb.block1[y][x].y != -1){
