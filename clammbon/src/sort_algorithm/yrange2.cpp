@@ -211,7 +211,7 @@ std::vector<std::vector<std::vector<point_type>>> yrange2::operator() ()
 		{
 			auto const& center = sorted_matrix[height + i - 1][width - j - 1];
 			auto const& lower = sorted_matrix[height + i][width - j - 1];
-			auto const& left = sorted_matrix[height + i + j][width - j - 2];
+			auto const& left = sorted_matrix[height + i - 1][width - j - 2];
 
 			if (exists(center) && exists(lower) && exists(left))
 				sorted_matrix[height + i][width + j] = dl_choose(comp_, left, center, lower);

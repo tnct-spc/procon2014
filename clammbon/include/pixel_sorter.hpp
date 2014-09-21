@@ -53,7 +53,7 @@ private:
     int pixel_comparison(pixel_type const& lhs, pixel_type const& rhs) const
     {
         int s = 0;
-        for(int i=0; i<3; ++i) s += static_cast<int>(std::pow(std::abs(lhs[i] - rhs[i]), 2));
+        for(int i=0; i<3; ++i) s += static_cast<int>(std::abs(lhs[i] - rhs[i]));
         return s;
     }
 
@@ -94,51 +94,6 @@ private:
     {
         return pixel_line_comparison(lhs.row(rhs.rows - 1), rhs.row(0));
     }
-
-	/*一枚目の右端と二枚目の左端を見る関数　一致が多いほど低いを返す*/
-	uint_fast64_t rl_comparison(cv::Mat file1, cv::Mat file2)
-	{
-		uint_fast64_t s = 0;
-		for (int i = 0; i < file1.rows; i++) {//縦ピクセル数ループ
-			for (int c = 0; c < file1.channels(); ++c){// 画像のチャネル数分だけループ。白黒の場合は1回、カラーの場合は3回
-				s += abs((file1.data[file1.step * (i + 1) - file1.channels() + c]) - (file2.data[file2.step * i + c]));
-			}
-		}
-		return s;
-	}
-
-	/*一枚目の左端と二枚目の右端を見る関数　一致が多いほど低いを返す*/
-	uint_fast64_t lr_comparison(cv::Mat file1, cv::Mat file2)
-	{
-		uint_fast64_t s = 0;
-		for (int i = 0; i < file1.rows; i++) {//縦ピクセル数ループ
-			for (int c = 0; c < file1.channels(); ++c){// 画像のチャネル数分だけループ。白黒の場合は1回、カラーの場合は3回
-				s += abs((file1.data[file1.step * i + c]) - (file2.data[file2.step * (i + 1) - file1.channels() + c]));
-
-			}
-		}
-		return s;
-	}
-
-	/*一枚目の上端と二枚目の下端を見る関数　一致が多いほど低いを返す*/
-	uint_fast64_t ud_comparison(cv::Mat file1, cv::Mat file2)
-	{
-		uint_fast64_t s = 0;
-		for (unsigned int i = 0; i < file1.step; i++) {//横ピクセル数ループ
-			s += abs((file1.data[i]) - (file2.data[(file2.rows - 1)* file2.step + i]));
-		}
-		return s;
-	}
-
-	/*一枚目の下端と二枚目の上端を見る関数　一致が多いほど低いを返す*/
-	uint_fast64_t du_comparison(cv::Mat file1, cv::Mat file2)
-	{
-		uint_fast64_t s = 0;
-		for (unsigned int i = 0; i < file1.step; i++) {//横ピクセル数ループ
-			s += abs((file1.data[(file2.rows - 1)*file2.step + i]) - (file2.data[i]));
-		}
-		return s;
-	}
 
     compared_type image_comp(question_raw_data const& data_,split_image_type const& image) const
     {
