@@ -117,30 +117,6 @@ private:
                 )
             );
 		
-
-		//################失礼します##########################//
-
-		int const sepx = image[0].size();
-		int const sepy = image.size();
-		int const one_picy = (data_.size.second / data_.split_num.second);// picy/sepy
-		int const one_picx = (data_.size.first / data_.split_num.first);// picx/sepx
-
-		cv::Mat prob_img = cv::imread("prob01.ppm", 1);
-
-		std::vector<std::vector<cv::Mat>>mat_vec(sepy, std::vector<cv::Mat>(sepx));
-		std::vector<cv::Mat> mat_vec1;
-		for (int i = 0; i < sepy; i++){
-			for (int j = 0; j < sepx; j++){
-				cv::Rect roi(j*one_picx, i*one_picy, one_picx, one_picy);//x, yからpicx / sepx, picy / sepyでROIを設定
-				mat_vec1.push_back(prob_img(roi).clone());
-				mat_vec[i][j] = prob_img(roi).clone();
-				//mat_vec[i][j] = data_.pixels(roi).clone();// 深いコピー
-			}
-		}
-		
-		splitter sp;
-		split_image_type splited = sp.split_image(data_);
-				
         for(int i=0; i<image.size(); ++i) for(int j=0; j<image[0].size(); ++j)
         {
             for(int k=0; k<image.size(); ++k) for(int l=0; l<image[0].size(); ++l)
@@ -149,42 +125,20 @@ private:
                 {
                     //順序を変えて逆の逆の組み合わせの相対評価は同じであることを使用して探索量を半分にする
                     //例えば，Aから見たBは上なら，Bから見たAは下．
-					/*
+					
                     comp[i][j][k][l].up    = comp[k][l][i][j].down  = ud_comparison(image[i][j], image[k][l]);
                     comp[i][j][k][l].right = comp[k][l][i][j].left  = rl_comparison(image[i][j], image[k][l]);
                     comp[i][j][k][l].down  = comp[k][l][i][j].up    = du_comparison(image[i][j], image[k][l]);
                     comp[i][j][k][l].left  = comp[k][l][i][j].right = lr_comparison(image[i][j], image[k][l]);
-					*/
-
-					comp[i][j][k][l].up    = comp[k][l][i][j].down  = ud_comparison(splited[i][j], splited[k][l]);
-					comp[i][j][k][l].right = comp[k][l][i][j].left  = rl_comparison(splited[i][j], splited[k][l]);
-					comp[i][j][k][l].down  = comp[k][l][i][j].up    = du_comparison(splited[i][j], splited[k][l]);
-					comp[i][j][k][l].left  = comp[k][l][i][j].right = lr_comparison(splited[i][j], splited[k][l]);
 					/*
-					std::cout << i * 3 + j << "," << k * 3 + l << " " << ud_comparison(splited[i][j], splited[k][l]) << std::endl;
-					std::cout << i * 3 + j << "," << k * 3 + l << " " << rl_comparison(splited[i][j], splited[k][l]) << std::endl;
-					std::cout << i * 3 + j << "," << k * 3 + l << " " << du_comparison(splited[i][j], splited[k][l]) << std::endl;
-					std::cout << i * 3 + j << "," << k * 3 + l << " " << lr_comparison(splited[i][j], splited[k][l]) << std::endl;
-					*/
 					std::cout << i * 3 + j << "," << k * 3 + l << " " << ud_comparison(mat_vec[i][j], mat_vec[k][l]) << std::endl;
 					std::cout << i * 3 + j << "," << k * 3 + l << " " << rl_comparison(mat_vec[i][j], mat_vec[k][l]) << std::endl;
 					std::cout << i * 3 + j << "," << k * 3 + l << " " << du_comparison(mat_vec[i][j], mat_vec[k][l]) << std::endl;
 					std::cout << i * 3 + j << "," << k * 3 + l << " " << lr_comparison(mat_vec[i][j], mat_vec[k][l]) << std::endl;
-
+					*/
 				}
             }
         }
-		/*
-		for (int i = 0; i < sepx*sepy; ++i){
-			for (int j = 0; j < sepx*sepy; ++j){
-				std::cout << i << "," << j << " " << ud_comparison(mat_vec1[i], mat_vec1[j]) << std::endl;
-				std::cout << i << "," << j << " " << rl_comparison(mat_vec1[i], mat_vec1[j]) << std::endl;
-				std::cout << i << "," << j << " " << du_comparison(mat_vec1[i], mat_vec1[j]) << std::endl;
-				std::cout << i << "," << j << " " << lr_comparison(mat_vec1[i], mat_vec1[j]) << std::endl;
-
-			}
-		}
-		*/
 
 		return comp;
     }
