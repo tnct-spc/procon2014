@@ -34,38 +34,37 @@ int yrange2::array_sum(return_type const& array_, int const x, int const y, int 
     return sum;
 }
 
-/*縦入れ替え*/
-void yrange2::column_replacement(return_type& matrix)
+/*縦列単位で入れ替え*/
+void yrange2::column_replacement(return_type & matrix)
 {
-	const int sepx = data_.split_num.first;
-	const int sepy = data_.split_num.second;
-	uint64_t good_val;
+	int const sepx = data_.split_num.first;
+	int const sepy = data_.split_num.second;
+	uint_fast64_t good_val;
 	std::vector<std::vector<point_type> > good_matrix(sepy, std::vector<point_type>(sepx));
-	std::vector<point_type> temp_vec;
 
 	good_matrix = matrix;
-	good_val = form_evaluate(comp_,matrix);
+	good_val = form_evaluate(comp_,good_matrix);
 
 	for (int i = 0; i < sepx; ++i){
 		for (int j = 0; j < sepy; ++j){
-			matrix[j].push_back(matrix[j][sepx - 1]);
-			matrix[j].pop_back();
+			matrix[j].insert(matrix[j].begin(), matrix[j][sepx - 1]);
+			matrix[j].erase(matrix[j].end() - 1);
 		}
-
-		if (good_val>form_evaluate(comp_,matrix)){
-			good_val = form_evaluate(comp_,matrix);
+		auto temp_score = form_evaluate(comp_, matrix);
+		if (good_val>temp_score){
+			good_val = temp_score;
 			good_matrix = matrix;
 		}
 	}
 	matrix = good_matrix;
 }
 
-/*横入れ替え*/
+/*横列単位で入れ替え*/
 void yrange2::row_replacement(return_type& matrix)
 {
-	const int sepx = data_.split_num.first;
-	const int sepy = data_.split_num.second;
-	uint64_t good_val;
+	int const sepx = data_.split_num.first;
+	int const sepy = data_.split_num.second;
+	uint_fast64_t good_val;
 	std::vector<std::vector<point_type> > good_matrix(sepy, std::vector<point_type>(sepx));
 	std::vector<point_type> temp_vec;
 
@@ -75,10 +74,11 @@ void yrange2::row_replacement(return_type& matrix)
 	for (int i = 0; i < sepy; ++i){
 		matrix.push_back(matrix[sepy - 1]);
 		matrix.pop_back();
-	}
-	if (good_val>form_evaluate(comp_,matrix)){
-		good_val = form_evaluate(comp_,matrix);
-		good_matrix = matrix;
+
+		if (good_val>form_evaluate(comp_, matrix)){
+			good_val = form_evaluate(comp_, matrix);
+			good_matrix = matrix;
+		}
 	}
 	matrix = good_matrix;
 }
@@ -86,24 +86,26 @@ void yrange2::row_replacement(return_type& matrix)
 //cv::matの塊にする
 std::vector<cv::Mat> yrange2::combine_image(std::vector<std::vector<std::vector<point_type>>>const & matrix)
 {
+	int const sepx = data_.split_num.first;
+	int const sepy = data_.split_num.second;
+	int const picx = data_.size.first;
+	int const picy = data_.size.second;
+	int const one_picx = picx / sepx;
+	int const one_picy = picy / sepy;
+
 	std::vector<cv::Mat> answer;
-	cv::Mat comb_pic(cv::Size(data_.size.first, data_.size.second), CV_8UC3);
-	cv::Rect roi_rect;
-	roi_rect.height = (data_.size.second / data_.split_num.second);// picy/sepy
-	roi_rect.width = (data_.size.first / data_.split_num.first);// picx/sepx
 	splitter sp;//どこからか持ってきてたsplitter
 	split_image_type splitted = sp.split_image(data_);
 	for (auto arr : matrix){
-		for (int i = 0; i < data_.split_num.second; i++){
-			for (int j = 0; j < data_.split_num.first; j++){
-				cv::Mat roi(comb_pic, roi_rect);
-				splitted[arr[i][j].y][arr[i][j].x].copyTo(roi);
-				roi_rect.x += (data_.size.first / data_.split_num.first);
+		cv::Mat comb_pic(cv::Size(picx, picy), CV_8UC3);
+		for (int i = 0; i < data_.split_num.second; ++i){
+			for (int j = 0; j < data_.split_num.first; ++j){
+				cv::Rect roi_rect(j*one_picx, i*one_picy, one_picx, one_picy);
+				cv::Mat roi_mat(comb_pic, roi_rect);
+				splitted[arr[i][j].y][arr[i][j].x].copyTo(roi_mat);
 			}
-			roi_rect.x = 0;
-			roi_rect.y += (data_.size.second / data_.split_num.second);
 		}
-		answer.push_back(comb_pic);
+		answer.push_back(comb_pic.clone());
 	}
 	return answer;
 }
@@ -243,7 +245,7 @@ std::vector<std::vector<std::vector<point_type>>> yrange2::operator() ()
 	//#########################################################yrange2.5#########################################################//
 
 	//縦入れ替え，横入れ替え
-	for (auto matrix : answer.points){
+	for (auto &matrix : answer.points){
 		row_replacement(matrix);
 		column_replacement(matrix);
 	}
