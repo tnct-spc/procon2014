@@ -72,7 +72,7 @@ void yrange2::row_replacement(return_type& matrix)
 	good_val = form_evaluate(comp_,matrix);
 
 	for (int i = 0; i < sepy; ++i){
-		matrix.push_back(matrix[sepy - 1]);
+		matrix.insert(matrix.begin(), matrix[sepy - 1]);
 		matrix.pop_back();
 
 		if (good_val>form_evaluate(comp_, matrix)){
