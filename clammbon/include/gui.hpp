@@ -15,6 +15,7 @@ namespace gui
         );
 
 	void combine_show_image(question_raw_data const& data_, compared_type const& comp_, answer_type_y const& answer);
+	void combine_show_image(question_raw_data const& data_, compared_type const& comp_, std::vector<std::vector<point_type>>const& matrix);
 
 	void show_image(question_raw_data const& data_, compared_type const& comp_, answer_type_y const& answer);
 

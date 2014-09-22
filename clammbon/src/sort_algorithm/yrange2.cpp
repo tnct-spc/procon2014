@@ -75,7 +75,6 @@ void yrange2::row_replacement(return_type& matrix)
 		matrix.insert(matrix.begin(), matrix[sepy - 1]);
 		matrix.pop_back();
 		auto const& temp_score = form_evaluate(comp_, matrix);
-		std::cout << temp_score << std::endl << std::endl;
 		if (good_val>temp_score){
 			good_val = temp_score;
 			good_matrix = matrix;
@@ -218,7 +217,7 @@ std::vector<std::vector<std::vector<point_type>>> yrange2::operator() ()
 			auto const& left = sorted_matrix[height + i - 1][width - j - 2];
 
 			if (exists(center) && exists(lower) && exists(left))
-				sorted_matrix[height + i][width + j] = dl_choose(comp_, left, center, lower);
+				sorted_matrix[height + i][width  - j - 2] = dl_choose(comp_, left, center, lower);
 			else
 				break;
 		}

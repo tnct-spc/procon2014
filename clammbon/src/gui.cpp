@@ -83,6 +83,30 @@ namespace gui
 		cvWaitKey(0);
 	}
 
+	void combine_show_image(question_raw_data const& data_, compared_type const& comp_, std::vector<std::vector<point_type>>const& matrix)
+	{
+		int const one_picx = data_.size.first / data_.split_num.first;
+		int const one_picy = data_.size.second / data_.split_num.second;
+		
+		cv::Mat comb_pic(cv::Size(one_picx*matrix.at(0).size(),one_picy*matrix.size()), CV_8UC3);
+		splitter sp;//どこからか持ってきてたsplitter
+		split_image_type splitted = sp.split_image(data_);
+
+		for (int i = 0; i < matrix.size(); ++i){
+			for (int j = 0; j < matrix.at(0).size(); ++j){
+				if (matrix[i][j].y > data_.split_num.second || matrix[i][j].x > data_.split_num.first) continue;
+				cv::Rect roi_rect(j*one_picx, i*one_picy, one_picx, one_picy);
+				cv::Mat roi_mat(comb_pic, roi_rect);
+				splitted[matrix[i][j].y][matrix[i][j].x].copyTo(roi_mat);
+			}
+		}
+		std::ostringstream outname("combine_show_image"); 
+		cv::namedWindow(outname.str(), CV_WINDOW_AUTOSIZE);
+		cv::imshow(outname.str(), comb_pic);
+
+		cvWaitKey(0);
+	}
+
 	void show_image(question_raw_data const& data_, compared_type const& comp_, answer_type_y const& answer)
 	{
 		for (int i = 0; i < answer.points.size(); ++i){
