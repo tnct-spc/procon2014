@@ -49,9 +49,9 @@ void yrange2::column_replacement(return_type & matrix)
 	for (int i = 0; i < sepx; ++i){
 		for (int j = 0; j < sepy; ++j){
 			matrix[j].insert(matrix[j].begin(), matrix[j][sepx - 1]);
-			matrix[j].erase(matrix[j].end() - 1);
+			matrix[j].pop_back();
 		}
-		auto temp_score = form_evaluate(comp_, matrix);
+		auto const& temp_score = form_evaluate(comp_, matrix);
 		if (good_val>temp_score){
 			good_val = temp_score;
 			good_matrix = matrix;
@@ -71,17 +71,18 @@ void yrange2::row_replacement(return_type& matrix)
 
 	good_matrix = matrix;
 	good_val = form_evaluate(comp_,matrix);
-
 	for (int i = 0; i < sepy; ++i){
 		matrix.insert(matrix.begin(), matrix[sepy - 1]);
 		matrix.pop_back();
-
-		if (good_val>form_evaluate(comp_, matrix)){
-			good_val = form_evaluate(comp_, matrix);
+		auto const& temp_score = form_evaluate(comp_, matrix);
+		std::cout << temp_score << std::endl << std::endl;
+		if (good_val>temp_score){
+			good_val = temp_score;
 			good_matrix = matrix;
 		}
 	}
 	matrix = good_matrix;
+
 }
 
 //cv::matの塊にする
@@ -249,6 +250,7 @@ std::vector<std::vector<std::vector<point_type>>> yrange2::operator() ()
 	for (auto &matrix : answer.points){
 		row_replacement(matrix);
 		column_replacement(matrix);
+		row_replacement(matrix);
 	}
 
 	//もっかいやっとく
