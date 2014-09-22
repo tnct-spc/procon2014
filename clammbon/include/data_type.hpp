@@ -1,4 +1,4 @@
-#ifndef RESOLVER_DATA_TYPE_HPP
+﻿#ifndef RESOLVER_DATA_TYPE_HPP
 #define RESOLVER_DATA_TYPE_HPP
 
 #include <cstdint>
@@ -126,7 +126,7 @@ typedef cv::Mat_<cv::Vec3b>                  image_type;
 // [i][j]の位置に分割された画像(cv::Mat_<cv::Vec3b>)が入っている．
 typedef std::vector<std::vector<image_type>> split_image_type;
 
-struct question_data : private boost::noncopyable
+struct question_data //: private boost::noncopyable
 {
     int problem_id;
     std::string player_id;
@@ -150,21 +150,26 @@ struct question_data : private boost::noncopyable
     {
     }
 
-    question_data(question_data&& other)
+//    question_data(question_data&& other)
+//    {
+//        *this = std::move(other);
+//    }
+
+    question_data()
     {
-        *this = std::move(other);
     }
-    question_data& operator=(question_data&& other)
-    {
-        this->problem_id = other.problem_id;
-        this->player_id = other.player_id;
-        this->size = std::move(other.size);
-        this->selectable = other.selectable;
-        this->cost_select = other.cost_select;
-        this->cost_change = other.cost_change;
-        this->block = std::move(other.block);
-        return *this;
-    }
+
+//    question_data& operator=(question_data&& other)
+//    {
+//        this->problem_id = other.problem_id;
+//        this->player_id = other.player_id;
+//        this->size = std::move(other.size);
+//        this->selectable = other.selectable;
+//        this->cost_select = other.cost_select;
+//        this->cost_change = other.cost_change;
+//        this->block = std::move(other.block);
+//        return *this;
+//    }
 
     question_data clone() const
     {
@@ -251,9 +256,9 @@ typedef std::vector<std::vector<direction_type<point_type>>> adjacent_type;
 
 //yrange2
 struct answer_type_y{
-	std::vector<std::vector<std::vector<point_type>>> point_type;
+	std::vector<std::vector<std::vector<point_type>>> points;
 	std::vector<double> score;
-	std::vector<cv::Mat> cv_Mat;
+	std::vector<cv::Mat> mat_image;
 };
 struct cr_set{
 	cv::Mat row;

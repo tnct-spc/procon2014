@@ -21,8 +21,6 @@ public:
     //イメージ圧縮関数
     image_type fold_image(unfold_image_type const& unfold_image, int const height, int const width) const;
 
-	//column_set作成関数
-	cr_set make_column_row_set(question_raw_data const& data_) const;
 
 };
 
