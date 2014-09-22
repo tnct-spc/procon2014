@@ -24,7 +24,8 @@ int yrange2::array_sum(return_type const& array_, int const x, int const y, int 
         for(int j=0; j<width; ++j)
         {
             auto const& target_point = array_[y + i][x + j];
-            if(target_point.x != std::numeric_limits<int>::max() && target_point.y != std::numeric_limits<int>::max())
+			if (target_point.x == std::numeric_limits<int>::max() && target_point.y == std::numeric_limits<int>::max()) return -1;
+			else
             {
                 auto const point = target_point.y * width + target_point.x;
                 sum += (point > 1000) ? 777 : point;
