@@ -80,9 +80,9 @@ namespace test_tool
     int emulator::count_correct(locate_type const& locate)
     {
         int correct = 0;
-        for(int i = 0; i < locate.size(); ++i)
+        for(size_t i = 0; i < locate.size(); ++i)
         {
-            for(int j = 0; j < locate.at(i).size(); ++j)
+            for(size_t j = 0; j < locate.at(i).size(); ++j)
             {
                 if(locate.at(i).at(j) == point_type{j, i}) ++correct;
             }
