@@ -18,10 +18,13 @@ using namespace Mongoose;
 
 class MyController : public Controller
 {
-    std::string problem_set = "default";
+    static std::string problem_set = "default";
 public:
     void show_usage(Request &req, StreamResponse &res)
     {
+        std::ifstream ifs(PCS_RESDIR + "/usage.html");
+        res << ifs.rdbuf();
+        res.setHeader("Content-Type", "text/html");
     }
     void submit_form(Request &req, StreamResponse &res)
     {
@@ -65,7 +68,7 @@ public:
         std::string const path = PCS_PROBDIR + "/" + problem_set + "/problem/" + file;
         std::ifstream ifs(path);
         if(ifs.fail()) {
-            std::cerr << "File " + path + " could not be opened";
+            std::cerr << "File " + path + " could not be opened\n";
             res << "404 Not found";
             res.setCode(404);
             res.setHeader("Content-Type", "text/plain");
@@ -80,7 +83,7 @@ public:
         std::string const path = PCS_PROBDIR + "/" + problem_set + "/position/" + file;
         std::ifstream ifs(path);
         if(ifs.fail()) {
-            std::cerr << "File " + path + " could not be opened";
+            std::cerr << "File " + path + " could not be opened\n";
             res << "404 Not found";
             res.setCode(404);
             res.setHeader("Content-Type", "text/plain");
@@ -89,6 +92,14 @@ public:
             res.setHeader("Content-Type", "text/plain");
         }
     }
+    void config(Request &req, StreamResponse &res)
+    {
+        if(req.get("problem_set") != "") {
+            problem_set = req.get("problem_set");
+            res << "Problem set set to " + req.get("problem_set") << std::endl;
+        }
+        res.setHeader("Content-Type", "text/plain");
+    }
 
     void setup()
     {
@@ -96,6 +107,7 @@ public:
         addRoute("POST", "/SubmitAnswer", MyController, submit_answer);
         addRoute("GET", "/", MyController, show_usage);
         addRoute("GET", "/index.html", MyController, show_usage);
+        addRoute("GET", "/config", MyController, config);
 //        addRoute("GET", "/problem/prob[0-9]{2}\\.ppm", MyController, dl_problem);
 //        本当はこうしたい↑
         for(int i = 0; i < 100; i++) {
