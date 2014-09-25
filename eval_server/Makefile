@@ -1,7 +1,7 @@
 include ../makefile.in
 
 OUTDIR :=../bin/$(buildtype)
-TARGET := server
+TARGET := pcserver
 
 SRCS := src/answer.cpp src/problem.cpp src/server.cpp src/tools.cpp src/http-mongoose.cpp src/test_tool.cpp
 PROG := $(OUTDIR)/$(TARGET)
@@ -13,7 +13,10 @@ CPPFLAGS +=
 LDFLAGS  +=
 LIBS     += -lpthread -l_mongoose
 
-.PHONY: all clean distclean
+DEST = /usr/local/bin/
+RESDEST = /usr/share/pcserver/
+
+.PHONY: all clean distclean install
 
 all: $(PROG)
 
@@ -35,6 +38,11 @@ clean:
 
 distclean:
 	rm -rf ../bin
+
+install:
+	mkdir -p $(RESDEST)
+	cp -r res problem_set $(RESDEST)
+	install $(PROG) $(DEST)
 
 # vim:set tabstop=4 noexpandtab
 
