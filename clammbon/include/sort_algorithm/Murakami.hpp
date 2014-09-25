@@ -38,6 +38,7 @@ private:
 	std::int_fast64_t eval_comp_(point_type, point_type,direction);
 	block_type combine_block(block_combination);
 	void make_sorted_comparation();
+	typedef point_type block_size_type;
 public:
 	Murakami(question_raw_data const& data, compared_type const& comp);
 	virtual ~Murakami() = default;

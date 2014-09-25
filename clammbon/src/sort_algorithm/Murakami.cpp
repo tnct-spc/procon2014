@@ -26,9 +26,9 @@ std::vector<std::vector<std::vector<point_type>>> Murakami::operator() (){
 	std::vector<std::vector<std::vector<point_type>>> block_list(
 		height * width,
 		std::vector<std::vector<point_type>>(
-		height,
+		1,
 		std::vector<point_type>(
-		width,
+		1,
 		{
 		-1, -1
 		}
@@ -85,6 +85,7 @@ std::vector<std::vector<std::vector<point_type>>> Murakami::operator() (){
 
 }
 Murakami::block_combination Murakami::eval_block(block_type block1, block_type block2){
+
 	auto const width = data_.split_num.first;
 	auto const height = data_.split_num.second;
 	int const b1_width = block1[0].size();
@@ -459,12 +460,25 @@ void Murakami::make_sorted_comparation(){
 	
 }
 Murakami::block_type Murakami::combine_block(block_combination block_comb){
+
 	if (block_comb.block1.size() == 0)throw std::runtime_error("結合予定ブロックのサイズが0です,block1");
 	if (block_comb.block2.size() == 0)throw std::runtime_error("結合予定ブロックのサイズが0です,block2");
 	int const b1_width = block_comb.block1[0].size();
 	int const b1_height = block_comb.block1.size();
 	int const b2_width = block_comb.block2[0].size();
 	int const b2_height = block_comb.block2.size();
+	point_type lu, rd; //lu left_up,左上 rd right_down,右下
+	/*
+	lu.x = std::max(0, block_comb.shift_x);
+	lu.y = std::max(0, block_comb.shift_y);
+	rd.x = std::min(-b1_width, block_comb.shift_x - b2_width);
+	rd.y = std::min(-b1_height, block_comb.shift_y - b2_height);
+	*/
+	lu.x = std::min(0, block_comb.shift_x);
+	lu.y = std::min(0, block_comb.shift_y);
+	rd.x = std::max(b1_width, block_comb.shift_x + b2_width);
+	rd.y = std::max(b1_height, block_comb.shift_y + b2_height);
+	block_size_type comb_block_size = rd - lu;
 	auto const block1_exists = [b1_height, b1_width, block_comb](int y, int x){
 		if (x >= 0 && x < b1_width && y >= 0 && y < b1_height){
 			if (block_comb.block1[y][x].x != -1 || block_comb.block1[y][x].y != -1){
@@ -513,9 +527,10 @@ Murakami::block_type Murakami::combine_block(block_combination block_comb){
 	if (block_comb.shift_y < 0){
 		l_y = -block_comb.shift_y;
 	}
-	std::vector<std::vector<point_type>> return_combined_block(height, std::vector<point_type>(width, { -1, -1 }));
-	for (int i = -l_y; i < height * 2 - 1; i++){
-		for (int j = -l_x; j < width * 2 - 1; j++){
+
+	std::vector<std::vector<point_type>> return_combined_block(comb_block_size.y, std::vector<point_type>(comb_block_size.x, { -1, -1 }));
+	for (int i = lu.y; i < rd.y; i++){
+		for (int j = lu.x; j < rd.x; j++){
 			if (block1_exists(i,j)){
 				return_combined_block[i + l_y][j + l_x] = block_comb.block1[i][j];
 			}
@@ -525,4 +540,5 @@ Murakami::block_type Murakami::combine_block(block_combination block_comb){
 		}
 	}
 	return return_combined_block;
+
 }
