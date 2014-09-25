@@ -21,6 +21,7 @@ std::vector<std::vector<std::vector<point_type>>> Murakami::operator() (){
 	auto const height = data_.split_num.second;
 	//sort_compare();//sorted_comparation作成
 	make_sorted_comparation();
+	std::cout << "make_ok" << std::endl;
 	//block_type block(height, std::vector<point_type>(width, { -1, -1 }));
 	//大きさが[height * width][height][width]で中身がx,y = -1で初期化
 	std::vector<std::vector<std::vector<point_type>>> block_list(
@@ -140,6 +141,19 @@ Murakami::block_combination Murakami::eval_block(block_type block1, block_type b
 			return false;
 		}
 	};
+	auto const block_size_check = [b1_width, b1_height, b2_width, b2_height, width, height](int shift_x,int shift_y){
+		point_type lu, rd;
+		lu.x = std::min(0, shift_x);
+		lu.y = std::min(0, shift_y);
+		rd.x = std::max(b1_width, shift_x + b2_width);
+		rd.y = std::max(b1_height, shift_y + b2_height);
+		if ((rd.x - lu.x) <= width || (rd.y - lu.y) <= height){
+			return true;
+		}
+		else{
+			return false;
+		}
+	};
 	int_fast64_t best_block_c = std::numeric_limits<int_fast64_t>::min();
 	int best_shift_i;
 	int best_shift_j;
@@ -189,7 +203,7 @@ Murakami::block_combination Murakami::eval_block(block_type block1, block_type b
 				//if (best_block_c != 0){};
 				rank1_num++;
 				block_c *= rank1_num; //0を掛けるのは怖い
-				if (block_c > best_block_c){
+				if (block_c > best_block_c && block_size_check(-i,-j)){
 					best_block_c = block_c;
 					best_shift_i = -i;
 					best_shift_j = -j;
@@ -233,7 +247,7 @@ std::int_fast64_t Murakami::eval_piece(point_type p1, point_type p2, direction d
 std::int_fast64_t Murakami::eval_comp_(point_type p1, point_type p2, direction dir){
 	int rank = 0;
 	std::int_fast64_t score = 0;
-	for (auto it : sorted_comparation.at(p1)[dir]){
+	for (auto it : sorted_comparation[p1][dir]){
 		if (it == p2)break;
 		rank++;
 	}
