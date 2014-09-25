@@ -18,7 +18,7 @@ using namespace Mongoose;
 
 class MyController : public Controller
 {
-    static std::string problem_set = "default";
+    std::string problem_set = "default";
 public:
     void show_usage(Request &req, StreamResponse &res)
     {
