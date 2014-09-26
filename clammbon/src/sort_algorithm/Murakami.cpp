@@ -52,7 +52,6 @@ std::vector<std::vector<std::vector<point_type>>> Murakami::operator() (){
 			for (const auto& i : block_list){//ブロック同士を比較するループ
 				for (const auto& j : block_list){
 					if (i == j) continue;
-					if ((i[0][0].x == 2 && i[0][0].y == 2 && j[0][0].x == 0 && j[0][0].y == 1) || (j[0][0].x == 2 && j[0][0].y == 2 && i[0][0].x == 0 && i[0][0].y == 1))momo = true;
 
 					block_combination b = eval_block(i, j);
 					if (best_block_combination.score < b.score){
