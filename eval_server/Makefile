@@ -1,19 +1,22 @@
 include ../makefile.in
 
 OUTDIR :=../bin/$(buildtype)
-TARGET := server
+TARGET := pcserver
 
-SRCS := src/http.cpp
+SRCS := src/answer.cpp src/problem.cpp src/server.cpp src/tools.cpp src/http-mongoose.cpp src/test_tool.cpp
 PROG := $(OUTDIR)/$(TARGET)
 OBJS := $(SRCS:src/%.cpp=obj/$(buildtype)/%.o)
 DEPS := $(SRCS:src/%.cpp=obj/$(buildtype)/%.d)
 
-CXXFLAGS +=
+CXXFLAGS += -march=native -I./include
 CPPFLAGS +=
 LDFLAGS  +=
-LIBS     += -lpthread -lboost_system -lboost_thread -lcppnetlib-uri -lcppnetlib-client-connections -lssl -lcrypto
+LIBS     += -lpthread -l_mongoose
 
-.PHONY: all clean distclean
+DEST = /usr/local/bin/
+RESDEST = /usr/share/pcserver/
+
+.PHONY: all clean distclean install
 
 all: $(PROG)
 
@@ -31,9 +34,15 @@ obj/$(buildtype)/%.o : src/%.cpp
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) $(DEFS) -o $@ -c -MMD -MP -MF $(@:%.o=%.d) $<
 
 clean:
-	rm -rf $(OUTDIR)
+	rm -rf $(OUTDIR) obj
 
 distclean:
 	rm -rf ../bin
 
+install:
+	mkdir -p $(RESDEST)
+	cp -r res problem_set $(RESDEST)
+	install $(PROG) $(DEST)
+
 # vim:set tabstop=4 noexpandtab
+

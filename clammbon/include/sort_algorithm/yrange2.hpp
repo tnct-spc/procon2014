@@ -18,9 +18,9 @@ private:
     int array_sum(return_type const& array_, int const x, int const y, int const height, int const width) const;
 
 	//縦入れ替え
-	void column_replacement(return_type& matrix)const;
+	void column_replacement(return_type& matrix);
 	//横入れ替え
-	void row_replacement(return_type& matrix)const;
+	void row_replacement(return_type& matrix);
 	//cv::Matの塊にする
 	std::vector<cv::Mat> combine_image(std::vector<std::vector<std::vector<point_type>>>const & matrix);
 	

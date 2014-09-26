@@ -10,7 +10,7 @@ namespace gui
     std::future<int> make_window(image_type const& image, std::string const& window_name = "Untitled");
 
     std::future<std::vector<std::vector<point_type>>> make_mansort_window(
-        question_raw_data const& data,
+        split_image_type const& splitted,
         std::string const& window_name = ""
         );
 

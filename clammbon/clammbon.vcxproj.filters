@@ -95,6 +95,9 @@
     <ClInclude Include="include\network.hpp">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
+    <ClInclude Include="include\sort_algorithm\Murakami.hpp">
+      <Filter>ヘッダー ファイル\sort_algorithm</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="src\impl\gui_move.ipp">
