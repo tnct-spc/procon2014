@@ -33,7 +33,7 @@ private:
     boost::optional<question_data> data_;
     boost::coroutines::coroutine<return_type>::pull_type co_;
 
-    const answer_list solve();
+    const answer_type solve();
     void greedy();
     void brute_force();
     void print() const;
@@ -54,7 +54,7 @@ private:
 
     std::vector<std::vector<point_type>> matrix;
     std::unordered_set<point_type> sorted_points;
-    answer_list answer;
+    answer_type answer;
     point_type selecting;
     point_type selecting_cur;
     std::queue<step_type> open;
@@ -155,7 +155,7 @@ void algorithm::impl::operator() (boost::coroutines::coroutine<return_type>::pus
     selecting = point_type{width - 1, height - 1};
     selecting_cur = current_point(selecting);
 
-    answer.push_back(answer_type{current_point(selecting), std::vector<char>()});
+    answer.list.push_back(answer_atom{selecting_cur, std::string()});
 
     // GO
 #ifndef NDEBUG
@@ -175,7 +175,7 @@ void algorithm::impl::move_selecting<'U'>()
     assert(selecting_cur.y > sorted_row);
     std::swap(matrix[selecting_cur.y][selecting_cur.x], matrix[selecting_cur.y - 1][selecting_cur.x]);
     --selecting_cur.y;
-    answer.back().actions.push_back('U');
+    answer.list.back().actions.push_back('U');
 #ifndef NDEBUG
     print();
 #endif
@@ -187,7 +187,7 @@ void algorithm::impl::move_selecting<'R'>()
     assert(selecting_cur.x < width - 1);
     std::swap(matrix[selecting_cur.y][selecting_cur.x], matrix[selecting_cur.y][selecting_cur.x + 1]);
     ++selecting_cur.x;
-    answer.back().actions.push_back('R');
+    answer.list.back().actions.push_back('R');
 #ifndef NDEBUG
     print();
 #endif
@@ -199,7 +199,7 @@ void algorithm::impl::move_selecting<'D'>()
     assert(selecting_cur.y < height - 1);
     std::swap(matrix[selecting_cur.y][selecting_cur.x], matrix[selecting_cur.y + 1][selecting_cur.x]);
     ++selecting_cur.y;
-    answer.back().actions.push_back('D');
+    answer.list.back().actions.push_back('D');
 #ifndef NDEBUG
     print();
 #endif
@@ -211,7 +211,7 @@ void algorithm::impl::move_selecting<'L'>()
     assert(selecting_cur.x > sorted_col);
     std::swap(matrix[selecting_cur.y][selecting_cur.x], matrix[selecting_cur.y][selecting_cur.x - 1]);
     --selecting_cur.x;
-    answer.back().actions.push_back('L');
+    answer.list.back().actions.push_back('L');
 #ifndef NDEBUG
     print();
 #endif
@@ -231,7 +231,7 @@ void algorithm::impl::add_step<'U'>()
     step_type step = current;
     std::swap(step.matrix[step.selecting_cur.y][step.selecting_cur.x], step.matrix[step.selecting_cur.y - 1][step.selecting_cur.x]);
     step.selecting_cur.y -= 1;
-    step.answer.back().actions.push_back('U');
+    step.answer.list.back().actions.push_back('U');
     if (!closed.count(step)) {
         open.push(step);
     }
@@ -243,7 +243,7 @@ void algorithm::impl::add_step<'R'>()
     step_type step = current;
     std::swap(step.matrix[step.selecting_cur.y][step.selecting_cur.x], step.matrix[step.selecting_cur.y][step.selecting_cur.x + 1]);
     step.selecting_cur.x += 1;
-    step.answer.back().actions.push_back('R');
+    step.answer.list.back().actions.push_back('R');
     if (!closed.count(step)) {
         open.push(step);
     }
@@ -255,7 +255,7 @@ void algorithm::impl::add_step<'D'>()
     step_type step = current;
     std::swap(step.matrix[step.selecting_cur.y][step.selecting_cur.x], step.matrix[step.selecting_cur.y + 1][step.selecting_cur.x]);
     step.selecting_cur.y += 1;
-    step.answer.back().actions.push_back('D');
+    step.answer.list.back().actions.push_back('D');
     if (!closed.count(step)) {
         open.push(step);
     }
@@ -267,7 +267,7 @@ void algorithm::impl::add_step<'L'>()
     step_type step = current;
     std::swap(step.matrix[step.selecting_cur.y][step.selecting_cur.x], step.matrix[step.selecting_cur.y][step.selecting_cur.x - 1]);
     step.selecting_cur.x -= 1;
-    step.answer.back().actions.push_back('L');
+    step.answer.list.back().actions.push_back('L');
     if (!closed.count(step)) {
         open.push(step);
     }
@@ -288,7 +288,7 @@ const point_type algorithm::impl::current_point(point_type const& point) const
 }
 
 // solve {{{2
-const answer_list algorithm::impl::solve()
+const answer_type algorithm::impl::solve()
 {
     // Ian Parberry 氏のアルゴリズムを長方形に拡張したもの
     // とりあえず1回選択のみ

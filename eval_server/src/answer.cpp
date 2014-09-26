@@ -3,8 +3,8 @@
 // 🍣🍣🍣  解答変換  🍣🍣🍣
 void Answer::convert(std::string const& s)
 {
-    answer_list al;
-    answer_type a;
+    answer_type al;
+    answer_atom a;
     std::istringstream ss;
     ss.str(s);
 
@@ -28,7 +28,7 @@ void Answer::convert(std::string const& s)
             a.actions.push_back(move[j]);
         }
 
-        al.push_back(a);
+        al.list.push_back(a);
     }
     final_answer = al;
     outerr << "STATUS: answer loaded successfully\n" << std::endl;

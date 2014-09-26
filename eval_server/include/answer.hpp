@@ -7,7 +7,7 @@ class Answer
 {
 private:
     std::ostringstream outerr;
-    answer_list final_answer;
+    answer_type final_answer;
     void convert(std::string const& s);
     bool sane;
 public:
@@ -24,7 +24,7 @@ public:
     {
         return outerr.str();
     }
-    inline answer_list const& get()
+    inline answer_type const& get()
     {
         return final_answer;
     }
