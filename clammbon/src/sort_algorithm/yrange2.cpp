@@ -264,7 +264,7 @@ std::vector<std::vector<std::vector<point_type>>> yrange2::operator() ()
 
 
 #ifdef _DEBUG
-    std::cout << "There are " << answer.points.size() << " solutions" << std::endl;
+    std::cout << "There are " << answer.points.size() << " solutions by yrange2." << std::endl;
 	for (auto const& one_answer : answer.points)
 	{
 		for (int i = 0; i < one_answer.size(); ++i)
