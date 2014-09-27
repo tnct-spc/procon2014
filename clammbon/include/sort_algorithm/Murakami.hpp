@@ -32,12 +32,13 @@ private:
 		std::int_fast64_t score; //評価値は結構大きいので32bitだとオーバーフローするかも?
 	};
 	//ブロック対ブロックの評価,ブロックに持たせるべき?
-	block_combination eval_block(block_type, block_type);
+	block_combination eval_block(const block_type&, const block_type&);
 	//ピース対ピースの評価,仕様をよく理解しないと書くのが辛い
-	std::int_fast64_t eval_piece(point_type, point_type,direction);
-	std::int_fast64_t eval_comp_(point_type, point_type,direction);
-	block_type combine_block(block_combination);
+	std::int_fast64_t eval_piece(const point_type&, const point_type&,direction);
+	std::int_fast64_t eval_comp_(const point_type&, const point_type&,direction);
+	block_type combine_block(const block_combination&);
 	void make_sorted_comparation();
+	typedef point_type block_size_type;
 public:
 	Murakami(question_raw_data const& data, compared_type const& comp);
 	virtual ~Murakami() = default;

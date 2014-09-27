@@ -31,8 +31,8 @@ public:
     {
         return problem_set;
     }
-    void parse(question_data const& problem, answer_list const& answer);
-    answer_list const string_to_answer(std::string const s);
+    void parse(question_data const& problem, answer_type const& answer);
+    answer_type const string_to_answer(std::string const s);
     inline bool ok()
     {
         return sane;
