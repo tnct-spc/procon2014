@@ -402,11 +402,14 @@ std::vector<point_type> duplicate_delete(compared_type const& comp_, std::vector
 			{
 				if (one_overlap_set.score != min_overlap_set.score)
 				{
-					usable.push_back(one_overlap_set.point);
 					matrix[one_overlap_set.point.y][one_overlap_set.point.x] = invalid_val;
 				}
 			}
 		}
+	}
+	for (int i = 0; i < sepy; ++i)for (int j = 0; j < sepx; ++j)
+	{
+		if (overlap_vec[i*sepy + j].size() == 0)usable.push_back(point_type{ j,i });
 	}
 	return std::move(usable);
 }

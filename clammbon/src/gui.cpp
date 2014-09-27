@@ -94,7 +94,7 @@ namespace gui
 
 		for (int i = 0; i < matrix.size(); ++i){
 			for (int j = 0; j < matrix.at(0).size(); ++j){
-				if (matrix[i][j].y >= data_.split_num.second || matrix[i][j].x >= data_.split_num.first) continue;
+				if (matrix[i][j].y >= data_.split_num.second || matrix[i][j].y <0 || matrix[i][j].x >= data_.split_num.first || matrix[i][j].x < 0) continue;
 				cv::Rect roi_rect(j*one_picx, i*one_picy, one_picx, one_picy);
 				cv::Mat roi_mat(comb_pic, roi_rect);
 				splitted[matrix[i][j].y][matrix[i][j].x].copyTo(roi_mat);
