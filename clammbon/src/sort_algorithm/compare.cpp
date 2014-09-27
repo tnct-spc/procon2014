@@ -177,54 +177,51 @@ int get_matrix_average(std::vector<point_score>const& matrix)
 }
 
 //matrixの重複しているものを{width,height}に置き換える
-void duplicate_delete(compared_type const& comp_, std::vector<std::vector<point_type> >& matrix)
+std::vector<point_type> duplicate_delete(compared_type const& comp_, std::vector<std::vector<point_type> >& matrix)
 {
-	int const sepx = matrix.at(0).size();
-	int const sepy = matrix.size();
 	struct overlap_set{
 		uint_fast64_t score;
-		point_type point,target;
+		point_type point;
 		bool operator<(const overlap_set& right) const {
 			return (score == right.score) ? point < right.point : score < right.score;
 		}
 	};
+	int const sepx = matrix.at(0).size();
+	int const sepy = matrix.size();
+	point_type const invalid_val = { sepx, sepy};
+	std::vector<point_type> usable;
+	std::vector<std::vector<overlap_set>>overlap_vec(sepx*sepy);
 
-	std::vector<overlap_set> overlap(sepx*sepy);
-	std::vector<std::vector<overlap_set> > each_overlap(sepx*sepy);
-
-	//リストにする
-	for (int i = 0; i < sepy; i++) for (int j = 0; j < sepx; j++){
-		overlap[sepy*i + j].target = matrix[j][i];
-		overlap[sepy*i + j].point = point_type{ j, i };
-		overlap[sepy*i + j].score = one_side_val(comp_, matrix, point_type{ j, i });
+	//targetを基準に分類
+	for (int i = 0; i < sepy; i++) for (int j = 0; j < sepx; j++)
+	{
+		overlap_vec[matrix[i][j].y*sepy + matrix[i][j].x].push_back(overlap_set{ 0, { j, i }});
 	}
-
-	//リストを分割画像ごとに分類
-	for (int i = 0; i < sepx*sepy; i++){
-		each_overlap[overlap[i].point.y / sepy + overlap[i].point.x].push_back(overlap[i]);
-	}
-
-	//リスト内で一番マッチしているもの見つける それ以外のものは333に置き換え
-	//重複がない場合とその問題画像が使われていない場合はcontinue
-	point_type temp;
-	std::list <point_type> target(sepx*sepy);
-	for (int i = 0; i < sepx*sepy; i++)target.push_back(point_type{ i%sepx, i/sepy });
-
-	for (int i = 0; i < sepx*sepy; i++){
-		if (each_overlap[i].size() == 0)continue;
-		if (each_overlap[i].size() == 1){
-
-			temp = each_overlap[i][0].target;
-			target.remove_if([temp](point_type re) { return re == temp; });
-			continue;
-		}
-		std::sort(each_overlap[i].begin(), each_overlap[i].end());
-		temp = each_overlap[i][0].point;
-		target.remove_if([temp](point_type re) { return re == temp; });
-		for (unsigned int u = 1; u < each_overlap[i].size(); u++){
-			matrix[each_overlap[i][u].point.x][each_overlap[i][u].point.y] = point_type{ sepx, sepy };
+	//被りを見つけ，その中で最小のものだけを残す
+	for (auto& one_overlap_vec : overlap_vec)
+	{
+		//被りがあったら
+		if (one_overlap_vec.size() != 0 && one_overlap_vec.size() != 1)
+		{
+			//それらそれぞれのスコアを調べ
+			for (auto& one_overlap_set : one_overlap_vec)
+			{
+				one_overlap_set.score = one_side_val(comp_, matrix, one_overlap_set.point);
+			}
+			//スコアが最小のものを見つけ
+			auto min_overlap_set = *std::min_element(one_overlap_vec.begin(), one_overlap_vec.end());
+			//それ以外のものをinvalid_valにする
+			for (auto& one_overlap_set : one_overlap_vec)
+			{
+				if (one_overlap_set.score != min_overlap_set.score)
+				{
+					usable.push_back(one_overlap_set.point);
+					matrix[one_overlap_set.point.y][one_overlap_set.point.x] = invalid_val;
+				}
+			}
 		}
 	}
+	return std::move(usable);
 }
 
 /*1辺あたりのdifference of rgb dataを返す関数*/
@@ -255,7 +252,7 @@ int one_side_val(compared_type const& comp_, std::vector<std::vector<point_type>
 		s += comp_[matrix[point.y][point.x].y][matrix[point.y][point.x].x][matrix[point.y][point.x + 1].y][matrix[point.y][point.x + 1].x].right;
 		count++;
 	}
-	return s / count;
+	return (count == 0) ? std::numeric_limits<int_fast64_t>::max() : s / count;
 }
 
 //与えられたsorted_matrixに与えられたmatrixを与えられた点からコピーしようと試みる

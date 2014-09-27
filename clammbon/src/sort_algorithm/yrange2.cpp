@@ -236,14 +236,14 @@ std::vector<std::vector<std::vector<point_type>>> yrange2::operator() ()
 		}
 	}
 
+	//#########################################################yrange2.5#########################################################//
+
+
 	//現段階で重複しているものは1つに絞る
 	// unique()を使う準備としてソートが必要
 	std::sort(answer.points.begin(), answer.points.end());
 	// unique()をしただけでは後ろにゴミが残るので、eraseで削除する
 	answer.points.erase(std::unique(answer.points.begin(), answer.points.end()), answer.points.end());
-
-	
-	//#########################################################yrange2.5#########################################################//
 
 	//縦入れ替え，横入れ替え
 	for (auto &matrix : answer.points){
