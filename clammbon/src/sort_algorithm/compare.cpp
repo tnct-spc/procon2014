@@ -8,86 +8,182 @@
 
 point_type ur_choose(compared_type const& comp, point_type const ul, point_type const dl, point_type const dr)
 {
-    point_type possition;
-    uint_fast64_t sum = std::numeric_limits<uint_fast64_t>::max();
+	point_type possition;
+	uint_fast64_t sum = std::numeric_limits<uint_fast64_t>::max();
 
-    for(int i=0; i<comp.size(); ++i) for(int j=0; j<comp[0].size(); ++j)
-    {
-        if(comp[dr.y][dr.x][i][j].up == std::numeric_limits<uint_fast64_t>::max()
-            || comp[ul.y][ul.x][i][j].right == std::numeric_limits<uint_fast64_t>::max()) continue;
+	for (int i = 0; i<comp.size(); ++i) for (int j = 0; j<comp[0].size(); ++j)
+	{
+		if (comp[dr.y][dr.x][i][j].up == std::numeric_limits<uint_fast64_t>::max()
+			|| comp[ul.y][ul.x][i][j].right == std::numeric_limits<uint_fast64_t>::max()) continue;
 
-        uint_fast64_t const tmp = comp[dr.y][dr.x][i][j].up + comp[ul.y][ul.x][i][j].right;
-        if(0 < tmp && tmp < sum)
-        {
-            sum = tmp;
-            possition = {j, i};
-        }
-    }
+		uint_fast64_t const tmp = comp[dr.y][dr.x][i][j].up + comp[ul.y][ul.x][i][j].right;
+		if (0 < tmp && tmp < sum)
+		{
+			sum = tmp;
+			possition = { j, i };
+		}
+	}
 
-    return possition;
+	return possition;
 }
 
 point_type ul_choose(compared_type const& comp, point_type const ur, point_type const dl, point_type const dr)
 {
-    point_type possition;
-    uint_fast64_t sum = std::numeric_limits<uint_fast64_t>::max();
+	point_type possition;
+	uint_fast64_t sum = std::numeric_limits<uint_fast64_t>::max();
 
-    for(int i=0; i<comp.size(); ++i) for(int j=0; j<comp[0].size(); ++j)
-    {
-        if(comp[dl.y][dl.x][i][j].up == std::numeric_limits<uint_fast64_t>::max()
-            || comp[ur.y][ur.x][i][j].left == std::numeric_limits<uint_fast64_t>::max()) continue;
+	for (int i = 0; i<comp.size(); ++i) for (int j = 0; j<comp[0].size(); ++j)
+	{
+		if (comp[dl.y][dl.x][i][j].up == std::numeric_limits<uint_fast64_t>::max()
+			|| comp[ur.y][ur.x][i][j].left == std::numeric_limits<uint_fast64_t>::max()) continue;
 
-        uint_fast64_t const tmp = comp[dl.y][dl.x][i][j].up + comp[ur.y][ur.x][i][j].left;
-        if(0 < tmp && tmp < sum)
-        {
-            sum = tmp;
-            possition = {j, i};
-        }
-    }
+		uint_fast64_t const tmp = comp[dl.y][dl.x][i][j].up + comp[ur.y][ur.x][i][j].left;
+		if (0 < tmp && tmp < sum)
+		{
+			sum = tmp;
+			possition = { j, i };
+		}
+	}
 
-    return possition;
+	return possition;
 }
 
 point_type dr_choose(compared_type const& comp, point_type const ul, point_type const ur, point_type const dl)
 {
-    point_type possition;
-    uint_fast64_t sum = std::numeric_limits<uint_fast64_t>::max();
+	point_type possition;
+	uint_fast64_t sum = std::numeric_limits<uint_fast64_t>::max();
 
-    for(int i=0; i<comp.size(); ++i) for(int j=0; j<comp[0].size(); ++j)
-    {
-        if(comp[ur.y][ur.x][i][j].down == std::numeric_limits<uint_fast64_t>::max()
-            || comp[dl.y][dl.x][i][j].right == std::numeric_limits<uint_fast64_t>::max()) continue;
+	for (int i = 0; i<comp.size(); ++i) for (int j = 0; j<comp[0].size(); ++j)
+	{
+		if (comp[ur.y][ur.x][i][j].down == std::numeric_limits<uint_fast64_t>::max()
+			|| comp[dl.y][dl.x][i][j].right == std::numeric_limits<uint_fast64_t>::max()) continue;
 
-        uint_fast64_t const tmp = comp[ur.y][ur.x][i][j].down + comp[dl.y][dl.x][i][j].right;
-        if(0 < tmp && tmp < sum)
-        {
-            sum = tmp;
-            possition = {j, i};
-        }
-    }
+		uint_fast64_t const tmp = comp[ur.y][ur.x][i][j].down + comp[dl.y][dl.x][i][j].right;
+		if (0 < tmp && tmp < sum)
+		{
+			sum = tmp;
+			possition = { j, i };
+		}
+	}
 
-    return possition;
+	return possition;
 }
 
 point_type dl_choose(compared_type const& comp, point_type const ul, point_type const ur, point_type const dr)
 {
-    point_type possition;
-    uint_fast64_t sum = std::numeric_limits<uint_fast64_t>::max();
+	point_type possition;
+	uint_fast64_t sum = std::numeric_limits<uint_fast64_t>::max();
 
-    for(int i=0; i<comp.size(); ++i) for(int j=0; j<comp[0].size(); ++j)
-    {
-        if(comp[ul.y][ul.x][i][j].down == std::numeric_limits<uint_fast64_t>::max()
-            || comp[dr.y][dr.x][i][j].left == std::numeric_limits<uint_fast64_t>::max()) continue;
+	for (int i = 0; i<comp.size(); ++i) for (int j = 0; j<comp[0].size(); ++j)
+	{
+		if (comp[ul.y][ul.x][i][j].down == std::numeric_limits<uint_fast64_t>::max()
+			|| comp[dr.y][dr.x][i][j].left == std::numeric_limits<uint_fast64_t>::max()) continue;
 
-        uint_fast64_t const tmp = comp[ul.y][ul.x][i][j].down + comp[dr.y][dr.x][i][j].left;
-        if(0 < tmp && tmp < sum)
-        {
-            sum = tmp;
-            possition = {j, i};
-        }
-    }
+		uint_fast64_t const tmp = comp[ul.y][ul.x][i][j].down + comp[dr.y][dr.x][i][j].left;
+		if (0 < tmp && tmp < sum)
+		{
+			sum = tmp;
+			possition = { j, i };
+		}
+	}
 
-    return possition;
+	return possition;
+}
+
+point_type ur_choose(compared_type const& comp, point_type const ul, point_type const dl, point_type const dr,std::vector<point_type>const& usable)
+{
+	point_type possition;
+	uint_fast64_t sum = std::numeric_limits<uint_fast64_t>::max();
+
+	for (auto const& usable_point : usable)
+	{
+		int const i = usable_point.y;
+		int const j = usable_point.x;
+
+		if (comp[dr.y][dr.x][i][j].up == std::numeric_limits<uint_fast64_t>::max()
+			|| comp[ul.y][ul.x][i][j].right == std::numeric_limits<uint_fast64_t>::max()) continue;
+
+		uint_fast64_t const tmp = comp[dr.y][dr.x][i][j].up + comp[ul.y][ul.x][i][j].right;
+		if (0 < tmp && tmp < sum)
+		{
+			sum = tmp;
+			possition = { j, i };
+		}
+	}
+
+	return possition;
+}
+
+point_type ul_choose(compared_type const& comp, point_type const ur, point_type const dl, point_type const dr, std::vector<point_type>const& usable)
+{
+	point_type possition;
+	uint_fast64_t sum = std::numeric_limits<uint_fast64_t>::max();
+
+	for (auto const& usable_point : usable)
+	{
+		int const i = usable_point.y;
+		int const j = usable_point.x;
+
+		if (comp[dl.y][dl.x][i][j].up == std::numeric_limits<uint_fast64_t>::max()
+			|| comp[ur.y][ur.x][i][j].left == std::numeric_limits<uint_fast64_t>::max()) continue;
+
+		uint_fast64_t const tmp = comp[dl.y][dl.x][i][j].up + comp[ur.y][ur.x][i][j].left;
+		if (0 < tmp && tmp < sum)
+		{
+			sum = tmp;
+			possition = { j, i };
+		}
+	}
+
+	return possition;
+}
+
+point_type dr_choose(compared_type const& comp, point_type const ul, point_type const ur, point_type const dl, std::vector<point_type>const& usable)
+{
+	point_type possition;
+	uint_fast64_t sum = std::numeric_limits<uint_fast64_t>::max();
+
+	for (auto const& usable_point : usable)
+	{
+		int const i = usable_point.y;
+		int const j = usable_point.x;
+
+		if (comp[ur.y][ur.x][i][j].down == std::numeric_limits<uint_fast64_t>::max()
+			|| comp[dl.y][dl.x][i][j].right == std::numeric_limits<uint_fast64_t>::max()) continue;
+
+		uint_fast64_t const tmp = comp[ur.y][ur.x][i][j].down + comp[dl.y][dl.x][i][j].right;
+		if (0 < tmp && tmp < sum)
+		{
+			sum = tmp;
+			possition = { j, i };
+		}
+	}
+
+	return possition;
+}
+
+point_type dl_choose(compared_type const& comp, point_type const ul, point_type const ur, point_type const dr, std::vector<point_type>const& usable)
+{
+	point_type possition;
+	uint_fast64_t sum = std::numeric_limits<uint_fast64_t>::max();
+
+	for (auto const& usable_point : usable)
+	{
+		int const i = usable_point.y;
+		int const j = usable_point.x;
+
+		if (comp[ul.y][ul.x][i][j].down == std::numeric_limits<uint_fast64_t>::max()
+			|| comp[dr.y][dr.x][i][j].left == std::numeric_limits<uint_fast64_t>::max()) continue;
+
+		uint_fast64_t const tmp = comp[ul.y][ul.x][i][j].down + comp[dr.y][dr.x][i][j].left;
+		if (0 < tmp && tmp < sum)
+		{
+			sum = tmp;
+			possition = { j, i };
+		}
+	}
+
+	return possition;
 }
 
 /*場を評価する関数*/
