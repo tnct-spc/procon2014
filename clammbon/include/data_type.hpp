@@ -14,9 +14,13 @@ struct point_type
     int x;
     int y;
     
-    friend inline bool operator== (point_type const& lhs, point_type const& rhs)
-    {
-        return lhs.x == rhs.x && lhs.y == rhs.y;
+	friend inline bool operator== (point_type const& lhs, point_type const& rhs)
+	{
+		return lhs.x == rhs.x && lhs.y == rhs.y;
+	}
+	friend inline bool operator!= (point_type const& lhs, point_type const& rhs)
+	{
+		return lhs.x != rhs.x && lhs.y != rhs.y;
 	}
 	friend inline bool operator< (point_type const& lhs, point_type const& rhs)
 	{
@@ -157,6 +161,16 @@ struct answer_type_y{
 	std::vector<double> score;
 	std::vector<cv::Mat> mat_image;
 };
+
+//yrange5
+struct point_score{
+	point_type point;
+	int score;
+	bool operator<(const point_score& right) const {
+		return score == right.score ? point < right.point : score < right.score;
+	}
+};
+
 struct cr_set{
 	cv::Mat row;
 	cv::Mat column;

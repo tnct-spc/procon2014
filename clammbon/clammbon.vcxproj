@@ -156,6 +156,7 @@
     <ClCompile Include="src\sort_algorithm\compare.cpp" />
     <ClCompile Include="src\sort_algorithm\genetic.cpp" />
     <ClCompile Include="src\sort_algorithm\yrange2.cpp" />
+    <ClCompile Include="src\sort_algorithm\yrange5.cpp" />
     <ClCompile Include="src\splitter.cpp" />
     <ClCompile Include="src\test_tool.cpp" />
   </ItemGroup>
@@ -170,6 +171,7 @@
     <ClInclude Include="include\sort_algorithm\compare.hpp" />
     <ClInclude Include="include\sort_algorithm\genetic.hpp" />
     <ClInclude Include="include\sort_algorithm\yrange2.hpp" />
+    <ClInclude Include="include\sort_algorithm\yrange5.hpp" />
     <ClInclude Include="include\splitter.hpp" />
     <ClInclude Include="include\test_tool.hpp" />
   </ItemGroup>

@@ -13,6 +13,7 @@
 #include "network.hpp"
 
 #include <sort_algorithm/yrange2.hpp>
+#include <sort_algorithm/yrange5.hpp>
 #include <sort_algorithm/genetic.hpp>
 
 class analyzer : boost::noncopyable
@@ -61,13 +62,13 @@ public:
 			formed.block = man_resolved;
 		}
 
-        return std::move(formed);
+        return std::move(formed);    
     }
 
 private:
     ppm_reader reader_;
     network::client netclient_;
-    pixel_sorter<yrange2> sorter_;
+    pixel_sorter<yrange5> sorter_;   
 };
 
 // 問題の並び替えパズル自体は，人間が行うほうがいいかもしれない．
