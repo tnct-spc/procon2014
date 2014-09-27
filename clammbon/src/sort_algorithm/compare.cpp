@@ -90,7 +90,7 @@ point_type dl_choose(compared_type const& comp, point_type const ul, point_type 
 	return possition;
 }
 
-point_type ur_choose(compared_type const& comp, point_type const ul, point_type const dl, point_type const dr,std::vector<point_type>const& usable)
+point_type ur_choose(compared_type const& comp, point_type const ul, point_type const dl, point_type const dr, std::vector<point_type>& usable)
 {
 	point_type possition;
 	uint_fast64_t sum = std::numeric_limits<uint_fast64_t>::max();
@@ -110,11 +110,11 @@ point_type ur_choose(compared_type const& comp, point_type const ul, point_type 
 			possition = { j, i };
 		}
 	}
-
+	usable.erase(remove(usable.begin(), usable.end(), possition), usable.end());
 	return possition;
 }
 
-point_type ul_choose(compared_type const& comp, point_type const ur, point_type const dl, point_type const dr, std::vector<point_type>const& usable)
+point_type ul_choose(compared_type const& comp, point_type const ur, point_type const dl, point_type const dr, std::vector<point_type>& usable)
 {
 	point_type possition;
 	uint_fast64_t sum = std::numeric_limits<uint_fast64_t>::max();
@@ -134,11 +134,11 @@ point_type ul_choose(compared_type const& comp, point_type const ur, point_type 
 			possition = { j, i };
 		}
 	}
-
+	usable.erase(remove(usable.begin(), usable.end(), possition), usable.end());
 	return possition;
 }
 
-point_type dr_choose(compared_type const& comp, point_type const ul, point_type const ur, point_type const dl, std::vector<point_type>const& usable)
+point_type dr_choose(compared_type const& comp, point_type const ul, point_type const ur, point_type const dl, std::vector<point_type>& usable)
 {
 	point_type possition;
 	uint_fast64_t sum = std::numeric_limits<uint_fast64_t>::max();
@@ -158,11 +158,11 @@ point_type dr_choose(compared_type const& comp, point_type const ul, point_type 
 			possition = { j, i };
 		}
 	}
-
+	usable.erase(remove(usable.begin(), usable.end(), possition), usable.end());
 	return possition;
 }
 
-point_type dl_choose(compared_type const& comp, point_type const ul, point_type const ur, point_type const dr, std::vector<point_type>const& usable)
+point_type dl_choose(compared_type const& comp, point_type const ul, point_type const ur, point_type const dr, std::vector<point_type>& usable)
 {
 	point_type possition;
 	uint_fast64_t sum = std::numeric_limits<uint_fast64_t>::max();
@@ -182,7 +182,98 @@ point_type dl_choose(compared_type const& comp, point_type const ul, point_type 
 			possition = { j, i };
 		}
 	}
+	usable.erase(remove(usable.begin(), usable.end(), possition), usable.end());
+	return possition;
+}
+point_type u_choose(compared_type const& comp, point_type const next_to, std::vector<point_type>& usable)
+{
+	point_type possition;
+	uint_fast64_t sum = std::numeric_limits<uint_fast64_t>::max();
 
+	for (auto const& usable_point : usable)
+	{
+		int const i = usable_point.y;
+		int const j = usable_point.x;
+
+		if (comp[next_to.y][next_to.x][i][j].up == std::numeric_limits<uint_fast64_t>::max()) continue;
+
+		uint_fast64_t const tmp = comp[next_to.y][next_to.x][i][j].up;
+		if (0 < tmp && tmp < sum)
+		{
+			sum = tmp;
+			possition = { j, i };
+		}
+	}
+	usable.erase(remove(usable.begin(), usable.end(), possition), usable.end());
+	return possition;
+}
+
+point_type r_choose(compared_type const& comp, point_type const next_to, std::vector<point_type>& usable)
+{
+	point_type possition;
+	uint_fast64_t sum = std::numeric_limits<uint_fast64_t>::max();
+
+	for (auto const& usable_point : usable)
+	{
+		int const i = usable_point.y;
+		int const j = usable_point.x;
+
+		if (comp[next_to.y][next_to.x][i][j].right == std::numeric_limits<uint_fast64_t>::max()) continue;
+
+		uint_fast64_t const tmp = comp[next_to.y][next_to.x][i][j].right;
+		if (0 < tmp && tmp < sum)
+		{
+			sum = tmp;
+			possition = { j, i };
+		}
+	}
+	usable.erase(remove(usable.begin(), usable.end(), possition), usable.end());
+	return possition;
+}
+
+point_type d_choose(compared_type const& comp, point_type const next_to, std::vector<point_type>& usable)
+{
+	point_type possition;
+	uint_fast64_t sum = std::numeric_limits<uint_fast64_t>::max();
+
+	for (auto const& usable_point : usable)
+	{
+		int const i = usable_point.y;
+		int const j = usable_point.x;
+
+		if (comp[next_to.y][next_to.x][i][j].down == std::numeric_limits<uint_fast64_t>::max()) continue;
+
+		uint_fast64_t const tmp = comp[next_to.y][next_to.x][i][j].down;
+		if (0 < tmp && tmp < sum)
+		{
+			sum = tmp;
+			possition = { j, i };
+		}
+	}
+	usable.erase(remove(usable.begin(), usable.end(), possition), usable.end());
+	return possition;
+}
+
+point_type l_choose(compared_type const& comp, point_type const next_to, std::vector<point_type>& usable)
+{
+	point_type possition;
+	uint_fast64_t sum = std::numeric_limits<uint_fast64_t>::max();
+
+	for (auto const& usable_point : usable)
+	{
+		int const i = usable_point.y;
+		int const j = usable_point.x;
+
+		if (comp[next_to.y][next_to.x][i][j].left == std::numeric_limits<uint_fast64_t>::max()) continue;
+
+		uint_fast64_t const tmp = comp[next_to.y][next_to.x][i][j].left;
+		if (0 < tmp && tmp < sum)
+		{
+			sum = tmp;
+			possition = { j, i };
+		}
+	}
+	usable.erase(remove(usable.begin(), usable.end(), possition), usable.end());
 	return possition;
 }
 
