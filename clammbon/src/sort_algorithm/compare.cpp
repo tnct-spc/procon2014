@@ -281,8 +281,8 @@ point_type l_choose(compared_type const& comp, point_type const next_to, std::ve
 uint_fast64_t form_evaluate(compared_type const& comp_, std::vector<std::vector<point_type> > const& matrix)
 {
 	uint_fast64_t s = 0;
-	const int width = matrix[0].size();
-	const int height = matrix.size();
+	const size_t width = matrix[0].size();
+	const size_t height = matrix.size();
 
 	for (int i = 0; i < height; ++i)for (int j = 0; j < width; ++j){
 		if (i != height - 1) s += comp_[matrix[i][j].y][matrix[i][j].x][matrix[i + 1][j].y][matrix[i + 1][j].x].down;
@@ -292,7 +292,7 @@ uint_fast64_t form_evaluate(compared_type const& comp_, std::vector<std::vector<
 }
 
 /*指定された範囲内の問題画像の種類を返す関数*/
-int get_kind_num(question_raw_data const& data_,std::vector<std::vector<point_type>> const& matrix, int const x, int const y)
+size_t get_kind_num(question_raw_data const& data_,std::vector<std::vector<point_type>> const& matrix, int const x, int const y)
 {
 	int const sepx = data_.split_num.first;
 	int const sepy = data_.split_num.second;

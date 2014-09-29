@@ -18,11 +18,11 @@ private:
     int array_sum(return_type const& array_, int const x, int const y, int const height, int const width) const;
 
 	//縦入れ替え
-	void yrange2::column_replacement(return_type& matrix);
+	void column_replacement(answer_type_y& answer);
 	//横入れ替え
-	void yrange2::row_replacement(return_type& matrix);
+	void row_replacement(answer_type_y& answer);
 	//cv::Matの塊にする
-	std::vector<cv::Mat> yrange2::combine_image(std::vector<std::vector<std::vector<point_type>>>const & matrix);
+	cv::Mat combine_image(answer_type_y const& answer);
 	
 public:
     // 泣きのポインタ渡し

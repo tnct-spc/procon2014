@@ -14,9 +14,9 @@ struct point_type
     int x;
     int y;
     
-	friend inline bool operator== (point_type const& lhs, point_type const& rhs)
-	{
-		return lhs.x == rhs.x && lhs.y == rhs.y;
+    friend inline bool operator== (point_type const& lhs, point_type const& rhs)
+    {
+        return lhs.x == rhs.x && lhs.y == rhs.y;
 	}
 	friend inline bool operator!= (point_type const& lhs, point_type const& rhs)
 	{
@@ -157,18 +157,20 @@ typedef std::vector<std::vector<direction_type<point_type>>> adjacent_type;
 
 //yrange2
 struct answer_type_y{
-	std::vector<std::vector<std::vector<point_type>>> points;
-	std::vector<double> score;
-	std::vector<cv::Mat> mat_image;
-	bool operator<(const answer_type_y& right) const {
-		return score == right.score ? points < right.points : score < right.score;
+	std::vector<std::vector<point_type>> points;
+	uint_fast64_t score;
+	cv::Mat mat_image;
+
+	friend inline bool operator== (answer_type_y const& lhs, answer_type_y const& rhs)
+	{
+		return lhs.points == rhs.points && lhs.score == rhs.score;
 	}
 };
 
 //yrange5
 struct point_score{
 	point_type point;
-	int score;
+	uint_fast64_t score;
 	bool operator<(const point_score& right) const {
 		return score == right.score ? point < right.point : score < right.score;
 	}
