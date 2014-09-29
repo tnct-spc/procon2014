@@ -2,6 +2,8 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
+#include <FL/Fl.H>
+#include <FL/Fl_Window.H>
 #include "gui.hpp"
 #include "data_type.hpp"
 #include "splitter.hpp"
@@ -10,6 +12,12 @@
 
 namespace gui
 {
+    void destroy_all_window()
+    {
+        Fl::first_window()->hide(); // 違うけどまあいいか…．delete系にすると2重開放で怒られる
+        return;
+    }
+
     std::future<int> make_window(image_type const& image, std::string const& window_name)
     {
         splitter sp;

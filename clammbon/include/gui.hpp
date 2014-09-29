@@ -7,6 +7,8 @@
 
 namespace gui
 {
+    void destroy_all_window();
+
     std::future<int> make_window(image_type const& image, std::string const& window_name = "Untitled");
 
     std::future<std::vector<std::vector<point_type>>> make_mansort_window(

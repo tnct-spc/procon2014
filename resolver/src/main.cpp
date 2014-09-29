@@ -16,6 +16,7 @@
 #include <sort_algorithm/yrange2.hpp>
 #include <sort_algorithm/genetic.hpp>
 #include <sort_algorithm/Murakami.hpp>
+
 class analyzer : boost::noncopyable
 {
 public:
@@ -37,13 +38,6 @@ public:
         std::string const data = netclient_.get_problem(01).get();
         raw = reader_.from_data(data);
 #endif
-        splitter sp;
-        auto splitted = sp.split_image(raw);
-
-        // 手作業用のウィンドウの作成
-        auto future = gui::make_mansort_window(splitted, "test");
-
-        // yrangeなどの実行
         question_data formed = {
             problem_id,
             player_id,
@@ -51,19 +45,31 @@ public:
             raw.selectable_num,
             raw.cost.first,
             raw.cost.second,
-            sorter_(raw, splitted)
+            std::vector<std::vector<point_type>>()
         };
 
-        // TODO: ここで，sorter_(raw)の結果がイマイチなら，
-        // man_resolvedが結果を置き換える可能性を考慮．
+        // 2次元画像に分割
+        auto splitted = splitter().split_image(raw);
 
-		if (formed.block.size() == 0){
-        //手作業のデータはこっちで受ける
-        auto man_resolved = future.get();
+        // 手作業用のウィンドウの作成
+        auto future = gui::make_mansort_window(splitted, "test");
 
-			formed.block = man_resolved;
-		}
+        // yrangeなどの実行
+        auto sorter_resolve = sorter_(raw, splitted);
 
+        if (sorter_resolve.size() == 0)
+        {
+            // 手作業のデータはこっちで受ける
+            formed.block = future.get();
+        }
+        else
+        {
+            formed.block = std::move(sorter_resolve);
+
+            // TODO: yrange2が終わっていれば，yrange5を立ち上げる処理など(merge時)
+        }
+
+        gui::destroy_all_window();
         return std::move(formed);
     }
 
