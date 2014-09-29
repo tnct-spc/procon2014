@@ -89,7 +89,6 @@ cv::Mat yrange2::combine_image(answer_type_y const& answer)
 	int const one_picx = data_.size.first / data_.split_num.first;
 	int const one_picy = data_.size.second / data_.split_num.second;
 
-	return_type const& matrix = answer.points;
 	splitter sp;//どこからか持ってきてたsplitter
 	split_image_type splitted = sp.split_image(data_);
 	cv::Mat comb_pic(cv::Size(data_.size.first, data_.size.second), CV_8UC3);
@@ -97,7 +96,7 @@ cv::Mat yrange2::combine_image(answer_type_y const& answer)
 		for (int j = 0; j < data_.split_num.first; ++j){
 			cv::Rect roi_rect(j*one_picx, i*one_picy, one_picx, one_picy);
 			cv::Mat roi_mat(comb_pic, roi_rect);
-			splitted[matrix[i][j].y][matrix[i][j].x].copyTo(roi_mat);
+			splitted[answer.points[i][j].y][answer.points[i][j].x].copyTo(roi_mat);
 		}
 	}
 	return std::move(comb_pic.clone());
@@ -222,7 +221,9 @@ std::vector<std::vector<std::vector<point_type>>> yrange2::operator() ()
 				{
 					one_answer[i][j] = sorted_matrix[y + i][x + j];
 				}
-				answer.push_back(answer_type_y{ std::move(one_answer)});
+				answer_type_y temp;
+				temp.points = one_answer;
+				answer.push_back(std::move(temp));
 			}
 		}
 	}
@@ -248,7 +249,7 @@ std::vector<std::vector<std::vector<point_type>>> yrange2::operator() ()
 
 	//無駄に多く返してもしょうがないので枝抜き
 	std::sort(answer.begin(), answer.end(), [](answer_type_y a, answer_type_y b){return a.score < b.score; });
-	answer.resize(3);
+	if (answer.size() >= 3) answer.resize(3);
 
 	//一枚のcv::Matにする
 	for (auto& one_answer : answer)
