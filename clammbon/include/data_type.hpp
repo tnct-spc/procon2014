@@ -156,6 +156,11 @@ struct answer_type_y{
 	std::vector<std::vector<point_type>> points;
 	uint_fast64_t score;
 	cv::Mat mat_image;
+
+	friend inline bool operator== (answer_type_y const& lhs, answer_type_y const& rhs)
+	{
+		return lhs.points == rhs.points && lhs.score == rhs.score;
+	}
 };
 
 struct cr_set{
