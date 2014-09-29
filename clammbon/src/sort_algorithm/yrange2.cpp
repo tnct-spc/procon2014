@@ -43,14 +43,14 @@ void yrange2::column_replacement(answer_type_y & answer)
 	uint_fast64_t good_val;
 	std::vector<std::vector<point_type> > good_matrix(sepy, std::vector<point_type>(sepx));
 	good_matrix = answer.points;
-	good_val = form_evaluate(comp_,good_matrix);
+	good_val = form_evaluate(data_,comp_,good_matrix);
 
 	for (int i = 0; i < sepx; ++i){
 		for (int j = 0; j < sepy; ++j){
 			answer.points[j].insert(answer.points[j].begin(), answer.points[j][sepx - 1]);
 			answer.points[j].pop_back();
 		}
-		auto const temp_score = form_evaluate(comp_, answer.points);
+		auto const temp_score = form_evaluate(data_,comp_, answer.points);
 		if (good_val>temp_score){
 			good_val = temp_score;
 			good_matrix = answer.points;
@@ -69,11 +69,11 @@ void yrange2::row_replacement(answer_type_y& answer)
 	std::vector<std::vector<point_type> > good_matrix(sepy, std::vector<point_type>(sepx));
 	std::vector<point_type> temp_vec;
 	good_matrix = answer.points;
-	good_val = form_evaluate(comp_,answer.points);
+	good_val = form_evaluate(data_, comp_, answer.points);
 	for (int i = 0; i < sepy; ++i){
 		answer.points.insert(answer.points.begin(), answer.points[sepy - 1]);
 		answer.points.pop_back();
-		auto const temp_score = form_evaluate(comp_, answer.points);
+		auto const temp_score = form_evaluate(data_, comp_, answer.points);
 		if (good_val>temp_score){
 			good_val = temp_score;
 			good_matrix = answer.points;

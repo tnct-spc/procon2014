@@ -76,7 +76,7 @@ namespace gui
 			std::ostringstream outname;
 			outname.str("");
 			if (answer[c].score > c && answer[c].score != 0)outname << "score = " << answer[c].score;
-			else outname << "score = " << form_evaluate(comp_, answer[c].points);
+			else outname << "score = " << form_evaluate(data_, comp_, answer[c].points);
 			cv::namedWindow(outname.str(), CV_WINDOW_AUTOSIZE);
 			cv::imshow(outname.str(), comb_pic);
 		}
@@ -137,7 +137,7 @@ namespace gui
 			std::ostringstream outname;
 			outname.str("");
 			if (one_answer.score != 0)outname << "score = " << one_answer.score;
-			else outname << "score = " << form_evaluate(comp_, one_answer.points);
+			else outname << "score = " << form_evaluate(data_, comp_, one_answer.points);
 			cv::namedWindow(outname.str(), CV_WINDOW_AUTOSIZE);
 			cv::imshow(outname.str(), one_answer.mat_image);
 		}

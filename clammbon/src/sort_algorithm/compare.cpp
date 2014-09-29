@@ -278,15 +278,12 @@ point_type l_choose(compared_type const& comp, point_type const next_to, std::ve
 }
 
 /*場を評価する関数*/
-uint_fast64_t form_evaluate(compared_type const& comp_, std::vector<std::vector<point_type> > const& matrix)
+uint_fast64_t form_evaluate(question_raw_data const& data_,compared_type const& comp_, std::vector<std::vector<point_type> > const& matrix)
 {
 	uint_fast64_t s = 0;
-	const size_t width = matrix[0].size();
-	const size_t height = matrix.size();
-
-	for (int i = 0; i < height; ++i)for (int j = 0; j < width; ++j){
-		if (i != height - 1) s += comp_[matrix[i][j].y][matrix[i][j].x][matrix[i + 1][j].y][matrix[i + 1][j].x].down;
-		if (j != width - 1) s += comp_[matrix[i][j].y][matrix[i][j].x][matrix[i][j + 1].y][matrix[i][j + 1].x].right;
+	for (int i = 0; i < matrix.size() - 1; ++i)for (int j = 0; j < matrix.at(0).size() - 1; ++j){
+		if (j != data_.split_num.first - 1) s += comp_[matrix[i][j].y][matrix[i][j].x][matrix[i][j + 1].y][matrix[i][j + 1].x].right;
+		if (i != data_.split_num.second - 1) s += comp_[matrix[i][j].y][matrix[i][j].x][matrix[i + 1][j].y][matrix[i + 1][j].x].down;
 	}
 	return s;
 }
@@ -312,9 +309,9 @@ size_t get_kind_num(question_raw_data const& data_,std::vector<std::vector<point
 uint_fast64_t range_evaluate(question_raw_data const& data_, compared_type const& comp_, std::vector<std::vector<point_type> > matrix, int x, int y)
 {
 	uint_fast64_t s = 0;
-	for (int i = 0; i < data_.split_num.second - 1; i++)for (int j = 0; j < data_.split_num.first - 1; j++){
-		s += comp_[matrix[y + i][x + j].y][matrix[y + i][x + j].x][matrix[y + i][x + j + 1].y][matrix[y + i][x + j + 1].x].right;
-		s += comp_[matrix[y + i][x + j].y][matrix[y + i][x + j].x][matrix[y + j][x + i + 1].y][matrix[y + j][x + i + 1].x].down;
+	for (int i = 0; i < data_.split_num.second; ++i)for (int j = 0; j < data_.split_num.first; ++j){
+		if (j != data_.split_num.first -1) s += comp_[matrix[y + i][x + j].y][matrix[y + i][x + j].x][matrix[y + i][x + j + 1].y][matrix[y + i][x + j + 1].x].right;
+		if (i != data_.split_num.second -1) s += comp_[matrix[y + i][x + j].y][matrix[y + i][x + j].x][matrix[y + i + 1][x + j].y][matrix[y + i + 1][x + j].x].down;
 	}
 	return s;
 }
@@ -409,7 +406,7 @@ std::vector<point_type> duplicate_delete(compared_type const& comp_, std::vector
 	}
 	for (int i = 0; i < sepy; ++i)for (int j = 0; j < sepx; ++j)
 	{
-		if (overlap_vec[i*sepy + j].size() == 0)usable.push_back(point_type{ j,i });
+		if (overlap_vec[i*sepy + j].size() == 0) usable.push_back(point_type{ j,i });
 	}
 	return std::move(usable);
 }

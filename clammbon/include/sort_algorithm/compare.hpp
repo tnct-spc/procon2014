@@ -15,8 +15,8 @@ point_type u_choose(compared_type const& comp, point_type const next_to, std::ve
 point_type r_choose(compared_type const& comp, point_type const next_to, std::vector<point_type>& usable);
 point_type d_choose(compared_type const& comp, point_type const next_to, std::vector<point_type>& usable);
 point_type l_choose(compared_type const& comp, point_type const next_to, std::vector<point_type>& usable);
-uint_fast64_t form_evaluate(compared_type const& comp_,std::vector<std::vector<point_type> > const& matrix);
-int get_kind_num(question_raw_data const& data_,std::vector<std::vector<point_type>> const& matrix, int const x, int const y);
+uint_fast64_t form_evaluate(question_raw_data const& data_,compared_type const& comp_,std::vector<std::vector<point_type> > const& matrix);
+size_t get_kind_num(question_raw_data const& data_,std::vector<std::vector<point_type>> const& matrix, int const x, int const y);
 uint_fast64_t range_evaluate(question_raw_data const& data_, compared_type const& comp_, std::vector<std::vector<point_type> > matrix, int x, int y);
 std::vector<point_score> make_matrix_rgb_database(question_raw_data const& data_, compared_type const& comp_, std::vector<std::vector<point_type> >& matrix);
 int get_matrix_average(std::vector<point_score>const& matrix);
