@@ -66,7 +66,17 @@ std::vector<std::vector<std::vector<point_type>>> Murakami::operator() (){
 				return (it == best_block_combination.block1 || it == best_block_combination.block2);
 			});
 			block_list.push_back(combined_block);//結合したのを入れる
-			std::cout << block_list.size() << std::endl;
+			std::cout << "***" <<block_list.size() << "***" <<std::endl;
+			for (const auto& i : block_list){
+				for (const auto& j : i){
+					for (const auto& k : j){
+						//std::cout << k.x << "," << k.y << " ";
+						std::cout << boost::format("(%2d,%2d)") % k.x % k.y;
+					}
+					std::cout << "\n";
+				}
+				std::cout << "\n";
+			}
 		}
 
 		for (int i = 0; i < height; i++){
@@ -75,9 +85,9 @@ std::vector<std::vector<std::vector<point_type>>> Murakami::operator() (){
 			}
 			std::cout << "\n";
 		}
-		//answer_type_y show_image;
-		//show_image.point_type = block_list;
-		//gui::combine_show_image(data_, comp_, show_image);
+		answer_type_y show_image;
+		show_image.points = block_list;
+		gui::combine_show_image(data_, comp_, show_image);
 		return block_list;
 
 }
@@ -178,8 +188,12 @@ Murakami::block_combination Murakami::eval_block(const block_type& block1, const
 			if (!confliction && empty_block_c == false){
 				//if (best_block_c != 0){};
 				rank1_num++;
-				block_c *= rank1_num; //0を掛けるのは怖い
+		
+				//block_c *= rank1_num; //0を掛けるのは怖い
+				if(block_c < 0)block_c = -pow(block_c, rank1_num);
+				if (block_c > 0)block_c = pow(block_c, rank1_num);
 				if (block_c > best_block_c && block_size_check(-i,-j)){
+					if(rank1_num > 2)std::cout << rank1_num << "<- rank" << std::endl;
 					best_block_c = block_c;
 					best_shift_i = -i;
 					best_shift_j = -j;
