@@ -101,30 +101,11 @@ Murakami::block_combination Murakami::eval_block(const block_type& block1, const
 	int const b2_height = block2.size();
 	
 	auto const block1_exists = [b1_height, b1_width, block1](int y, int x){
-		if (x >= 0 && x < b1_width && y >= 0 && y < b1_height){
-			if (block1[y][x].x != -1 || block1[y][x].y != -1){
-				return true;
-			}
-			else{
-				return false;
-			}
-		}
-		else{
-			return false;
-		}
+		return ((x >= 0 && x < b1_width && y >= 0 && y < b1_height) && (block1[y][x].x != -1 || block1[y][x].y != -1));
 	};
 	auto const block2_exists = [b2_height, b2_width, block2](int y, int x){
-		if (x >= 0 && x < b2_width && y >= 0 && y < b2_height){
-			if (block2[y][x].x != -1 || block2[y][x].y != -1){
-				return true;
-			}
-			else{
-				return false;
-			}
-		}
-		else{
-			return false;
-		}
+		return ((x >= 0 && x < b2_width && y >= 0 && y < b2_height) && (block2[y][x].x != -1 || block2[y][x].y != -1));
+
 	};
 	auto const block_size_check = [b1_width, b1_height, b2_width, b2_height, width, height](int shift_x,int shift_y){
 		point_type lu, rd;
@@ -143,17 +124,18 @@ Murakami::block_combination Murakami::eval_block(const block_type& block1, const
 	int_fast64_t best_block_c = std::numeric_limits<int_fast64_t>::min();
 	int best_shift_i = std::numeric_limits<int>::min();
 	int best_shift_j = std::numeric_limits<int>::min();
-	for (int i = -b2_height; i < b1_height + b2_height + 1; i++){
-		for (int j = -b1_width; j < b1_width + b2_width + 1; j++){
+	for (int i = -b2_height; i <= b1_height + b2_height; i++){
+		for (int j = -b1_width; j <= b1_width + b2_width; j++){
 			bool confliction = false;
 			int_fast64_t block_c = 0;
 			bool empty_block_c = true;
 			int_fast64_t rank1_num = 0;//キャストが面倒くさいからint_fast64_tで
 			for (int k = 0; k < b1_height; k++){
 				for (int l = 0; l < b1_width; l++){
-					if (block2_exists(k - i, l - j)){
+					if (block2_exists(k + i, l + j)){
 						if (block1[k][l].x != -1 && block1[k][l].y != -1 ){
 							confliction = true;
+							std::cout << "confriction!!" << std::endl;
 							break;
 						}
 					}
