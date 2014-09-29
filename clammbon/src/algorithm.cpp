@@ -42,7 +42,7 @@ private:
     bool is_finished(std::vector<std::vector<point_type>> const& mat) const;
     void move_target(point_type const& target, char const& direction);
     void move_to(point_type const& to);
-    bool must_chagne_select(std::vector<std::vector<point_type>> const& mat, point_type const& select) const;
+    bool must_chagne_select(step_type const& step) const;
 
     template <char T>
     void move_selecting();
@@ -460,10 +460,8 @@ void algorithm::impl::brute_force()
 {
     // Brute-Force Algorithm
 
-    // 選択画像を変更するかどうか判定
-
-    // 根ノードをキューに追加
-    open.push(step_type{answer, selecting_cur, matrix});
+    step_type first_step = {answer, selecting_cur, matrix};
+    open.push(first_step);
 
     // 解答発見フラグ
     bool finished = false;
@@ -823,43 +821,44 @@ bool algorithm::impl::is_finished(std::vector<std::vector<point_type>> const& ma
 }
 
 // must_chagne_select {{{2
-bool algorithm::impl::must_chagne_select(std::vector<std::vector<point_type>> const& mat, point_type const& select) const
+bool algorithm::impl::must_chagne_select(step_type const& step) const
 {
-    // 偶置換, 奇置換の判定を行い, 奇置換ならば true を返す
+    // 偶置換, 奇置換の判定を行い, 奇置換であれば true を返す
     // http://www.aji.sakura.ne.jp/algorithm/slide_goal.html
+
+    std::cerr << step.selecting_cur << std::endl;
 
     int change = 0;
     std::vector<point_type> linear_matrix;
     std::vector<point_type> original_linear_matrix;
 
-    // mat の中身を 1 列にする
-    int x = mat.size() % 2 == 0 ? mat.front().size() : -1;
-    for (int y = 0; y < mat.size(); ++y) {
-        if (x == -1) {
-            for (++x; x < mat[y].size(); ++x) {
-                if (mat[y][x] != select) {
-                    linear_matrix.push_back(mat[y][x]);
-                }
-                if (point_type{x, y} != select) {
-                    original_linear_matrix.push_back(point_type{x, y});
-                }
-            }
-        } else {
-            for (--x; x >= 0; --x) {
-                if (mat[y][x] != select) {
-                    linear_matrix.push_back(mat[y][x]);
-                }
-                if (point_type{x, y} != select) {
-                    original_linear_matrix.push_back(point_type{x, y});
-                }
-            }
-        }
-    }
+    // step.matrix の右下 BFS_NUM x BFS_NUM 部分を 1 列にする
+    std::vector<point_type> row;
+    row = step.matrix[height - BFS_NUM];
+    std::copy(row.end() - 3, row.end(), std::back_inserter(linear_matrix));
+    row = step.matrix[height - BFS_NUM + 1];
+    std::copy(row.end() - 3, row.end(), std::back_inserter(linear_matrix));
+    std::reverse(linear_matrix.end() - 3, linear_matrix.end());
+    row = step.matrix[height - BFS_NUM + 2];
+    std::copy(row.end() - 3, row.end(), std::back_inserter(linear_matrix));
+    linear_matrix.erase(std::remove(linear_matrix.begin(), linear_matrix.end(), step.matrix[step.selecting_cur.y][step.selecting_cur.x]), linear_matrix.end());
 
-    // original_linear_matrix の配置になるように linear_matrix を並び替え
+    for (int x = width - BFS_NUM; x < width; ++x) {
+        original_linear_matrix.push_back(point_type{x, height - BFS_NUM});
+    }
+    for (int x = width - 1; x >= width - BFS_NUM; --x) {
+        original_linear_matrix.push_back(point_type{x, height - BFS_NUM + 1});
+    }
+    for (int x = width - BFS_NUM; x < width; ++x) {
+        original_linear_matrix.push_back(point_type{x, height - BFS_NUM + 2});
+    }
+    original_linear_matrix.erase(std::remove(original_linear_matrix.begin(), original_linear_matrix.end(), step.matrix[step.selecting_cur.y][step.selecting_cur.x]), original_linear_matrix.end());
+
+    // original_linear_matrix の配置になるように linear_matrix を並び替える
     for (int i = 0; i < linear_matrix.size(); ++i) {
+        for (auto const& x : linear_matrix) std::cerr << boost::format("%1$02X ") % x.num() ; std::cerr << ": " << change << std::endl;
         if (linear_matrix[i] != original_linear_matrix[i]) {
-            change += std::distance(original_linear_matrix.begin(), std::find(original_linear_matrix.begin(), original_linear_matrix.end(), linear_matrix[i])) - i;
+            change += std::distance(linear_matrix.begin(), std::find(linear_matrix.begin(), linear_matrix.end(), original_linear_matrix[i])) - i;
             linear_matrix.erase(std::remove(linear_matrix.begin(), linear_matrix.end(), original_linear_matrix[i]), linear_matrix.end());
             linear_matrix.insert(linear_matrix.begin() + i, original_linear_matrix[i]);
         }
