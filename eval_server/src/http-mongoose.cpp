@@ -46,7 +46,7 @@ public:
 
         pcserver pcs;
         Problem pro(problem_set);
-        pro.load(problemid);
+        pro.load(problemid)
         Answer ans(answer);
 
         if(pro.valid() && ans.valid())
@@ -100,6 +100,17 @@ public:
         }
         res.setHeader("Content-Type", "text/plain");
     }
+    void debug(Request &req, StreamResponse &res)
+    {
+        auto ans = std::move(load_answer("/home/ntsc_j/procon2014/question/pp_prob01.ans"));
+        for(auto a : ans) {
+            for(auto b : a) {
+                res << "(" << b.x << "," << b.y << ") ";
+            }
+            res << std::endl;
+        }
+        
+    }
 
     void setup()
     {
@@ -108,6 +119,7 @@ public:
         addRoute("GET", "/", MyController, show_usage);
         addRoute("GET", "/index.html", MyController, show_usage);
         addRoute("GET", "/config", MyController, config);
+        addRoute("GET", "/debug", MyController, debug);
 //        addRoute("GET", "/problem/prob[0-9]{2}\\.ppm", MyController, dl_problem);
 //        本当はこうしたい↑
         for(int i = 0; i < 100; i++) {
@@ -127,6 +139,7 @@ volatile static bool running = true;
 void signal_handler(int signum)
 {
     if(running) {
+        std::cerr << "Exiting...\n";
         running = false;
     }
 }
