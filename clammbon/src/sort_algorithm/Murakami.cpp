@@ -122,7 +122,8 @@ Murakami::block_combination Murakami::eval_block(const block_type& block1, const
 		lu.y = std::min(0, shift_y);
 		rd.x = std::max(b1_width, shift_x + b2_width);
 		rd.y = std::max(b1_height, shift_y + b2_height);
-		if ((rd.x - lu.x) <= width || (rd.y - lu.y) <= height){
+		if ((rd.x - lu.x) <= width && (rd.y - lu.y) <= height){
+			//std::cout << "w" << rd.x - lu.x << " h" << rd.y - lu.y << std::endl;
 			return true;
 		}
 		else{
@@ -130,8 +131,8 @@ Murakami::block_combination Murakami::eval_block(const block_type& block1, const
 		}
 	};
 	int_fast64_t best_block_c = std::numeric_limits<int_fast64_t>::min();
-	int best_shift_i;
-	int best_shift_j;
+	int best_shift_i = std::numeric_limits<int>::min();
+	int best_shift_j = std::numeric_limits<int>::min();
 	for (int i = -b2_height; i < b1_height + b2_height + 1; i++){
 		for (int j = -b1_width; j < b1_width + b2_width + 1; j++){
 			bool confliction = false;
