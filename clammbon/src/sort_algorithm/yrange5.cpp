@@ -365,6 +365,9 @@ std::vector<std::vector<std::vector<point_type>>> yrange5::operator() ()
 	std::sort(answer.points.begin(), answer.points.end());
 	answer.points.erase(std::unique(answer.points.begin(), answer.points.end()), answer.points.end());
 
+	//上位2つでいいでしょ
+	std::sort(answer.score.begin(), answer.score.end());
+
 	//一枚のcv::Matにする
 	answer.mat_image = combine_image(answer.points);
 

@@ -160,6 +160,9 @@ struct answer_type_y{
 	std::vector<std::vector<std::vector<point_type>>> points;
 	std::vector<double> score;
 	std::vector<cv::Mat> mat_image;
+	bool operator<(const answer_type_y& right) const {
+		return score == right.score ? points < right.points : score < right.score;
+	}
 };
 
 //yrange5
