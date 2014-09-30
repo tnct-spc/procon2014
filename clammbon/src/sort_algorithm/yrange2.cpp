@@ -43,14 +43,14 @@ void yrange2::column_replacement(answer_type_y & answer)
 	uint_fast64_t good_val;
 	std::vector<std::vector<point_type> > good_matrix(sepy, std::vector<point_type>(sepx));
 	good_matrix = answer.points;
-	good_val = form_evaluate(comp_,good_matrix);
+	good_val = form_evaluate(data_,comp_,good_matrix);
 
 	for (int i = 0; i < sepx; ++i){
 		for (int j = 0; j < sepy; ++j){
 			answer.points[j].insert(answer.points[j].begin(), answer.points[j][sepx - 1]);
 			answer.points[j].pop_back();
 		}
-		auto const temp_score = form_evaluate(comp_, answer.points);
+		auto const temp_score = form_evaluate(data_,comp_, answer.points);
 		if (good_val>temp_score){
 			good_val = temp_score;
 			good_matrix = answer.points;
@@ -69,11 +69,11 @@ void yrange2::row_replacement(answer_type_y& answer)
 	std::vector<std::vector<point_type> > good_matrix(sepy, std::vector<point_type>(sepx));
 	std::vector<point_type> temp_vec;
 	good_matrix = answer.points;
-	good_val = form_evaluate(comp_,answer.points);
+	good_val = form_evaluate(data_, comp_, answer.points);
 	for (int i = 0; i < sepy; ++i){
 		answer.points.insert(answer.points.begin(), answer.points[sepy - 1]);
 		answer.points.pop_back();
-		auto const temp_score = form_evaluate(comp_, answer.points);
+		auto const temp_score = form_evaluate(data_, comp_, answer.points);
 		if (good_val>temp_score){
 			good_val = temp_score;
 			good_matrix = answer.points;
@@ -92,15 +92,15 @@ cv::Mat yrange2::combine_image(answer_type_y const& answer)
 	splitter sp;//どこからか持ってきてたsplitter
 	split_image_type splitted = sp.split_image(data_);
 	cv::Mat comb_pic(cv::Size(data_.size.first, data_.size.second), CV_8UC3);
-	for (int i = 0; i < data_.split_num.second; ++i){
-		for (int j = 0; j < data_.split_num.first; ++j){
-			cv::Rect roi_rect(j*one_picx, i*one_picy, one_picx, one_picy);
-			cv::Mat roi_mat(comb_pic, roi_rect);
+		for (int i = 0; i < data_.split_num.second; ++i){
+			for (int j = 0; j < data_.split_num.first; ++j){
+				cv::Rect roi_rect(j*one_picx, i*one_picy, one_picx, one_picy);
+				cv::Mat roi_mat(comb_pic, roi_rect);
 			splitted[answer.points[i][j].y][answer.points[i][j].x].copyTo(roi_mat);
+			}
 		}
-	}
 	return std::move(comb_pic.clone());
-}
+	}
 
 yrange2::yrange2(question_raw_data const& data, compared_type const& comp)
     : data_(data), comp_(comp), adjacent_data_(select_minimum(comp))
@@ -229,13 +229,14 @@ std::vector<answer_type_y> yrange2::operator() ()
 		}
 	}
 
+	//#########################################################yrange2.5#########################################################//
+
+
 	//現段階で重複しているものは1つに絞る
 	// unique()を使う準備としてソートが必要
 	std::sort(answer.begin(), answer.end(), [](answer_type_y a, answer_type_y b){return a.points < b.points; });
 	// unique()をしただけでは後ろにゴミが残るので、eraseで削除する
 	answer.erase(std::unique(answer.begin(), answer.end()), answer.end());
-
-	//#########################################################yrange2.5#########################################################//
 
 	//縦入れ替え，横入れ替え
 	for (auto &matrix : answer){
@@ -258,7 +259,7 @@ std::vector<answer_type_y> yrange2::operator() ()
 	{
 		one_answer.mat_image = std::move(combine_image(one_answer));
 	}
-	
+
 #ifdef _DEBUG
     std::cout << "There are " << yrange2_ans << " solutions" << std::endl;
 	for (auto const& one_answer : answer)

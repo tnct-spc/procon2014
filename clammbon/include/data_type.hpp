@@ -18,6 +18,10 @@ struct point_type
     {
         return lhs.x == rhs.x && lhs.y == rhs.y;
 	}
+	friend inline bool operator!= (point_type const& lhs, point_type const& rhs)
+	{
+		return lhs.x != rhs.x && lhs.y != rhs.y;
+	}
 	friend inline bool operator< (point_type const& lhs, point_type const& rhs)
 	{
 		return (lhs.x == rhs.x) ? lhs.y < rhs.y : lhs.x < rhs.x;
@@ -160,6 +164,15 @@ struct answer_type_y{
 	friend inline bool operator== (answer_type_y const& lhs, answer_type_y const& rhs)
 	{
 		return lhs.points == rhs.points && lhs.score == rhs.score;
+	}
+};
+
+//yrange5
+struct point_score{
+	point_type point;
+	uint_fast64_t score;
+	bool operator<(const point_score& right) const {
+		return score == right.score ? point < right.point : score < right.score;
 	}
 };
 

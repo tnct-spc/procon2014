@@ -28,10 +28,10 @@ public:
         // TODO: ここで返却されたデータのうち，適しているものを選択してreturn
 
 		if (proposed.size() == 0) return std::vector < std::vector<point_type> > {};
-		else return proposed[0];
+		else return proposed.at(0).points;
     }
 
-    std::vector<return_type> proposed_answer(question_raw_data const& raw) const
+	std::vector<answer_type_y> proposed_answer(question_raw_data const& raw) const
     {
         //
         // Sub Algorithm
