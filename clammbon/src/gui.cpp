@@ -77,7 +77,7 @@ namespace gui
 			cv::namedWindow(outname.str(), CV_WINDOW_AUTOSIZE);
 			cv::imshow(outname.str(), comb_pic);
 		}
-		cv::waitKey(10000);
+		cv::waitKey(0);
 	}
 
 	void combine_show_image(question_raw_data const& data_, compared_type const& comp_, std::vector<std::vector<point_type>>const& matrix)
@@ -98,8 +98,8 @@ namespace gui
 			}
 		}
 		std::ostringstream outname("combine_show_image");
-		cv::namedWindow(outname.str(), CV_WINDOW_AUTOSIZE);
-		cv::imshow(outname.str(), comb_pic);
+			cv::namedWindow(outname.str(), CV_WINDOW_AUTOSIZE);
+			cv::imshow(outname.str(), comb_pic);
 
 		cvWaitKey(0);
 	}
@@ -130,7 +130,7 @@ namespace gui
 	void show_image(question_raw_data const& data_, compared_type const& comp_, std::vector<answer_type_y> const& answer)
 	{
 		for (auto& one_answer : answer)
-		{
+	{
 			std::ostringstream outname;
 			outname.str("");
 			if (one_answer.score != 0)outname << "score = " << one_answer.score;

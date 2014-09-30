@@ -46,7 +46,7 @@ BOOST_AUTO_TEST_CASE(submit1)
 {
     network::client client{};
 
-    answer_list answer =
+    answer_type answer =
     {
     };
     auto const response = client.submit(0, "1", answer).get();
@@ -55,14 +55,14 @@ BOOST_AUTO_TEST_CASE(submit1)
 
 BOOST_AUTO_TEST_CASE(submit2)
 {
-    answer_list answer;
+    answer_type answer;
     network::client client{};
 
-    answer.push_back({ point_type{ 0, 0}, { 'D', 'D', 'R', 'U', 'L' } });
+    answer.list.push_back({ point_type{ 0, 0}, { 'D', 'D', 'R', 'U', 'L' } });
     auto const response1 = client.submit(0, "1", answer).get();
     BOOST_CHECK(response1 == "ACCEPTED 16");
 
-    answer.push_back({ point_type{ 0, 1}, { 'R', 'D', 'R', 'D', 'R', 'U', 'U', 'U', 'L' } });
+    answer.list.push_back({ point_type{ 0, 1}, { 'R', 'D', 'R', 'D', 'R', 'U', 'U', 'U', 'L' } });
     auto const response2 = client.submit(0, "2", answer).get();
     BOOST_CHECK(response2 == "ACCEPTED 11");
 }

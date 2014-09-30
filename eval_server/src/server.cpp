@@ -4,7 +4,7 @@
 #include "test_tool.hpp"
 
 // 🍣🍣🍣  パーサ  🍣🍣🍣
-void pcserver::parse(question_data const& problem, answer_list const& answer)
+void pcserver::parse(question_data const& problem, answer_type const& answer)
 {
     // outputに本番サーバと同じ情報、outerrにそれ以外を吐く
     test_tool::emulator emu(problem);

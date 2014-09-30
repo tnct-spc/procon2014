@@ -71,8 +71,24 @@ public:
 private:
     ppm_reader reader_;
     network::client netclient_;
-    pixel_sorter<yrange2> sorter_;
+    pixel_sorter<Murakami> sorter_;
 };
+
+question_data convert_block(question_data const& data)
+{
+    auto res = data.clone();
+
+    for(int i = 0; i < data.size.second; ++i)
+    {
+        for(int j = 0; j < data.size.first; ++j)
+        {
+            auto const& target = data.block[i][j];
+            res.block[target.y][target.x] = point_type{j, i};
+        }
+    }
+
+    return res;
+}
 
 // 問題の並び替えパズル自体は，人間が行うほうがいいかもしれない．
 
@@ -80,9 +96,10 @@ int main()
 {
     analyzer analyze;
     auto const data = analyze(1, "test token");
+    auto const converted = convert_block(data);
 
     algorithm algo;
-    algo.reset(data);
+    algo.reset(converted);
 
     auto const answer = algo.get();
     // 送信処理をしたり，結果を見て再実行(algo.get())したり．

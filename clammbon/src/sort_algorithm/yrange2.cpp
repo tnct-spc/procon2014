@@ -77,7 +77,7 @@ void yrange2::row_replacement(answer_type_y& answer)
 		if (good_val>temp_score){
 			good_val = temp_score;
 			good_matrix = answer.points;
-	}
+		}
 	}
 	answer.points = good_matrix;
 	answer.score = good_val;

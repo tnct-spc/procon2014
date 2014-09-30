@@ -3,7 +3,7 @@
 //  🍣🍣🍣  問題ローダ 🍣🍣🍣
 void Problem::load(std::string const& problemid, std::string const& playerid)
 {
-    std::ifstream pos(path_to_pos(problem_set, problemid)), ppm(path_to_ppm(problem_set, problemid));
+    std::ifstream ans(path_to_ans(problem_set, problemid)), ppm(path_to_ppm(problem_set, problemid));
     std::string ppm_header, hash;
     std::pair<int, int> size;
     int problem_id, selectable, cost_select, cost_change;
@@ -18,8 +18,8 @@ void Problem::load(std::string const& problemid, std::string const& playerid)
         return;
     }
 
-    if(pos.fail()) {
-        outerr << "ERROR: failed to load position file " << path_to_pos(problem_set, problemid) << std::endl;
+    if(ans.fail()) {
+        outerr << "ERROR: failed to load answer file " << path_to_ans(problem_set, problemid) << std::endl;
         return;
     }
     if(ppm.fail()) {
@@ -36,17 +36,7 @@ void Problem::load(std::string const& problemid, std::string const& playerid)
     ppm >> hash >> selectable;
     ppm >> hash >> cost_select >> cost_change;
 
-    std::vector<std::vector<point_type>> block;
-    for(int i = 0; i < size.second; i++) {
-        std::vector<point_type> row;
-        for(int j = 0; j < size.first; j++) {
-            std::string s;
-            pos >> s;
-            row.push_back(pos2int(s));
-        }
-        block.push_back(row);
-        row.clear(); // いるのか？
-    }
+    std::vector<std::vector<point_type>> block = std::move(load_answer(path_to_ans(problem_set, problemid)));
 
     question = {
         problem_id,

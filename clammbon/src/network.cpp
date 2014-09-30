@@ -52,35 +52,6 @@ namespace network
         return ret;
     }
     
-    std::string client::serialize_answer(answer_list const& answer)
-    {
-        std::string answer_string;
-
-        // 選択回数を数える
-        int const select_num = answer.size();
-
-        // 1行目 選択回数
-        answer_string = (boost::format("%d\r\n") % select_num).str();
-
-        for(answer_type const& line : answer)
-        {
-            // 3n+2行目 選択画像位置
-            answer_string += (boost::format("%X%X\r\n") % line.position.x % line.position.y).str();
-
-            // 交換回数を数える
-            int const change_num = line.actions.size();
-
-            // 3n+3行目 交換回数
-            answer_string += (boost::format("%d\r\n") % change_num).str();
-
-            // 3n+4行目 交換操作
-            for(char const direction : line.actions) answer_string.push_back(direction);
-            answer_string += "\r\n";
-        }
-
-        return answer_string;
-    }
-
     std::string client::form_urlencode(std::unordered_map<std::string, std::string> const& header) const
     {
         std::string ret;
@@ -147,9 +118,9 @@ namespace network
             );
     }
 
-    std::future<std::string> client::submit(int const problem_id, std::string const& player_id, answer_list const& answer)
+    std::future<std::string> client::submit(int const problem_id, std::string const& player_id, answer_type const& answer)
     {
-        return submit(problem_id, player_id, serialize_answer(answer));
+        return submit(problem_id, player_id, answer.serialize());
     }
 } // namespace network
 
