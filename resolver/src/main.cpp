@@ -10,6 +10,7 @@
 #include "ppm_reader.hpp"
 #include "splitter.hpp"
 #include "algorithm.hpp"
+#include "algorithm_2.hpp"
 #include "gui.hpp"
 #include "network.hpp"
 
@@ -97,7 +98,7 @@ int main()
     auto const data = analyze(1, "test token");
     auto const converted = convert_block(data);
 
-    algorithm algo;
+    algorithm_2 algo;
     algo.reset(converted);
 
     auto const answer = algo.get();
