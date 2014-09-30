@@ -232,7 +232,6 @@ std::vector<answer_type_y> yrange2::operator() ()
 
 	//#########################################################yrange2.5#########################################################//
 
-
 	//現段階で重複しているものは1つに絞る
 	// unique()を使う準備としてソートが必要
 	std::sort(answer.begin(), answer.end(), [](answer_type_y a, answer_type_y b){return a.points < b.points; });

@@ -316,50 +316,6 @@ uint_fast64_t range_evaluate(question_raw_data const& data_, compared_type const
 	return s;
 }
 
-/*並べられたそれぞれの問題画像の持つrgb値を調べる関数*/
-std::vector<point_score> make_matrix_rgb_database(question_raw_data const& data_, compared_type const& comp_, std::vector<std::vector<point_type> >& matrix)
-{
-	int const sepx = data_.split_num.first;
-	int const sepy = data_.split_num.second;
-	std::vector<point_score> point_score_vec;
-	std::vector<std::vector<int>>data;
-	data.resize(sepy);
-	for (auto& temp : data) temp.resize(sepx);
-
-	for (int i = 0; i < sepy; i++)for (int j = 0; j < sepx - 1; j++)data[i][j] = data[i][j + 1] = comp_[matrix[i][j].y][matrix[i][j].x][matrix[i][j + 1].y][matrix[i][j + 1].x].right;//横加算
-	for (int i = 0; i < sepy - 1; i++)for (int j = 0; j < sepx; j++)data[i][j] = data[i + 1][j] = comp_[matrix[i][j].y][matrix[i][j].x][matrix[i + 1][j].y][matrix[i + 1][j].x].down;//縦加算
-
-	data[0][0] /= 2;//左上隅
-	data[0][sepx - 1] /= 2;//右上隅
-	data[sepy - 1][0] /= 2;//左下隅
-	data[sepy - 1][sepx - 1] /= 2;//右下隅
-
-	for (int j = 0; j < sepx - 2; j++)data[0][j + 1] /= 3;//上辺除算
-	for (int j = 0; j < sepx - 2; j++)data[sepx - 1][j + 1] /= 3;//下辺除算
-	for (int i = 0; i < sepy - 2; i++)data[i + 1][0] /= 3;//左辺除算	
-	for (int i = 0; i < sepy - 2; i++)data[i + 1][sepy - 1] /= 3;//右辺除算
-
-	for (int i = 1; i < sepy - 1; i++)for (int j = 1; j < sepx - 1; j++)data[i][j] /= 4;//中央除算
-
-	for (int i = 0; i < sepy; ++i)for (int j = 0; j < sepx; ++j){
-		point_score_vec.push_back(std::move(point_score{ { j, i }, data[i][j] }));
-	}
-
-	std::sort(point_score_vec.rbegin(), point_score_vec.rend());
-
-	return(std::move(point_score_vec));
-}
-
-//渡されたpoint_scoreの平均値を返す
-int get_matrix_average(std::vector<point_score>const& matrix)
-{
-	uint_fast64_t average = 0;
-	for (auto temp:matrix){
-		average += temp.score;
-	}
-	return average / matrix.size();
-}
-
 //matrixの重複しているものを{width,height}に置き換える
 std::vector<point_type> duplicate_delete(compared_type const& comp_, std::vector<std::vector<point_type> >& matrix)
 {
