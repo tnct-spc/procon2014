@@ -66,25 +66,12 @@ private:
         // 2次元画像に分割
         auto splitted = splitter().split_image(raw);
 
-        // 手作業用のウィンドウの作成
-        auto future = gui::make_mansort_window(splitted, "test");
-
         // yrangeなどの実行
         auto sorter_resolve = sorter_(raw, splitted);
+        formed.block = std::move(sorter_resolve);
 
-        if (sorter_resolve.size() == 0)
-        {
-            // 手作業のデータはこっちで受ける
-            formed.block = future.get();
-        }
-        else
-        {
-            formed.block = std::move(sorter_resolve);
+        // TODO: yrange5の実行
 
-            // TODO: yrange2が終わっていれば，yrange5を立ち上げる処理など(merge時)
-        }
-
-        gui::destroy_all_window();
         return std::move(formed);
     }
 
@@ -125,8 +112,8 @@ int main()
     network::client client;
 
     // 原画像推測部
-    auto const data = analyze();
-    auto const converted = convert_block(data);
+    auto const suggested = analyze();
+    auto const converted = convert_block(suggested);
 
     // 手順探索部
     algo.reset(converted);
@@ -135,6 +122,17 @@ int main()
     // 1発目の提出
     auto submit_result = client.submit(ploblemid, token, answer.get());
     std::cout << submit_result.get() << std::endl;
+
+//    // 手作業用のウィンドウの作成
+//    auto future = gui::make_mansort_window(splitted, "test");
+
+    // 2発目以降の提出など(yrange5)
+    auto const second_suggested = analyze();
+    algo.reset(convert_block(second_suggested));
+    auto const second_answer = algo.get();
+
+    auto submit_second_result = client.submit(ploblemid, token, second_answer.get());
+    std::cout << submit_second_result.get() << std::endl;
 
     return 0;
 }
