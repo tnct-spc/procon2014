@@ -70,7 +70,7 @@ public:
 private:
     ppm_reader reader_;
     network::client netclient_;
-    pixel_sorter<yrange2> sorter_;
+    pixel_sorter<Murakami> sorter_;
 };
 
 question_data convert_block(question_data const& data)
