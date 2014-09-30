@@ -106,7 +106,7 @@ yrange5::yrange5(question_raw_data const& data, compared_type const& comp)
 {
 }
 
-std::vector<std::vector<std::vector<point_type>>> yrange5::operator() ()
+std::vector<answer_type_y> yrange5::operator() ()
 {
 	auto const width = data_.split_num.first;
 	auto const height = data_.split_num.second;
@@ -121,6 +121,7 @@ std::vector<std::vector<std::vector<point_type>>> yrange5::operator() ()
 	std::vector<kind_rgb>kind_rgb_vector(width*height);
 	std::vector<answer_type_y> to_iddfs;//kid_rgbで選考したもの入れとく
 	std::vector<answer_type_y> answer;
+	answer.reserve(height*width * 2);
 	splitter sp;
 
 	//すべてのピースから並べ始めるためのループ
@@ -233,10 +234,7 @@ std::vector<std::vector<std::vector<point_type>>> yrange5::operator() ()
 				}
 				ans_temp2.push_back(ans_temp1);
 			}
-			//TODO:ここどうにかしよう
-			answer_type_y temp;
-			temp.points = ans_temp2;
-			to_iddfs.push_back(std::move(temp));
+			to_iddfs.push_back(answer_type_y{ ans_temp2, 0, cv::Mat() });
 		}
 	}
 
@@ -334,10 +332,7 @@ std::vector<std::vector<std::vector<point_type>>> yrange5::operator() ()
 				//gui::combine_show_image(data_, comp_, sorted_matrix);
 				if (array_sum(sorted_matrix, 0, 0, height, width) == ((width*height - 1)*(width*height) / 2) && get_kind_num(data_, sorted_matrix, 0, 0) == width*height)
 				{
-					//TODO:ここどうにかしよう
-					answer_type_y temp;
-					temp.points = sorted_matrix;
-					answer.push_back(std::move(temp));
+					answer.push_back(answer_type_y{ sorted_matrix, 0, cv::Mat() });
 				}
 			}
 		}
@@ -388,11 +383,5 @@ std::vector<std::vector<std::vector<point_type>>> yrange5::operator() ()
 	}
 	gui::show_image(data_, comp_, answer);
 #endif
-	//TODO:ここどうにかしよう
-	std::vector<return_type> return_vec;
-	for (auto const& one_answer : answer)
-	{
-		return_vec.push_back(std::move(one_answer.points));
-	}
-	return return_vec;
+	return answer;
 }

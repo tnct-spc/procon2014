@@ -38,7 +38,7 @@ public:
     yrange5(question_raw_data const& data, compared_type const& comp);
     virtual ~yrange5() = default;
 
-    std::vector<std::vector<std::vector<point_type>>> operator() ();
+    std::vector<answer_type_y> operator() ();
 };
 
 #endif
