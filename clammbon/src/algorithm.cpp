@@ -1,4 +1,4 @@
-﻿//#define algorithm_debug
+//#define NDEBUG
 #include <algorithm>
 #include <cassert>
 #include <iostream>
@@ -33,7 +33,7 @@ private:
     boost::optional<question_data> data_;
     boost::coroutines::coroutine<return_type>::pull_type co_;
 
-    const answer_list solve();
+    const answer_type solve();
     void greedy();
     void brute_force();
     void print() const;
@@ -50,13 +50,16 @@ private:
     void move_selecting();
 
     template <char T>
-    const step_type move_bf(step_type step) const;
+    void add_step();
 
     std::vector<std::vector<point_type>> matrix;
     std::unordered_set<point_type> sorted_points;
-    answer_list answer;
+    answer_type answer;
     point_type selecting;
     point_type selecting_cur;
+    std::queue<step_type> open;
+    std::unordered_set<step_type> closed;
+    step_type current;
     int width;
     int height;
     int cost_select;
@@ -152,15 +155,17 @@ void algorithm::impl::operator() (boost::coroutines::coroutine<return_type>::pus
     selecting = point_type{width - 1, height - 1};
     selecting_cur = current_point(selecting);
 
-    answer.push_back(answer_type{current_point(selecting), std::vector<char>()});
+    answer.list.push_back(answer_atom{selecting_cur, std::string()});
 
     // GO
-#ifdef algorithm_debug
+#ifndef NDEBUG
     print();
 #endif
     try {
         yield(solve());
-    } catch (std::runtime_error const& e) { }
+    } catch (std::runtime_error const& e) {
+        std::cerr << "Couldn't solve the problem." << std::endl;
+    }
 }
 
 // move_selecting {{{2
@@ -170,8 +175,8 @@ void algorithm::impl::move_selecting<'U'>()
     assert(selecting_cur.y > sorted_row);
     std::swap(matrix[selecting_cur.y][selecting_cur.x], matrix[selecting_cur.y - 1][selecting_cur.x]);
     --selecting_cur.y;
-    answer.back().actions.push_back('U');
-#ifdef algorithm_debug
+    answer.list.back().actions.push_back('U');
+#ifndef NDEBUG
     print();
 #endif
 }
@@ -182,8 +187,8 @@ void algorithm::impl::move_selecting<'R'>()
     assert(selecting_cur.x < width - 1);
     std::swap(matrix[selecting_cur.y][selecting_cur.x], matrix[selecting_cur.y][selecting_cur.x + 1]);
     ++selecting_cur.x;
-    answer.back().actions.push_back('R');
-#ifdef algorithm_debug
+    answer.list.back().actions.push_back('R');
+#ifndef NDEBUG
     print();
 #endif
 }
@@ -194,8 +199,8 @@ void algorithm::impl::move_selecting<'D'>()
     assert(selecting_cur.y < height - 1);
     std::swap(matrix[selecting_cur.y][selecting_cur.x], matrix[selecting_cur.y + 1][selecting_cur.x]);
     ++selecting_cur.y;
-    answer.back().actions.push_back('D');
-#ifdef algorithm_debug
+    answer.list.back().actions.push_back('D');
+#ifndef NDEBUG
     print();
 #endif
 }
@@ -206,8 +211,8 @@ void algorithm::impl::move_selecting<'L'>()
     assert(selecting_cur.x > sorted_col);
     std::swap(matrix[selecting_cur.y][selecting_cur.x], matrix[selecting_cur.y][selecting_cur.x - 1]);
     --selecting_cur.x;
-    answer.back().actions.push_back('L');
-#ifdef algorithm_debug
+    answer.list.back().actions.push_back('L');
+#ifndef NDEBUG
     print();
 #endif
 }
@@ -219,41 +224,53 @@ void algorithm::impl::move_selecting()
     move_selecting<Second, Rest...>();
 }
 
-// move_bf {{{2
+// add_step {{{2
 template <>
-const step_type algorithm::impl::move_bf<'U'>(step_type step) const
+void algorithm::impl::add_step<'U'>()
 {
+    step_type step = current;
     std::swap(step.matrix[step.selecting_cur.y][step.selecting_cur.x], step.matrix[step.selecting_cur.y - 1][step.selecting_cur.x]);
     step.selecting_cur.y -= 1;
-    step.answer.back().actions.push_back('U');
-    return step;
+    step.answer.list.back().actions.push_back('U');
+    if (!closed.count(step)) {
+        open.push(step);
+    }
 }
 
 template <>
-const step_type algorithm::impl::move_bf<'R'>(step_type step) const
+void algorithm::impl::add_step<'R'>()
 {
+    step_type step = current;
     std::swap(step.matrix[step.selecting_cur.y][step.selecting_cur.x], step.matrix[step.selecting_cur.y][step.selecting_cur.x + 1]);
     step.selecting_cur.x += 1;
-    step.answer.back().actions.push_back('R');
-    return step;
+    step.answer.list.back().actions.push_back('R');
+    if (!closed.count(step)) {
+        open.push(step);
+    }
 }
 
 template <>
-const step_type algorithm::impl::move_bf<'D'>(step_type step) const
+void algorithm::impl::add_step<'D'>()
 {
+    step_type step = current;
     std::swap(step.matrix[step.selecting_cur.y][step.selecting_cur.x], step.matrix[step.selecting_cur.y + 1][step.selecting_cur.x]);
     step.selecting_cur.y += 1;
-    step.answer.back().actions.push_back('D');
-    return step;
+    step.answer.list.back().actions.push_back('D');
+    if (!closed.count(step)) {
+        open.push(step);
+    }
 }
 
 template <>
-const step_type algorithm::impl::move_bf<'L'>(step_type step) const
+void algorithm::impl::add_step<'L'>()
 {
+    step_type step = current;
     std::swap(step.matrix[step.selecting_cur.y][step.selecting_cur.x], step.matrix[step.selecting_cur.y][step.selecting_cur.x - 1]);
     step.selecting_cur.x -= 1;
-    step.answer.back().actions.push_back('L');
-    return step;
+    step.answer.list.back().actions.push_back('L');
+    if (!closed.count(step)) {
+        open.push(step);
+    }
 }
 
 // current_point {{{2
@@ -271,7 +288,7 @@ const point_type algorithm::impl::current_point(point_type const& point) const
 }
 
 // solve {{{2
-const answer_list algorithm::impl::solve()
+const answer_type algorithm::impl::solve()
 {
     // Ian Parberry 氏のアルゴリズムを長方形に拡張したもの
     // とりあえず1回選択のみ
@@ -439,13 +456,6 @@ void algorithm::impl::brute_force()
 {
     // Brute-Force Algorithm
 
-    // メモリの超無駄遣い！
-    std::queue<step_type> open;
-    std::unordered_set<step_type> closed;
-
-    // 毎度ポップするやつ
-    step_type current;
-
     // 選択画像を変更するかどうか判定
 
     // 根ノードをキューに追加
@@ -453,8 +463,6 @@ void algorithm::impl::brute_force()
 
     // 解答発見フラグ
     bool finished = false;
-
-    step_type tmp;
 
     while (open.size() > 0) {
         current = open.front();
@@ -469,122 +477,50 @@ void algorithm::impl::brute_force()
         if (current.selecting_cur.y == height - BFS_NUM) {
             if (current.selecting_cur.x == width - BFS_NUM) {
                 // 右と下
-                tmp = move_bf<'R'>(current);
-                if (!closed.count(tmp)) {
-                    open.push(tmp);
-                }
-                tmp = move_bf<'D'>(current);
-                if (!closed.count(tmp)) {
-                    open.push(tmp);
-                }
+                add_step<'R'>();
+                add_step<'D'>();
             } else if (current.selecting_cur.x == width - 1) {
                 // 左と下
-                tmp = move_bf<'L'>(current);
-                if (!closed.count(tmp)) {
-                    open.push(tmp);
-                }
-                tmp = move_bf<'D'>(current);
-                if (!closed.count(tmp)) {
-                    open.push(tmp);
-                }
+                add_step<'L'>();
+                add_step<'D'>();
             } else {
                 // 左右下
-                tmp = move_bf<'L'>(current);
-                if (!closed.count(tmp)) {
-                    open.push(tmp);
-                }
-                tmp = move_bf<'R'>(current);
-                if (!closed.count(tmp)) {
-                    open.push(tmp);
-                }
-                tmp = move_bf<'D'>(current);
-                if (!closed.count(tmp)) {
-                    open.push(tmp);
-                }
+                add_step<'L'>();
+                add_step<'R'>();
+                add_step<'D'>();
             }
         } else if (current.selecting_cur.y == height - 1) {
             if (current.selecting_cur.x == width - BFS_NUM) {
                 // 右と上
-                tmp = move_bf<'R'>(current);
-                if (!closed.count(tmp)) {
-                    open.push(tmp);
-                }
-                tmp = move_bf<'U'>(current);
-                if (!closed.count(tmp)) {
-                    open.push(tmp);
-                }
+                add_step<'R'>();
+                add_step<'U'>();
             } else if (current.selecting_cur.x == width - 1) {
                 // 左と上
-                tmp = move_bf<'L'>(current);
-                if (!closed.count(tmp)) {
-                    open.push(tmp);
-                }
-                tmp = move_bf<'U'>(current);
-                if (!closed.count(tmp)) {
-                    open.push(tmp);
-                }
+                add_step<'L'>();
+                add_step<'U'>();
             } else {
                 // 左右上
-                tmp = move_bf<'L'>(current);
-                if (!closed.count(tmp)) {
-                    open.push(tmp);
-                }
-                tmp = move_bf<'R'>(current);
-                if (!closed.count(tmp)) {
-                    open.push(tmp);
-                }
-                tmp = move_bf<'U'>(current);
-                if (!closed.count(tmp)) {
-                    open.push(tmp);
-                }
+                add_step<'L'>();
+                add_step<'R'>();
+                add_step<'U'>();
             }
         } else {
             if (current.selecting_cur.x == width - BFS_NUM) {
                 // 右上下
-                tmp = move_bf<'R'>(current);
-                if (!closed.count(tmp)) {
-                    open.push(tmp);
-                }
-                tmp = move_bf<'U'>(current);
-                if (!closed.count(tmp)) {
-                    open.push(tmp);
-                }
-                tmp = move_bf<'D'>(current);
-                if (!closed.count(tmp)) {
-                    open.push(tmp);
-                }
+                add_step<'R'>();
+                add_step<'U'>();
+                add_step<'D'>();
             } else if (current.selecting_cur.x == width - 1) {
                 // 左上下
-                tmp = move_bf<'L'>(current);
-                if (!closed.count(tmp)) {
-                    open.push(tmp);
-                }
-                tmp = move_bf<'U'>(current);
-                if (!closed.count(tmp)) {
-                    open.push(tmp);
-                }
-                tmp = move_bf<'D'>(current);
-                if (!closed.count(tmp)) {
-                    open.push(tmp);
-                }
+                add_step<'L'>();
+                add_step<'U'>();
+                add_step<'D'>();
             } else {
                 // 四方
-                tmp = move_bf<'U'>(current);
-                if (!closed.count(tmp)) {
-                    open.push(tmp);
-                }
-                tmp = move_bf<'R'>(current);
-                if (!closed.count(tmp)) {
-                    open.push(tmp);
-                }
-                tmp = move_bf<'D'>(current);
-                if (!closed.count(tmp)) {
-                    open.push(tmp);
-                }
-                tmp = move_bf<'L'>(current);
-                if (!closed.count(tmp)) {
-                    open.push(tmp);
-                }
+                add_step<'U'>();
+                add_step<'R'>();
+                add_step<'D'>();
+                add_step<'L'>();
             }
         }
         closed.insert(current);
@@ -943,44 +879,5 @@ void algorithm::impl::print() const
     }
     //std::cin.ignore();
 }
-
-// main {{{1
-#ifdef algorithm_debug
-// 検証用main
-// clang++ -std=c++11 -g -W -Wall -I../include -lboost_system -lboost_coroutine algorithm.cpp
-int main(void)
-{
-    const std::vector<std::vector<point_type>> matrix = {
-        {{ 1,  2}, { 0,  1}, { 2,  2}, { 1,  1}},
-        {{ 2,  0}, { 0,  0}, { 3,  0}, { 3,  3}},
-        {{ 2,  3}, { 0,  2}, { 1,  3}, { 0,  3}},
-        {{ 1,  0}, { 3,  1}, { 2,  1}, { 3,  2}}
-    };
-    const auto size = std::pair<int, int>(matrix[0].size(), matrix.size());
-    constexpr int problem_id = 1;
-    const std::string player_id = "player_id";
-    constexpr int selectable = 16;
-    constexpr int cost_select = 10;
-    constexpr int cost_change = 10;
-    const auto qdata = question_data(problem_id, player_id, size, selectable, cost_select, cost_change, matrix);
-    algorithm algo;
-    algo.reset(qdata);
-    const auto answer = algo.get();
-    if (answer) {
-        std::cout << answer->size() << std::endl;
-        for (auto const& line : *answer) {
-            std::cout << boost::format("%1$02X") % line.position.num() << std::endl;
-            std::cout << line.actions.size() << std::endl;
-            for (auto const& action : line.actions) {
-                std::cout << action;
-            }
-            std::cout << std::endl;
-        }
-    } else {
-        std::cerr << "Couldn't solve the problem." << std::endl;
-    }
-    return 0;
-}
-#endif
 
 // vim: set ts=4 sw=4 et fdm=marker:

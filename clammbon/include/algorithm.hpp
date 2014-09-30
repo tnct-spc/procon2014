@@ -7,7 +7,7 @@
 class algorithm
 {
 public:
-    typedef answer_list return_type; // TODO: あとで相談とか
+    typedef answer_type return_type;
 
     algorithm();
     virtual ~algorithm();

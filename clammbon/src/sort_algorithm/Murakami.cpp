@@ -66,7 +66,17 @@ std::vector<std::vector<std::vector<point_type>>> Murakami::operator() (){
 				return (it == best_block_combination.block1 || it == best_block_combination.block2);
 			});
 			block_list.push_back(combined_block);//結合したのを入れる
-			std::cout << block_list.size() << std::endl;
+			std::cout << "***" <<block_list.size() << "***" <<std::endl;
+			for (const auto& i : block_list){
+				for (const auto& j : i){
+					for (const auto& k : j){
+						//std::cout << k.x << "," << k.y << " ";
+						std::cout << boost::format("(%2d,%2d)") % k.x % k.y;
+					}
+					std::cout << "\n";
+				}
+				std::cout << "\n";
+			}
 		}
 
 		for (int i = 0; i < height; i++){
@@ -75,9 +85,9 @@ std::vector<std::vector<std::vector<point_type>>> Murakami::operator() (){
 			}
 			std::cout << "\n";
 		}
-		//answer_type_y show_image;
-		//show_image.point_type = block_list;
-		//gui::combine_show_image(data_, comp_, show_image);
+		answer_type_y show_image;
+		show_image.points = block_list;
+		gui::combine_show_image(data_, comp_, show_image);
 		return block_list;
 
 }
@@ -91,30 +101,11 @@ Murakami::block_combination Murakami::eval_block(const block_type& block1, const
 	int const b2_height = block2.size();
 	
 	auto const block1_exists = [b1_height, b1_width, block1](int y, int x){
-		if (x >= 0 && x < b1_width && y >= 0 && y < b1_height){
-			if (block1[y][x].x != -1 || block1[y][x].y != -1){
-				return true;
-			}
-			else{
-				return false;
-			}
-		}
-		else{
-			return false;
-		}
+		return ((x >= 0 && x < b1_width && y >= 0 && y < b1_height) && (block1[y][x].x != -1 || block1[y][x].y != -1));
 	};
 	auto const block2_exists = [b2_height, b2_width, block2](int y, int x){
-		if (x >= 0 && x < b2_width && y >= 0 && y < b2_height){
-			if (block2[y][x].x != -1 || block2[y][x].y != -1){
-				return true;
-			}
-			else{
-				return false;
-			}
-		}
-		else{
-			return false;
-		}
+		return ((x >= 0 && x < b2_width && y >= 0 && y < b2_height) && (block2[y][x].x != -1 || block2[y][x].y != -1));
+
 	};
 	auto const block_size_check = [b1_width, b1_height, b2_width, b2_height, width, height](int shift_x,int shift_y){
 		point_type lu, rd;
@@ -122,7 +113,8 @@ Murakami::block_combination Murakami::eval_block(const block_type& block1, const
 		lu.y = std::min(0, shift_y);
 		rd.x = std::max(b1_width, shift_x + b2_width);
 		rd.y = std::max(b1_height, shift_y + b2_height);
-		if ((rd.x - lu.x) <= width || (rd.y - lu.y) <= height){
+		if ((rd.x - lu.x) <= width && (rd.y - lu.y) <= height){
+			//std::cout << "w" << rd.x - lu.x << " h" << rd.y - lu.y << std::endl;
 			return true;
 		}
 		else{
@@ -130,19 +122,20 @@ Murakami::block_combination Murakami::eval_block(const block_type& block1, const
 		}
 	};
 	int_fast64_t best_block_c = std::numeric_limits<int_fast64_t>::min();
-	int best_shift_i;
-	int best_shift_j;
-	for (int i = -b2_height; i < b1_height + b2_height + 1; i++){
-		for (int j = -b1_width; j < b1_width + b2_width + 1; j++){
+	int best_shift_i = std::numeric_limits<int>::min();
+	int best_shift_j = std::numeric_limits<int>::min();
+	for (int i = -b2_height; i <= b1_height + b2_height; i++){
+		for (int j = -b1_width; j <= b1_width + b2_width; j++){
 			bool confliction = false;
 			int_fast64_t block_c = 0;
 			bool empty_block_c = true;
 			int_fast64_t rank1_num = 0;//キャストが面倒くさいからint_fast64_tで
 			for (int k = 0; k < b1_height; k++){
 				for (int l = 0; l < b1_width; l++){
-					if (block2_exists(k - i, l - j)){
+					if (block2_exists(k + i, l + j)){
 						if (block1[k][l].x != -1 && block1[k][l].y != -1 ){
 							confliction = true;
+							std::cout << "confriction!!" << std::endl;
 							break;
 						}
 					}
@@ -177,8 +170,12 @@ Murakami::block_combination Murakami::eval_block(const block_type& block1, const
 			if (!confliction && empty_block_c == false){
 				//if (best_block_c != 0){};
 				rank1_num++;
-				block_c *= rank1_num; //0を掛けるのは怖い
+		
+				//block_c *= rank1_num; //0を掛けるのは怖い
+				if(block_c < 0)block_c = -pow(block_c, rank1_num);
+				if (block_c > 0)block_c = pow(block_c, rank1_num);
 				if (block_c > best_block_c && block_size_check(-i,-j)){
+					if(rank1_num > 2)std::cout << rank1_num << "<- rank" << std::endl;
 					best_block_c = block_c;
 					best_shift_i = -i;
 					best_shift_j = -j;

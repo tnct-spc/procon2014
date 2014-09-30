@@ -26,9 +26,6 @@ namespace network
         OutputIterator urlencode(InputIterator first, InputIterator last, OutputIterator out) const;
         std::string urlencode(std::string const& src) const;
 
-        // answer_listをシリアライズ(直列化)して，送信用データにする
-        std::string serialize_answer(answer_list const& answer);
-
         // AAA=BBB&CCC=DDD
         std::string form_urlencode(std::unordered_map<std::string, std::string> const& header) const;
 
@@ -45,7 +42,7 @@ namespace network
 
         std::future<std::string> get_problem(int const problem_id);
         std::future<std::string> submit(int const problem_id, std::string const& player_id, std::string const& answer);
-        std::future<std::string> submit(int const problem_id, std::string const& player_id, answer_list const& answer);
+        std::future<std::string> submit(int const problem_id, std::string const& player_id, answer_type const& answer);
     };
 } // namespace network
 

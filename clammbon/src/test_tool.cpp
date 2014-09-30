@@ -9,7 +9,7 @@ namespace test_tool
     {
     }
 
-    auto emulator::start(answer_list const& answer) -> return_type
+    auto emulator::start(answer_type const& answer) -> return_type
     {
         auto const emulated = emulate_movement(answer);
         auto const cost     = count_cost(answer);
@@ -54,12 +54,12 @@ namespace test_tool
         return locate;
     }
 
-    auto emulator::emulate_movement(answer_list const& answer) -> locate_type
+    auto emulator::emulate_movement(answer_type const& answer) -> locate_type
     {
         locate_type state = create_default();
         point_type selected{-1, -1};
 
-        for(auto const& select : answer)
+        for(auto const& select : answer.list)
         {
             selected = select.position;
             for(const char action : select.actions)
@@ -79,11 +79,11 @@ namespace test_tool
         return state;
     }
 
-    int emulator::count_cost(answer_list const& answer)
+    int emulator::count_cost(answer_type const& answer)
     {
         int cost = 0;
 
-        for(auto const& select : answer)
+        for(auto const& select : answer.list)
         {
             cost += question_.cost_select;
             for(char const action : select.actions)

@@ -12,8 +12,6 @@
 #include "answer.hpp"
 #include "config.hpp"
 
-std::string resdir, probdir;
-
 using namespace Mongoose;
 
 class MyController : public Controller
@@ -92,6 +90,21 @@ public:
             res.setHeader("Content-Type", "text/plain");
         }
     }
+    void dl_answer(Request &req, StreamResponse &res)
+    {
+        std::string const file = req.getUrl().substr(req.getUrl().find("/answer/") + 8);
+        std::string const path = PCS_PROBDIR + "/" + problem_set + "/answer/" + file;
+        std::ifstream ifs(path);
+        if(ifs.fail()) {
+            std::cerr << "File " + path + " could not be opened\n";
+            res << "404 Not found";
+            res.setCode(404);
+            res.setHeader("Content-Type", "text/plain");
+        } else {
+            res << ifs.rdbuf();
+            res.setHeader("Content-Type", "text/plain");
+        }
+    }
     void config(Request &req, StreamResponse &res)
     {
         if(req.get("problem_set") != "") {
@@ -99,6 +112,17 @@ public:
             res << "Problem set set to " + req.get("problem_set") << std::endl;
         }
         res.setHeader("Content-Type", "text/plain");
+    }
+    void debug(Request &req, StreamResponse &res)
+    {
+        auto ans = std::move(load_answer("/home/ntsc_j/procon2014/question/pp_prob01.ans"));
+        for(auto a : ans) {
+            for(auto b : a) {
+                res << "(" << b.x << "," << b.y << ") ";
+            }
+            res << std::endl;
+        }
+        
     }
 
     void setup()
@@ -108,6 +132,7 @@ public:
         addRoute("GET", "/", MyController, show_usage);
         addRoute("GET", "/index.html", MyController, show_usage);
         addRoute("GET", "/config", MyController, config);
+        addRoute("GET", "/debug", MyController, debug);
 //        addRoute("GET", "/problem/prob[0-9]{2}\\.ppm", MyController, dl_problem);
 //        本当はこうしたい↑
         for(int i = 0; i < 100; i++) {
@@ -120,6 +145,11 @@ public:
             oss << "/position/prob" << std::setw(2) << std::setfill('0') << i << ".pos";
             addRoute("GET", oss.str(), MyController, dl_position);
         }
+        for(int i = 0; i < 100; i++) {
+            std::ostringstream oss;
+            oss << "/answer/prob" << std::setw(2) << std::setfill('0') << i << ".ans";
+            addRoute("GET", oss.str(), MyController, dl_answer);
+        }
     }
 };
 
@@ -127,6 +157,7 @@ volatile static bool running = true;
 void signal_handler(int signum)
 {
     if(running) {
+        std::cerr << "Exiting...\n";
         running = false;
     }
 }

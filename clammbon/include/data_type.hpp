@@ -213,15 +213,47 @@ struct question_raw_data : private boost::noncopyable
     }
 };
 
-struct answer_type
+struct answer_atom
 {
     point_type position;
-    std::vector<char> actions;
+    std::string actions;
 };
-typedef std::vector<answer_type> answer_list;
+struct answer_type
+{
+    std::vector<answer_atom> list;
+
+    std::string serialize() const
+    {
+        std::string answer_string;
+
+        // 選択回数を数える
+        int const select_num = list.size();
+
+        // 1行目 選択回数
+        answer_string = (boost::format("%d\r\n") % select_num).str();
+
+        for(answer_atom const& line : list)
+        {
+            // 3n+2行目 選択画像位置
+            answer_string += (boost::format("%X%X\r\n") % line.position.x % line.position.y).str();
+
+            // 交換回数を数える
+            int const change_num = line.actions.size();
+
+            // 3n+3行目 交換回数
+            answer_string += (boost::format("%d\r\n") % change_num).str();
+
+            // 3n+4行目 交換操作
+            for(char const direction : line.actions) answer_string.push_back(direction);
+            answer_string += "\r\n";
+        }
+
+        return std::move(answer_string);
+    }
+};
 
 struct step_type {
-    answer_list answer;
+    answer_type answer;
     point_type selecting_cur;
     std::vector<std::vector<point_type>> matrix;
 
