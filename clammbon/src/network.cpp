@@ -51,7 +51,7 @@ namespace network
         urlencode(src.cbegin(), src.cend(), std::back_inserter(ret));
         return ret;
     }
-
+    
     std::string client::form_urlencode(std::unordered_map<std::string, std::string> const& header) const
     {
         std::string ret;

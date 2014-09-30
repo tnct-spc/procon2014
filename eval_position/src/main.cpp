@@ -162,7 +162,7 @@ int main(int argc, char *argv[])
         // 正しいものの数を数える
         int correct = 0;
         for(int i=0; i<proposed_answers.size(); ++i)
-            if(proposed_answers[i] == *correct_answer)
+            if(proposed_answers[i].points == *correct_answer)
                 ++correct;
 
         csv.push(filepath.stem().string(), proposed_answers.size(), correct);
