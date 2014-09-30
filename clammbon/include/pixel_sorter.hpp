@@ -26,12 +26,12 @@ public:
         auto const& proposed = proposed_answer(raw, splited_image);
 
         // TODO: ここで返却されたデータのうち，適しているものを選択してreturn
-    
+
 		if (proposed.size() == 0) return std::vector < std::vector<point_type> > {};
-		else return proposed[0];
+		else return proposed.at(0).points;
     }
 
-    std::vector<return_type> proposed_answer(question_raw_data const& raw, split_image_type const& splited_image) const
+    std::vector<answer_type_y> proposed_answer(question_raw_data const& raw, split_image_type const& splited_image) const
     {
         //
         // Sub Algorithm
@@ -116,7 +116,7 @@ private:
                     )
                 )
             );
-
+		
         for(int i=0; i<image.size(); ++i) for(int j=0; j<image[0].size(); ++j)
         {
             for(int k=0; k<image.size(); ++k) for(int l=0; l<image[0].size(); ++l)
@@ -136,11 +136,11 @@ private:
 					std::cout << i * 3 + j << "," << k * 3 + l << " " << du_comparison(mat_vec[i][j], mat_vec[k][l]) << std::endl;
 					std::cout << i * 3 + j << "," << k * 3 + l << " " << lr_comparison(mat_vec[i][j], mat_vec[k][l]) << std::endl;
 					*/
-                }
+				}
             }
         }
 
-        return comp;
+		return comp;
     }
 
     splitter const split_;

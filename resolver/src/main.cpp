@@ -14,6 +14,7 @@
 #include "network.hpp"
 
 #include <sort_algorithm/yrange2.hpp>
+#include <sort_algorithm/yrange5.hpp>
 #include <sort_algorithm/genetic.hpp>
 #include <sort_algorithm/Murakami.hpp>
 class analyzer : boost::noncopyable
@@ -40,7 +41,7 @@ public:
         splitter sp;
         auto splitted = sp.split_image(raw);
 
-        // 手作業用のウィンドウの作成
+		// 手作業用のウィンドウの作成
         auto future = gui::make_mansort_window(splitted, "test");
 
         // yrangeなどの実行
@@ -58,8 +59,8 @@ public:
         // man_resolvedが結果を置き換える可能性を考慮．
 
 		if (formed.block.size() == 0){
-        //手作業のデータはこっちで受ける
-        auto man_resolved = future.get();
+			//手作業のデータはこっちで受ける
+			auto man_resolved = future.get();
 
 			formed.block = man_resolved;
 		}
@@ -70,7 +71,7 @@ public:
 private:
     ppm_reader reader_;
     network::client netclient_;
-    pixel_sorter<Murakami> sorter_;
+    pixel_sorter<yrange2> sorter_;
 };
 
 // 問題の並び替えパズル自体は，人間が行うほうがいいかもしれない．

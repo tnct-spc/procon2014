@@ -19,7 +19,7 @@ struct point_type
 {
     int x;
     int y;
-
+    
     inline std::string const str() const
     {
         return ( boost::format("(%1%,%2%)") % this->x % this->y ).str();
@@ -32,15 +32,15 @@ struct point_type
     friend inline bool operator== (point_type const& lhs, point_type const& rhs)
     {
         return lhs.x == rhs.x && lhs.y == rhs.y;
-    }
+	}
     friend inline bool operator!= (point_type const& lhs, point_type const& rhs)
     {
         return lhs.x != rhs.x || lhs.y != rhs.y;
     }
-    friend inline bool operator< (point_type const& lhs, point_type const& rhs)
-    {
-    return (lhs.x == rhs.x) ? lhs.y < rhs.y : lhs.x < rhs.x;
-    }
+	friend inline bool operator< (point_type const& lhs, point_type const& rhs)
+	{
+		return (lhs.x == rhs.x) ? lhs.y < rhs.y : lhs.x < rhs.x;
+	}
     friend inline point_type const operator- (point_type const& lhs, point_type const& rhs)
     {
         return point_type{lhs.x - rhs.x, lhs.y - rhs.y};
@@ -193,7 +193,7 @@ struct question_raw_data : private boost::noncopyable
     std::pair<int,int> size; // x * y
     int max_brightness; // 最大輝度
     image_type pixels;
-
+    
     question_raw_data()
     {
     }
@@ -256,10 +256,25 @@ typedef std::vector<std::vector<direction_type<point_type>>> adjacent_type;
 
 //yrange2
 struct answer_type_y{
-	std::vector<std::vector<std::vector<point_type>>> points;
-	std::vector<double> score;
-	std::vector<cv::Mat> mat_image;
+	std::vector<std::vector<point_type>> points;
+	uint_fast64_t score;
+	cv::Mat mat_image;
+
+	friend inline bool operator== (answer_type_y const& lhs, answer_type_y const& rhs)
+	{
+		return lhs.points == rhs.points && lhs.score == rhs.score;
+	}
 };
+
+//yrange5
+struct point_score{
+	point_type point;
+	uint_fast64_t score;
+	bool operator<(const point_score& right) const {
+		return score == right.score ? point < right.point : score < right.score;
+	}
+};
+
 struct cr_set{
 	cv::Mat row;
 	cv::Mat column;
@@ -290,11 +305,11 @@ namespace std
         {
             return hash_value(point);
         }
-    };
+};
 }
 
 enum direction {
-    up, right, down, left
+	up, right, down, left
 };
 
 #endif
