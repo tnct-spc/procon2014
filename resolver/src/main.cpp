@@ -14,6 +14,7 @@
 #include "network.hpp"
 
 #include <sort_algorithm/yrange2.hpp>
+#include <sort_algorithm/yrange5.hpp>
 #include <sort_algorithm/genetic.hpp>
 #include <sort_algorithm/Murakami.hpp>
 
@@ -81,7 +82,7 @@ private:
     bool first_;
     ppm_reader reader_;
     network::client netclient_;
-    pixel_sorter<yrange2> sorter_;
+    pixel_sorter<Murakami> sorter_;
 };
 
 question_data convert_block(question_data const& data)

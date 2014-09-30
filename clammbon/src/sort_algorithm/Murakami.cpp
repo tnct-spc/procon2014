@@ -16,7 +16,7 @@ Murakami::Murakami(question_raw_data const& data, compared_type const& comp)
 {
 }
 
-std::vector<std::vector<std::vector<point_type>>> Murakami::operator() (){
+std::vector<answer_type_y> Murakami::operator() (){
 	auto const width = data_.split_num.first;
 	auto const height = data_.split_num.second;
 	//sort_compare();//sorted_comparation作成
@@ -78,17 +78,17 @@ std::vector<std::vector<std::vector<point_type>>> Murakami::operator() (){
 				std::cout << "\n";
 			}
 		}
-
+		//-------------------------------------ここから第一閉塞----------------------------//
 		for (int i = 0; i < height; i++){
 			for (int j = 0; j < width; j++){
 				std::cout << block_list[0][i][j].x << "," << block_list[0][i][j].y << "|";
 			}
 			std::cout << "\n";
 		}
-		answer_type_y show_image;
-		show_image.points = block_list;
-		gui::combine_show_image(data_, comp_, show_image);
-		return block_list;
+
+		gui::combine_show_image(data_, comp_, block_list.at(0));
+		return std::vector<answer_type_y>{ { block_list.at(0), 0, cv::Mat() } };
+		//-------------------------------------ここまで第一閉塞-----------------------------//
 
 }
 Murakami::block_combination Murakami::eval_block(const block_type& block1, const block_type& block2){
@@ -100,31 +100,12 @@ Murakami::block_combination Murakami::eval_block(const block_type& block1, const
 	int const b2_width = block2[0].size();
 	int const b2_height = block2.size();
 	
-	auto const block1_exists = [b1_height, b1_width, block1](int y, int x){
-		if (x >= 0 && x < b1_width && y >= 0 && y < b1_height){
-			if (block1[y][x].x != -1 || block1[y][x].y != -1){
-				return true;
-			}
-			else{
-				return false;
-			}
-		}
-		else{
-			return false;
-		}
+	auto const block1_exists = [b1_height, b1_width, &block1](int y, int x){
+		return ((x >= 0 && x < b1_width && y >= 0 && y < b1_height) && (block1[y][x].x != -1 || block1[y][x].y != -1));
 	};
-	auto const block2_exists = [b2_height, b2_width, block2](int y, int x){
-		if (x >= 0 && x < b2_width && y >= 0 && y < b2_height){
-			if (block2[y][x].x != -1 || block2[y][x].y != -1){
-				return true;
-			}
-			else{
-				return false;
-			}
-		}
-		else{
-			return false;
-		}
+	auto const block2_exists = [b2_height, b2_width, &block2](int y, int x){
+		return ((x >= 0 && x < b2_width && y >= 0 && y < b2_height) && (block2[y][x].x != -1 || block2[y][x].y != -1));
+
 	};
 	auto const block_size_check = [b1_width, b1_height, b2_width, b2_height, width, height](int shift_x,int shift_y){
 		point_type lu, rd;
@@ -143,56 +124,54 @@ Murakami::block_combination Murakami::eval_block(const block_type& block1, const
 	int_fast64_t best_block_c = std::numeric_limits<int_fast64_t>::min();
 	int best_shift_i = std::numeric_limits<int>::min();
 	int best_shift_j = std::numeric_limits<int>::min();
-	for (int i = -b2_height; i < b1_height + b2_height + 1; i++){
-		for (int j = -b1_width; j < b1_width + b2_width + 1; j++){
+	for (int i = -b2_height; i <= b1_height + b2_height; i++){
+		for (int j = -b2_width; j <= b1_width + b2_width; j++){
 			bool confliction = false;
 			int_fast64_t block_c = 0;
 			bool empty_block_c = true;
-			int_fast64_t rank1_num = 0;//キャストが面倒くさいからint_fast64_tで
+			int rank1_num = 0;//キャストが面倒くさいからint_fast64_tで
 			for (int k = 0; k < b1_height; k++){
 				for (int l = 0; l < b1_width; l++){
-					if (block2_exists(k - i, l - j)){
-						if (block1[k][l].x != -1 && block1[k][l].y != -1 ){
+					if (block2_exists(k + i, l + j) && block1_exists(k,l)){
 							confliction = true;
+							//std::cout << "confriction!!" << std::endl;
 							break;
-						}
-					}
-					if (block1_exists(k, l) && !block2_exists(k + i, l + j)){
-						int_fast64_t piece_c = 0;
+					}else if (block1_exists(k, l) && !block2_exists(k + i, l + j)){
+						//int_fast64_t piece_c = 0;
 						if (block2_exists(k + i - 1, l + j)){//上
-							piece_c += eval_piece(block1[k][l], block2[k + i - 1][l + j], up);
+							block_c += eval_piece(block1[k][l], block2[k + i - 1][l + j], up);
 							empty_block_c = false;
 							if (sorted_comparation[block1[k][l]][up][1] == block2[k + i - 1][l + j]) rank1_num++;
 						}
 						if (block2_exists(k + i, l + j - 1)){//左
-							piece_c += eval_piece(block1[k][l], block2[k + i][l + j - 1], left);
+							block_c += eval_piece(block1[k][l], block2[k + i][l + j - 1], left);
 							empty_block_c = false;
 							if (sorted_comparation[block1[k][l]][left][1] == block2[k + i][l + j - 1]) rank1_num++;
 						}
 						if (block2_exists(k + i + 1, l + j)){//下
-							piece_c += eval_piece(block1[k][l], block2[k + i + 1][l + j], down);
+							block_c += eval_piece(block1[k][l], block2[k + i + 1][l + j], down);
 							empty_block_c = false;
 							if (sorted_comparation[block1[k][l]][down][1] == block2[k + i + 1][l + j]) rank1_num++;
 						}
 						if (block2_exists(k + i, l + j + 1)){//右
-							piece_c += eval_piece(block1[k][l], block2[k + i][l + j + 1], right);
+							block_c += eval_piece(block1[k][l], block2[k + i][l + j + 1], right);
 							empty_block_c = false;
 							if (sorted_comparation[block1[k][l]][right][1] == block2[k + i][l + j + 1]) rank1_num++;
 						}
 						//pow(piece_c, rank1_num);
-						block_c += piece_c;
+						//block_c += piece_c;
 					}
 				}
 				if (confliction)break;
 			}
-			if (!confliction && empty_block_c == false){
+			if (!confliction && empty_block_c == false && block_size_check(-i, -j)){
 				//if (best_block_c != 0){};
 				rank1_num++;
 		
 				//block_c *= rank1_num; //0を掛けるのは怖い
 				if(block_c < 0)block_c = -pow(block_c, rank1_num);
 				if (block_c > 0)block_c = pow(block_c, rank1_num);
-				if (block_c > best_block_c && block_size_check(-i,-j)){
+				if (block_c > best_block_c){
 					if(rank1_num > 2)std::cout << rank1_num << "<- rank" << std::endl;
 					best_block_c = block_c;
 					best_shift_i = -i;
@@ -341,7 +320,7 @@ void Murakami::make_sorted_comparation(){
 
 	}
 
-	sorted_comparation = sorted_point_score_dir_point;
+	sorted_comparation = std::move(sorted_point_score_dir_point);
 	/*
 	std::ofstream ofs("solusions.csv", std::ios::out | std::ios::app | std::ios::ate);
 	ofs << "point_type.x,point_type.y,direct,rank,point_type.x,point_type.y" << std::endl;
@@ -371,7 +350,7 @@ Murakami::block_type Murakami::combine_block(const block_combination& block_comb
 	rd.x = std::max(b1_width, block_comb.shift_x + b2_width);
 	rd.y = std::max(b1_height, block_comb.shift_y + b2_height);
 	block_size_type comb_block_size = rd - lu;
-	auto const block1_exists = [b1_height, b1_width, block_comb](int y, int x){
+	auto const block1_exists = [b1_height, b1_width, &block_comb](int y, int x){
 		if (x >= 0 && x < b1_width && y >= 0 && y < b1_height){
 			if (block_comb.block1[y][x].x != -1 || block_comb.block1[y][x].y != -1){
 				return true;
@@ -384,7 +363,7 @@ Murakami::block_type Murakami::combine_block(const block_combination& block_comb
 			return false;
 		}
 	};
-	auto const block2_exists = [b2_height, b2_width, block_comb](int y, int x){
+	auto const block2_exists = [b2_height, b2_width, &block_comb](int y, int x){
 		if (x >= 0 && x < b2_width && y >= 0 && y < b2_height){
 			if (block_comb.block2[y][x].x != -1 || block_comb.block2[y][x].y != -1){
 				return true;

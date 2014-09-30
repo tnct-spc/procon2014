@@ -60,7 +60,7 @@ namespace gui
         );
     }
 
-	void combine_show_image(question_raw_data const& data_, compared_type const& comp_, answer_type_y const& answer)
+	void combine_show_image(question_raw_data const& data_, compared_type const& comp_, std::vector<answer_type_y> const& answer)
 	{
 		cv::Mat comb_pic(cv::Size(data_.size.first, data_.size.second), CV_8UC3);
 		cv::Rect roi_rect;
@@ -68,11 +68,11 @@ namespace gui
 		roi_rect.width = (data_.size.first / data_.split_num.first);// picx/sepx
 		splitter sp;//どこからか持ってきてたsplitter
 		split_image_type splitted = sp.split_image(data_);
-		for (int c = 0; c < answer.points.size(); ++c){
+		for (int c = 0; c < answer.size(); ++c){
 			for (int i = 0; i < data_.split_num.second; ++i){
 				for (int j = 0; j < data_.split_num.first; ++j){
 					cv::Mat roi(comb_pic, roi_rect);
-					splitted[answer.points[c][i][j].y][answer.points[c][i][j].x].copyTo(roi);
+					splitted[answer[c].points[i][j].y][answer[c].points[i][j].x].copyTo(roi);
 					roi_rect.x += (data_.size.first / data_.split_num.first);
 				}
 				roi_rect.x = 0;
@@ -80,23 +80,71 @@ namespace gui
 			}
 			std::ostringstream outname;
 			outname.str("");
-			if (answer.score.size() > c && answer.score[c] != 0)outname << "score = " << answer.score[c];
-			else outname << "score = " << form_evaluate(comp_, answer.points[c]);
+			if (answer[c].score > c && answer[c].score != 0)outname << "score = " << answer[c].score;
+			else outname << "score = " << form_evaluate(data_, comp_, answer[c].points);
 			cv::namedWindow(outname.str(), CV_WINDOW_AUTOSIZE);
 			cv::imshow(outname.str(), comb_pic);
 		}
-		cv::waitKey(10000);
+		cv::waitKey(0);
 	}
 
-	void show_image(question_raw_data const& data_, compared_type const& comp_, answer_type_y const& answer)
+	void combine_show_image(question_raw_data const& data_, compared_type const& comp_, std::vector<std::vector<point_type>>const& matrix)
 	{
-		for (int i = 0; i < answer.points.size(); ++i){
+		int const one_picx = data_.size.first / data_.split_num.first;
+		int const one_picy = data_.size.second / data_.split_num.second;
+
+		cv::Mat comb_pic(cv::Size(one_picx*matrix.at(0).size(), one_picy*matrix.size()), CV_8UC3);
+		splitter sp;//どこからか持ってきてたsplitter
+		split_image_type splitted = sp.split_image(data_);
+
+		for (int i = 0; i < matrix.size(); ++i){
+			for (int j = 0; j < matrix.at(0).size(); ++j){
+				if (matrix[i][j].y >= data_.split_num.second || matrix[i][j].y <0 || matrix[i][j].x >= data_.split_num.first || matrix[i][j].x < 0) continue;
+				cv::Rect roi_rect(j*one_picx, i*one_picy, one_picx, one_picy);
+				cv::Mat roi_mat(comb_pic, roi_rect);
+				splitted[matrix[i][j].y][matrix[i][j].x].copyTo(roi_mat);
+			}
+		}
+		std::ostringstream outname("combine_show_image");
+			cv::namedWindow(outname.str(), CV_WINDOW_AUTOSIZE);
+			cv::imshow(outname.str(), comb_pic);
+
+		cvWaitKey(0);
+	}
+
+	void combine_show_image(question_raw_data const& data_, compared_type const& comp_, std::vector<std::vector<point_type>>const& matrix, std::ostringstream const outname)
+	{
+		int const one_picx = data_.size.first / data_.split_num.first;
+		int const one_picy = data_.size.second / data_.split_num.second;
+
+		cv::Mat comb_pic(cv::Size(one_picx*matrix.at(0).size(), one_picy*matrix.size()), CV_8UC3);
+		splitter sp;//どこからか持ってきてたsplitter
+		split_image_type splitted = sp.split_image(data_);
+
+		for (int i = 0; i < matrix.size(); ++i){
+			for (int j = 0; j < matrix.at(0).size(); ++j){
+				if (matrix[i][j].y >= data_.split_num.second || matrix[i][j].x >= data_.split_num.first) continue;
+				cv::Rect roi_rect(j*one_picx, i*one_picy, one_picx, one_picy);
+				cv::Mat roi_mat(comb_pic, roi_rect);
+				splitted[matrix[i][j].y][matrix[i][j].x].copyTo(roi_mat);
+			}
+		}
+		cv::namedWindow(outname.str(), CV_WINDOW_AUTOSIZE);
+		cv::imshow(outname.str(), comb_pic);
+
+		cvWaitKey(0);
+	}
+
+	void show_image(question_raw_data const& data_, compared_type const& comp_, std::vector<answer_type_y> const& answer)
+	{
+		for (auto& one_answer : answer)
+	{
 			std::ostringstream outname;
 			outname.str("");
-			if (answer.score.size() > i && answer.score[i] != 0)outname << "score = " << answer.score[i];
-			else outname << "score = " << form_evaluate(comp_, answer.points[i]);
+			if (one_answer.score != 0)outname << "score = " << one_answer.score;
+			else outname << "score = " << form_evaluate(data_, comp_, one_answer.points);
 			cv::namedWindow(outname.str(), CV_WINDOW_AUTOSIZE);
-			cv::imshow(outname.str(), answer.mat_image[i]);
+			cv::imshow(outname.str(), one_answer.mat_image);
 		}
 		cv::waitKey(10000);
 	}
