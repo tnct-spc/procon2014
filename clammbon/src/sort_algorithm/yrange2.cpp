@@ -127,6 +127,7 @@ std::vector<answer_type_y> yrange2::operator() ()
 		);
 
 	std::vector<answer_type_y> answer;
+	answer.reserve(width*height * 2);
 	splitter sp;
 
 
