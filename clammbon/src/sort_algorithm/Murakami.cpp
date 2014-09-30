@@ -16,7 +16,7 @@ Murakami::Murakami(question_raw_data const& data, compared_type const& comp)
 {
 }
 
-std::vector<std::vector<std::vector<point_type>>> Murakami::operator() (){
+std::vector<answer_type_y> Murakami::operator() (){
 	auto const width = data_.split_num.first;
 	auto const height = data_.split_num.second;
 	//sort_compare();//sorted_comparation作成
@@ -85,10 +85,9 @@ std::vector<std::vector<std::vector<point_type>>> Murakami::operator() (){
 			}
 			std::cout << "\n";
 		}
-		answer_type_y show_image;
-		show_image.points = block_list;
-		gui::combine_show_image(data_, comp_, show_image);
-		return block_list;
+
+		gui::combine_show_image(data_, comp_, block_list.at(0));
+		return std::vector<answer_type_y>{ { block_list.at(0), 0, cv::Mat() } };
 		//-------------------------------------ここまで第一閉塞-----------------------------//
 
 }
