@@ -20,13 +20,28 @@
 class analyzer : boost::noncopyable
 {
 public:
-    explicit analyzer()
-        : netclient_()
+    explicit analyzer(int const problem_id, std::string const& player_id)
+        : netclient_(), first_(true), problem_id_(problem_id), player_id_(player_id)
     {
     }
     virtual ~analyzer() = default;
 
-    question_data operator() (int const problem_id, std::string const& player_id)
+    question_data operator() ()
+    {
+        if(first_)
+        {
+            first_ = false;
+            return first_process(problem_id_, player_id_);
+        }
+        else
+        {
+            // TODO: yrange5の結果を待つなど
+            return question_data{};
+        }
+    }
+
+private:
+    question_data first_process(int const problem_id, std::string const& player_id)
     {
         question_raw_data raw;
 #if 1
@@ -73,7 +88,10 @@ public:
         return std::move(formed);
     }
 
-private:
+    int const problem_id_;
+    std::string const player_id_;
+
+    bool first_;
     ppm_reader reader_;
     network::client netclient_;
     pixel_sorter<yrange2> sorter_;
@@ -99,15 +117,25 @@ question_data convert_block(question_data const& data)
 
 int main()
 {
-    analyzer analyze;
-    auto const data = analyze(1, "test token");
+    auto const ploblemid = 1;
+    auto const token     = "3935105806";
+
+    analyzer        analyze(ploblemid, token);
+    algorithm       algo;
+    network::client client;
+
+    // 原画像推測部
+    auto const data = analyze();
     auto const converted = convert_block(data);
 
-    algorithm algo;
+    // 手順探索部
     algo.reset(converted);
-
     auto const answer = algo.get();
-    // 送信処理をしたり，結果を見て再実行(algo.get())したり．
+
+    // 1発目の提出
+    auto submit_result = client.submit(ploblemid, token, answer.get());
+    std::cout << submit_result.get() << std::endl;
 
     return 0;
 }
+
