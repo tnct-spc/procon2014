@@ -370,7 +370,7 @@ std::vector<point_type> duplicate_delete(compared_type const& comp_, std::vector
 /*1辺あたりのdifference of rgb dataを返す関数*/
 int one_side_val(compared_type const& comp_, std::vector<std::vector<point_type> >matrix, point_type point)
 {
-	point_type invalid_val = { matrix.at(0).size(), matrix.size() };
+	point_type invalid_val = { static_cast<int>(matrix.at(0).size()), static_cast<int>(matrix.size()) };
 	int const sepx = matrix.at(0).size();
 	int const sepy = matrix.size();
 	uint_fast64_t s = 0;
