@@ -12,8 +12,6 @@
 #include "answer.hpp"
 #include "config.hpp"
 
-std::string resdir, probdir;
-
 using namespace Mongoose;
 
 class MyController : public Controller
@@ -46,7 +44,7 @@ public:
 
         pcserver pcs;
         Problem pro(problem_set);
-        pro.load(problemid)
+        pro.load(problemid);
         Answer ans(answer);
 
         if(pro.valid() && ans.valid())
@@ -81,6 +79,21 @@ public:
     {
         std::string const file = req.getUrl().substr(req.getUrl().find("/position/") + 10);
         std::string const path = PCS_PROBDIR + "/" + problem_set + "/position/" + file;
+        std::ifstream ifs(path);
+        if(ifs.fail()) {
+            std::cerr << "File " + path + " could not be opened\n";
+            res << "404 Not found";
+            res.setCode(404);
+            res.setHeader("Content-Type", "text/plain");
+        } else {
+            res << ifs.rdbuf();
+            res.setHeader("Content-Type", "text/plain");
+        }
+    }
+    void dl_answer(Request &req, StreamResponse &res)
+    {
+        std::string const file = req.getUrl().substr(req.getUrl().find("/answer/") + 8);
+        std::string const path = PCS_PROBDIR + "/" + problem_set + "/answer/" + file;
         std::ifstream ifs(path);
         if(ifs.fail()) {
             std::cerr << "File " + path + " could not be opened\n";
@@ -131,6 +144,11 @@ public:
             std::ostringstream oss;
             oss << "/position/prob" << std::setw(2) << std::setfill('0') << i << ".pos";
             addRoute("GET", oss.str(), MyController, dl_position);
+        }
+        for(int i = 0; i < 100; i++) {
+            std::ostringstream oss;
+            oss << "/answer/prob" << std::setw(2) << std::setfill('0') << i << ".ans";
+            addRoute("GET", oss.str(), MyController, dl_answer);
         }
     }
 };
