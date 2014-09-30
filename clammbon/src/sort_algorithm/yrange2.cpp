@@ -111,6 +111,7 @@ std::vector<std::vector<std::vector<point_type>>> yrange2::operator() ()
 {
 	auto const width = data_.split_num.first;
 	auto const height = data_.split_num.second;
+	int constexpr yrange2_show_ans = 8;
 
 	auto const exists = [height, width](point_type const& p)
 	{
@@ -248,8 +249,9 @@ std::vector<std::vector<std::vector<point_type>>> yrange2::operator() ()
 	answer.erase(std::unique(answer.begin(), answer.end()), answer.end());
 
 	//無駄に多く返してもしょうがないので枝抜き
+	int const yrange2_ans = answer.size();
 	std::sort(answer.begin(), answer.end(), [](answer_type_y a, answer_type_y b){return a.score < b.score; });
-	if (answer.size() >= 3) answer.resize(3);
+	if (answer.size() >= yrange2_show_ans) answer.resize(yrange2_show_ans);
 
 	//一枚のcv::Matにする
 	for (auto& one_answer : answer)
@@ -258,7 +260,7 @@ std::vector<std::vector<std::vector<point_type>>> yrange2::operator() ()
 	}
 	
 #ifdef _DEBUG
-    std::cout << "There are " << answer.size() << " solutions" << std::endl;
+    std::cout << "There are " << yrange2_ans << " solutions" << std::endl;
 	for (auto const& one_answer : answer)
 	{
 		for (int i = 0; i < one_answer.points.size(); ++i)
