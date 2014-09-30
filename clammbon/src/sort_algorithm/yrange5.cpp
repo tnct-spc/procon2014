@@ -110,6 +110,7 @@ std::vector<std::vector<std::vector<point_type>>> yrange5::operator() ()
 {
 	auto const width = data_.split_num.first;
 	auto const height = data_.split_num.second;
+	constexpr int paramerter = 50;
 
 	auto const exists = [height, width](point_type const& p)
 	{
@@ -223,7 +224,7 @@ std::vector<std::vector<std::vector<point_type>>> yrange5::operator() ()
 
 		std::sort(kind_rgb_vector.begin(), kind_rgb_vector.end());
 
-		for (int k = 0; k < kind_rgb_vector.size() / 4; k++){
+		for (int k = 0; k < kind_rgb_vector.size() / paramerter; k++){
 			std::vector<std::vector <point_type>> ans_temp2;
 			for (int i = 0; i < height; ++i){
 				std::vector<point_type>ans_temp1;
