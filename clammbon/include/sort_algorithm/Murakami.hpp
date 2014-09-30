@@ -29,10 +29,11 @@ private:
 		int shift_x;
 		int shift_y;
 		//あるブロックとの結合するとき(結合したあと)の評価値
-		std::int_fast64_t score; //評価値は結構大きいので32bitだとオーバーフローするかも?
+		boost::multiprecision::cpp_int score; //評価値は結構大きいので32bitだとオーバーフローするかも?
 	};
 	//ブロック対ブロックの評価,ブロックに持たせるべき?
 	block_combination eval_block(const block_type&, const block_type&);
+	block_combination eval_block2(const block_type&, const block_type&);
 	//ピース対ピースの評価,仕様をよく理解しないと書くのが辛い
 	std::int_fast64_t eval_piece(const point_type&, const point_type&,direction);
 	std::int_fast64_t eval_comp_(const point_type&, const point_type&,direction);
