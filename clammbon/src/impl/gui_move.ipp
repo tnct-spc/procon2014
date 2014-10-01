@@ -28,6 +28,8 @@ namespace impl
         MoveWindow(split_image_type const& images, std::string const& window_name);
         virtual ~MoveWindow() = default;
 
+        void set_data(std::vector<std::vector<point_type>> const& possitions);
+
         // 結果を返す関数であるが，期待通りの働きをしない
         std::vector<std::vector<point_type>> result() const;
 
@@ -66,6 +68,8 @@ namespace impl
         std::vector<std::vector<unfold_image_type>> image_;
         std::vector<std::vector<Fl_RGB_Image*>> rgbs_;
         std::vector<std::vector<std::unique_ptr<MoveBox>>> boxes_;
+
+        std::vector<std::vector<point_type>> positions_;
     };
 
     MoveBox::MoveBox(point_type const& point, int const x, int const y, int const w, int const h)
@@ -136,56 +140,70 @@ namespace impl
             }
             boxes_.push_back(std::move(line));
         }
+
+        //
+        positions_.clear();
+        positions_.reserve(split_y_);
+        for(int i=0; i<split_y_; ++i)
+        {
+            std::vector<point_type> line;
+            line.reserve(split_x_);
+            for(int j=0; j<split_x_; ++j)
+            {
+                line.push_back(point_type{j, i});
+            }
+            positions_.push_back(std::move(line));
+        }
+        boxes_redraw();
+    }
+    
+    void MoveWindow::set_data(std::vector<std::vector<point_type>> const& positions)
+    {
+        positions_ = positions;
+        boxes_redraw();
     }
 
     std::vector<std::vector<point_type>> MoveWindow::result() const
     {
-        std::vector<std::vector<point_type>> result(
-            split_y_,
-            std::vector<point_type>(split_x_, point_type{-1,-1})
-            );
-
-        for(int i=0; i<split_y_; ++i)
-        {
-            for(int j=0; j<split_x_; ++j)
-            {
-                auto const& target = boxes_[i][j]->first_point();
-                result[target.y][target.x] = point_type{j, i};
-            }
-        }
-
-        return result;
+        return positions_;
     }
 
     void MoveWindow::boxes_redraw()
     {
-        for(int i=0; i<split_y_; ++i)
+        int const window_width  = positions_.at(0).size() * image_width_;
+        int const window_height = positions_.size() * image_height_;
+        this->size(window_width, window_height);
+
+        for(int i = 0; i < positions_.size(); ++i)
         {
-            for(int j=0; j<split_x_; ++j)
+            for(int j = 0; j < positions_.at(0).size(); ++j)
             {
-                auto& target_box = boxes_[i][j];
+                if(positions_[i][j] == point_type{-1, -1}) continue; // -1は特別マス
+
+                auto& target_box = boxes_[positions_[i][j].y][positions_[i][j].x];
                 target_box->resize(image_width_*j, image_height_*i, image_width_, image_height_);
                 target_box->redraw();
             }
         }
+
         return;
     }
 
     void MoveWindow::box_swap(point_type const& p1, point_type const& p2)
     {
-        std::swap(boxes_[p1.y][p1.x], boxes_[p2.y][p2.x]);
+        std::swap(positions_[p1.y][p1.x], positions_[p2.y][p2.x]);
     }
 
     void MoveWindow::box_x_line_swap(int const y1, int const y2)
     {
-        std::swap(boxes_[y1], boxes_[y2]);
+        std::swap(positions_[y1], positions_[y2]);
     }
 
     void MoveWindow::box_y_line_swap(int const x1, int const x2)
     {
         for(int i=0; i<split_y_; ++i)
         {
-            std::swap(boxes_[i][x1], boxes_[i][x2]);
+            std::swap(positions_[i][x1], positions_[i][x2]);
         }
     }
 
