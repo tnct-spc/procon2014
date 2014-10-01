@@ -462,6 +462,16 @@ void algorithm::impl::brute_force()
 
     step_type first_step = {answer, selecting_cur, matrix};
     open.push(first_step);
+    for (int y = height - BFS_NUM; y < height; ++y) {
+        for (int x = width - BFS_NUM; x < width; ++x) {
+            if (x == width - 1 && y == height - 1) {
+                continue;
+            }
+            first_step.selecting_cur = point_type{x, y};
+            first_step.answer.list.push_back({first_step.selecting_cur, ""});
+            open.push(first_step);
+        }
+    }
 
     // 解答発見フラグ
     bool finished = false;
