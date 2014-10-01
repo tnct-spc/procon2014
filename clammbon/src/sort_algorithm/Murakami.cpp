@@ -11,7 +11,8 @@
 #include <sort_algorithm/adjacent.hpp>
 #include <sort_algorithm/Murakami.hpp>
 #include <./gui.hpp>
-
+#include <boost/timer.hpp>
+#include <omp.h>
 Murakami::Murakami(question_raw_data const& data, compared_type const& comp)
 	: data_(data), comp_(comp)
 {
@@ -30,6 +31,7 @@ std::vector<answer_type_y> Murakami::operator() (){
 	#endif
 	make_sorted_comparation();
 	std::cout << "make_ok" << std::endl;
+	boost::timer t;
 	std::vector<std::vector<std::vector<point_type>>> block_list(
 		height * width,
 		std::vector<std::vector<point_type>>(
@@ -100,6 +102,7 @@ std::vector<answer_type_y> Murakami::operator() (){
 			//gui::combine_show_image(data_, comp_, block_list);
 
 		}
+		std::cout << t.elapsed() << "s経過した" << std::endl;
 		//-------------------------------------ここから第一閉塞----------------------------//
 		for (int i = 0; i < height; i++){
 			for (int j = 0; j < width; j++){
@@ -130,14 +133,6 @@ Murakami::block_combination Murakami::eval_block(const block_type& block1, const
 
 	};
 	auto const block_size_check = [b1_width, b1_height, b2_width, b2_height, width, height](int shift_y,int shift_x){
-		/*
-		point_type lu, rd;
-		lu.x = std::min(0, shift_x);
-		lu.y = std::min(0, shift_y);
-		rd.x = std::max(b1_width, shift_x + b2_width);
-		rd.y = std::max(b1_height, shift_y + b2_height);
-		return ((rd.x - lu.x) <= width && (rd.y - lu.y) <= height);
-		*/
 		return (std::max(b1_width, shift_x + b2_width) - std::min(0, shift_x) <= width && std::max(b1_height, shift_y + b2_height) - std::min(0, shift_y) <= height);
 	};
 	int_fast64_t best_block_c = std::numeric_limits<int_fast64_t>::min();
@@ -237,11 +232,16 @@ std::int_fast64_t Murakami::eval_piece(const point_type& p1, const point_type& p
 std::int_fast64_t Murakami::eval_comp_(const point_type& p1, const point_type& p2, direction dir){
 	int rank = 0;
 	std::int_fast64_t score = 0;
+	/*
+	std::vector<point_type>::iterator it = find(sorted_comparation[p1][dir].begin(), sorted_comparation[p1][dir].end(), p2);
+	rank = it - sorted_comparation[p1][dir].begin();
+	*/
+	
 	for (const auto& it : sorted_comparation[p1][dir]){
 		if (it == p2)break;
 		rank++;
 	}
-
+	
 	if (rank == 0)throw std::runtime_error("断片画像が重複しています");
 	if (rank == 1){
 		switch (dir)
