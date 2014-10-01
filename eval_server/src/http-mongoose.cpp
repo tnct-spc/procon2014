@@ -16,7 +16,7 @@ using namespace Mongoose;
 
 class MyController : public Controller
 {
-    std::string problem_set = "default";
+    std::string problem_set = std::getenv("PCS_PROBSET") ? std::string(std::getenv("PCS_PROBSET")) : "default";
 public:
     void show_usage(Request &req, StreamResponse &res)
     {
@@ -49,14 +49,16 @@ public:
 
         if(pro.valid() && ans.valid())
             pcs.parse(pro.get(), ans.get());
-        
-        if(pcs.ok())
+
+        if(pcs.ok()) {
             if(options.find("quiet") != std::string::npos)
                 res << pcs.get_output();
             else
                 res << pcs.get_error() << pcs.get_output();
-        else
+        } else
             res << pro.get_error() << ans.get_error() << pcs.get_error();
+
+//        std::cerr << pro.get_error() << ans.get_error() << pcs.get_error() << pcs.get_output();
 
         res.setHeader("Content-Type", "text/plain");
     }
