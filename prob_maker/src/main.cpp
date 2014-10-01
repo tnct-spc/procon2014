@@ -15,7 +15,7 @@
 int constexpr piece_size_max = 128;
 int constexpr piece_size_min = 16;
 int constexpr split_max = 16;
-int constexpr split_min = 1;  // TODO: どうだったっけ?
+int constexpr split_min = 2;
 int constexpr image_size_max = 1024;
 int constexpr image_size_min = split_min * piece_size_min;
 
