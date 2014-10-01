@@ -826,8 +826,6 @@ bool algorithm::impl::must_chagne_select(step_type const& step) const
     // 偶置換, 奇置換の判定を行い, 奇置換であれば true を返す
     // http://www.aji.sakura.ne.jp/algorithm/slide_goal.html
 
-    std::cerr << step.selecting_cur << std::endl;
-
     int change = 0;
     std::vector<point_type> linear_matrix;
     std::vector<point_type> original_linear_matrix;
@@ -856,7 +854,6 @@ bool algorithm::impl::must_chagne_select(step_type const& step) const
 
     // original_linear_matrix の配置になるように linear_matrix を並び替える
     for (int i = 0; i < linear_matrix.size(); ++i) {
-        for (auto const& x : linear_matrix) std::cerr << boost::format("%1$02X ") % x.num() ; std::cerr << ": " << change << std::endl;
         if (linear_matrix[i] != original_linear_matrix[i]) {
             change += std::distance(linear_matrix.begin(), std::find(linear_matrix.begin(), linear_matrix.end(), original_linear_matrix[i])) - i;
             linear_matrix.erase(std::remove(linear_matrix.begin(), linear_matrix.end(), original_linear_matrix[i]), linear_matrix.end());
