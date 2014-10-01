@@ -11,6 +11,7 @@
 #include <sort_algorithm/adjacent.hpp>
 #include <sort_algorithm/Murakami.hpp>
 #include <./gui.hpp>
+
 Murakami::Murakami(question_raw_data const& data, compared_type const& comp)
 	: data_(data), comp_(comp)
 {
@@ -77,6 +78,8 @@ std::vector<answer_type_y> Murakami::operator() (){
 				}
 				std::cout << "\n";
 			}
+			gui::combine_show_image(data_, comp_, block_list);
+
 		}
 		//-------------------------------------ここから第一閉塞----------------------------//
 		for (int i = 0; i < height; i++){
