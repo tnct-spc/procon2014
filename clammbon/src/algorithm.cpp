@@ -3,6 +3,7 @@
 #include <cassert>
 #include <iostream>
 #include <iterator>
+#include <unordered_map>
 #include <boost/bind.hpp>
 #include <boost/coroutine/all.hpp>
 #include <boost/coroutine/coroutine.hpp>
@@ -58,7 +59,7 @@ private:
     point_type selecting;
     point_type selecting_cur;
     std::queue<step_type> open;
-    std::unordered_set<step_type> closed;
+    std::unordered_map<point_type, std::unordered_set<step_type>> closed;
     step_type current;
     int width;
     int height;
@@ -232,7 +233,7 @@ void algorithm::impl::add_step<'U'>()
     std::swap(step.matrix[step.selecting_cur.y][step.selecting_cur.x], step.matrix[step.selecting_cur.y - 1][step.selecting_cur.x]);
     step.selecting_cur.y -= 1;
     step.answer.list.back().actions.push_back('U');
-    if (!closed.count(step)) {
+    if (!closed[step.matrix[step.selecting_cur.y][step.selecting_cur.x]].count(step)) {
         open.push(step);
     }
 }
@@ -244,7 +245,7 @@ void algorithm::impl::add_step<'R'>()
     std::swap(step.matrix[step.selecting_cur.y][step.selecting_cur.x], step.matrix[step.selecting_cur.y][step.selecting_cur.x + 1]);
     step.selecting_cur.x += 1;
     step.answer.list.back().actions.push_back('R');
-    if (!closed.count(step)) {
+    if (!closed[step.matrix[step.selecting_cur.y][step.selecting_cur.x]].count(step)) {
         open.push(step);
     }
 }
@@ -256,7 +257,7 @@ void algorithm::impl::add_step<'D'>()
     std::swap(step.matrix[step.selecting_cur.y][step.selecting_cur.x], step.matrix[step.selecting_cur.y + 1][step.selecting_cur.x]);
     step.selecting_cur.y += 1;
     step.answer.list.back().actions.push_back('D');
-    if (!closed.count(step)) {
+    if (!closed[step.matrix[step.selecting_cur.y][step.selecting_cur.x]].count(step)) {
         open.push(step);
     }
 }
@@ -268,7 +269,7 @@ void algorithm::impl::add_step<'L'>()
     std::swap(step.matrix[step.selecting_cur.y][step.selecting_cur.x], step.matrix[step.selecting_cur.y][step.selecting_cur.x - 1]);
     step.selecting_cur.x -= 1;
     step.answer.list.back().actions.push_back('L');
-    if (!closed.count(step)) {
+    if (!closed[step.matrix[step.selecting_cur.y][step.selecting_cur.x]].count(step)) {
         open.push(step);
     }
 }
@@ -535,8 +536,17 @@ void algorithm::impl::brute_force()
                 add_step<'L'>();
             }
         }
-        closed.insert(current);
+        closed[current.matrix[current.selecting_cur.y][current.selecting_cur.x]].insert(current);
     }
+
+    // 和集合を求めてみる
+    std::unordered_set<step_type> hoge;
+    for (auto const& fuga : closed) {
+        for (step_type const& piyo : fuga.second) {
+            hoge.insert(piyo);
+        }
+    }
+    std::cout << hoge.size() << std::endl;
 
     if (!finished) {
         throw std::runtime_error("Couldn't solve the problem.");
