@@ -68,7 +68,7 @@ public:
 private:
     ppm_reader reader_;
     network::client netclient_;
-    pixel_sorter<yrange5> sorter_;
+    pixel_sorter<yrange2> sorter_;
 };
 
 // 問題の並び替えパズル自体は，人間が行うほうがいいかもしれない．

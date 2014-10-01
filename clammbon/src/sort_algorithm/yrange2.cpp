@@ -118,11 +118,14 @@ std::vector<answer_type_y> yrange2::operator() ()
 		return 0 <= p.x && p.x < width && 0 <= p.y && p.y < height;
 	};
 
-	std::vector<std::vector<point_type>> sorted_matrix(
+	std::vector<std::vector<std::vector<point_type>>> sorted_matrix(
+		width*height,
+		std::vector<std::vector<point_type>>(
 		height * 2 - 1,
 		std::vector<point_type>(
 		width * 2 - 1,
 		{ std::numeric_limits<int>::max(), std::numeric_limits<int>::max() }
+		)
 		)
 		);
 
@@ -132,96 +135,99 @@ std::vector<answer_type_y> yrange2::operator() ()
 
 
 	//すべてのピースから並べ始めるためのループ
-	for (int c_y = 0; c_y < height; ++c_y) for (int c_x = 0; c_x < width; ++c_x)
+	#ifdef _OPENMP
+	#pragma omp parallel for
+	#endif
+	for (int c = 0; c < width*height; ++c)
 	{
-		sorted_matrix[height - 1][width - 1] = point_type{ c_x, c_y };
+		sorted_matrix.at(c)[height - 1][width - 1] = point_type{ c%width, c/width };
 
 		//上に見ていく
 		for (int i = 0; i < height - 1; ++i)
 		{
-			auto const& adjacent = sorted_matrix[height - 1 - i][width - 1];
-			sorted_matrix[height - 2 - i][width - 1] = adjacent_data_[adjacent.y][adjacent.x].up;
-			if (sorted_matrix[height - 2 - i][width - 1].y < 0 || sorted_matrix[height - 2 - i][width - 1].y >= height) break;
+			auto const& adjacent = sorted_matrix.at(c)[height - 1 - i][width - 1];
+			sorted_matrix.at(c)[height - 2 - i][width - 1] = adjacent_data_[adjacent.y][adjacent.x].up;
+			if (sorted_matrix.at(c)[height - 2 - i][width - 1].y < 0 || sorted_matrix.at(c)[height - 2 - i][width - 1].y >= height) break;
 		}
 		//下に見ていく
 		for (int i = 0; i < height - 1; ++i)
 		{
-			auto const& adjacent = sorted_matrix[height - 1 + i][width - 1];
-			sorted_matrix[height + i][width - 1] = adjacent_data_[adjacent.y][adjacent.x].down;
-			if (sorted_matrix[height + i][width - 1].y < 0 || sorted_matrix[height + i][width - 1].y >= height) break;
+			auto const& adjacent = sorted_matrix.at(c)[height - 1 + i][width - 1];
+			sorted_matrix.at(c)[height + i][width - 1] = adjacent_data_[adjacent.y][adjacent.x].down;
+			if (sorted_matrix.at(c)[height + i][width - 1].y < 0 || sorted_matrix.at(c)[height + i][width - 1].y >= height) break;
 		}
 		//右に見ていく
 		for (int i = 0; i < width - 1; ++i)
 		{
-			auto const& adjacent = sorted_matrix[height - 1][width - 1 + i];
-			sorted_matrix[height - 1][width + i] = adjacent_data_[adjacent.y][adjacent.x].right;
-			if (sorted_matrix[height - 1][width + i].x < 0 || sorted_matrix[height - 1][width + i].x >= width) break;
+			auto const& adjacent = sorted_matrix.at(c)[height - 1][width - 1 + i];
+			sorted_matrix.at(c)[height - 1][width + i] = adjacent_data_[adjacent.y][adjacent.x].right;
+			if (sorted_matrix.at(c)[height - 1][width + i].x < 0 || sorted_matrix.at(c)[height - 1][width + i].x >= width) break;
 		}
 		//左に見ていく
 		for (int i = 0; i < width - 1; ++i)
 		{
-			auto const& adjacent = sorted_matrix[height - 1][width - 1 - i];
-			sorted_matrix[height - 1][width - 2 - i] = adjacent_data_[adjacent.y][adjacent.x].left;
-			if (sorted_matrix[height - 1][width - 2 - i].x < 0 || sorted_matrix[height - 1][width - 2 - i].x >= width) break;
+			auto const& adjacent = sorted_matrix.at(c)[height - 1][width - 1 - i];
+			sorted_matrix.at(c)[height - 1][width - 2 - i] = adjacent_data_[adjacent.y][adjacent.x].left;
+			if (sorted_matrix.at(c)[height - 1][width - 2 - i].x < 0 || sorted_matrix.at(c)[height - 1][width - 2 - i].x >= width) break;
 		}
 
 		//中心を除き上に向かってループ，右に見ていく
 		for (int i = 0; i < height - 1; ++i) for (int j = 0; j < width - 1; ++j)
 		{
-			auto const& center = sorted_matrix[height - i - 1][width + j - 1];
-			auto const& upper = sorted_matrix[height - i - 2][width + j - 1];
-			auto const& right = sorted_matrix[height - i - 1][width + j];
+			auto const& center = sorted_matrix.at(c)[height - i - 1][width + j - 1];
+			auto const& upper = sorted_matrix.at(c)[height - i - 2][width + j - 1];
+			auto const& right = sorted_matrix.at(c)[height - i - 1][width + j];
 
 			if (exists(center) && exists(upper) && exists(right))
-				sorted_matrix[height - i - 2][width + j] = ur_choose(comp_, upper, center, right);
+				sorted_matrix.at(c)[height - i - 2][width + j] = ur_choose(comp_, upper, center, right);
 			else
 				break;
 		}
 		//中心を除き上に向かってループ，左に見ていく
 		for (int i = 0; i < height - 1; ++i) for (int j = 0; j < width - 1; ++j)
 		{
-			auto const& center = sorted_matrix[height - i - 1][width - j - 1];
-			auto const& upper = sorted_matrix[height - i - 2][width - j - 1];
-			auto const& left = sorted_matrix[height - i - 1][width - j - 2];
+			auto const& center = sorted_matrix.at(c)[height - i - 1][width - j - 1];
+			auto const& upper = sorted_matrix.at(c)[height - i - 2][width - j - 1];
+			auto const& left = sorted_matrix.at(c)[height - i - 1][width - j - 2];
 
 			if (exists(center) && exists(upper) && exists(left))
-				sorted_matrix[height - i - 2][width - j - 2] = ul_choose(comp_, upper, left, center);
+				sorted_matrix.at(c)[height - i - 2][width - j - 2] = ul_choose(comp_, upper, left, center);
 			else
 				break;
 		}
 		//中心を除き下に向かってループ，右に見ていく
 		for (int i = 0; i < height - 1; ++i) for (int j = 0; j < width - 1; ++j)
 		{
-			auto const& center = sorted_matrix[height + i - 1][width + j - 1];
-			auto const& lower = sorted_matrix[height + i][width + j - 1];
-			auto const& right = sorted_matrix[height + i - 1][width + j];
+			auto const& center = sorted_matrix.at(c)[height + i - 1][width + j - 1];
+			auto const& lower = sorted_matrix.at(c)[height + i][width + j - 1];
+			auto const& right = sorted_matrix.at(c)[height + i - 1][width + j];
 
 			if (exists(center) && exists(lower) && exists(right))
-				sorted_matrix[height + i][width + j] = dr_choose(comp_, center, right, lower);
+				sorted_matrix.at(c)[height + i][width + j] = dr_choose(comp_, center, right, lower);
 			else
 				break;
 		}
 		//中心を除き下に向かってループ，左に見ていく
 		for (int i = 0; i < height - 1; ++i) for (int j = 0; j < width - 1; ++j)
 		{
-			auto const& center = sorted_matrix[height + i - 1][width - j - 1];
-			auto const& lower = sorted_matrix[height + i][width - j - 1];
-			auto const& left = sorted_matrix[height + i - 1][width - j - 2];
+			auto const& center = sorted_matrix.at(c)[height + i - 1][width - j - 1];
+			auto const& lower = sorted_matrix.at(c)[height + i][width - j - 1];
+			auto const& left = sorted_matrix.at(c)[height + i - 1][width - j - 2];
 
 			if (exists(center) && exists(lower) && exists(left))
-				sorted_matrix[height + i][width  - j - 2] = dl_choose(comp_, left, center, lower);
+				sorted_matrix.at(c)[height + i][width  - j - 2] = dl_choose(comp_, left, center, lower);
 			else
 				break;
 		}
 
 		for (int y = 0; y < height; ++y) for (int x = 0; x < width; ++x)
 		{
-			if (array_sum(sorted_matrix, x, y, height, width) == ((width*height - 1)*(width*height) / 2) && get_kind_num(data_, sorted_matrix, x, y) == width*height)
+			if (array_sum(sorted_matrix.at(c), x, y, height, width) == ((width*height - 1)*(width*height) / 2) && get_kind_num(data_, sorted_matrix.at(c), x, y) == width*height)
 			{
 				std::vector<std::vector<point_type>> one_answer(height, std::vector<point_type>(width));
 				for (int i = 0; i < height; i++) for (int j = 0; j < width; j++)
 				{
-					one_answer[i][j] = sorted_matrix[y + i][x + j];
+					one_answer[i][j] = sorted_matrix.at(c)[y + i][x + j];
 				}
 				answer_type_y temp;
 				temp.points = one_answer;
@@ -232,27 +238,27 @@ std::vector<answer_type_y> yrange2::operator() ()
 
 	//#########################################################yrange2.5#########################################################//
 
-	//現段階で重複しているものは1つに絞る
-	// unique()を使う準備としてソートが必要
-	std::sort(answer.begin(), answer.end(), [](answer_type_y a, answer_type_y b){return a.points < b.points; });
-	// unique()をしただけでは後ろにゴミが残るので、eraseで削除する
-	answer.erase(std::unique(answer.begin(), answer.end()), answer.end());
+	////現段階で重複しているものは1つに絞る
+	//// unique()を使う準備としてソートが必要
+	//std::sort(answer.begin(), answer.end(), [](answer_type_y a, answer_type_y b){return a.points < b.points; });
+	//// unique()をしただけでは後ろにゴミが残るので、eraseで削除する
+	//answer.erase(std::unique(answer.begin(), answer.end()), answer.end());
 
-	//縦入れ替え，横入れ替え
-	for (auto &matrix : answer){
-		row_replacement(matrix);
-		column_replacement(matrix);
-		row_replacement(matrix);
-	}
+	////縦入れ替え，横入れ替え
+	//for (auto &matrix : answer){
+	//	row_replacement(matrix);
+	//	column_replacement(matrix);
+	//	row_replacement(matrix);
+	//}
 
-	//もっかいやっとく
-	std::sort(answer.begin(), answer.end(), [](answer_type_y a, answer_type_y b){return a.points < b.points; });
-	answer.erase(std::unique(answer.begin(), answer.end()), answer.end());
+	////もっかいやっとく
+	//std::sort(answer.begin(), answer.end(), [](answer_type_y a, answer_type_y b){return a.points < b.points; });
+	//answer.erase(std::unique(answer.begin(), answer.end()), answer.end());
 
-	//無駄に多く返してもしょうがないので枝抜き
-	int const yrange2_ans = answer.size();
-	std::sort(answer.begin(), answer.end(), [](answer_type_y a, answer_type_y b){return a.score < b.score; });
-	if (answer.size() >= yrange2_show_ans) answer.resize(yrange2_show_ans);
+	////無駄に多く返してもしょうがないので枝抜き
+	//int const yrange2_ans = answer.size();
+	//std::sort(answer.begin(), answer.end(), [](answer_type_y a, answer_type_y b){return a.score < b.score; });
+	//if (answer.size() >= yrange2_show_ans) answer.resize(yrange2_show_ans);
 
 	//一枚のcv::Matにする
 	for (auto& one_answer : answer)
@@ -261,7 +267,7 @@ std::vector<answer_type_y> yrange2::operator() ()
 	}
 
 #ifdef _DEBUG
-    std::cout << "There are " << yrange2_ans << " solutions" << std::endl;
+    std::cout << "There are " << /*yrange2_ans*/answer.size() << " solutions" << std::endl;
 	for (auto const& one_answer : answer)
 	{
 		for (int i = 0; i < one_answer.points.size(); ++i)
