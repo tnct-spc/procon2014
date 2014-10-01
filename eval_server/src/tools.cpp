@@ -63,13 +63,13 @@ std::vector<std::vector<point_type>> load_answer(std::string const& filename)
     std::vector<std::string> lines;
     boost::algorithm::split(lines, src, boost::is_any_of("\r\n"));
 //    std::cerr << lines.size() << " lines\n";
-    for(int i = 0; i < lines.size(); i++) {
+    for(std::vector<std::string>::size_type i = 0; i < lines.size(); i++) {
         if(lines[i] != "") {
             std::vector<std::string> points;
             boost::algorithm::split(points, lines[i], boost::is_any_of(" "));
             // points[j]の例: "(0,0)"
 //            std::cerr << points.size() << " points\n";
-            for(int j = 0; j < points.size(); j++) {
+            for(std::vector<std::string>::size_type j = 0; j < points.size(); j++) {
                 if(points[j] != "") {
 //                    std::cerr << "(" << i << "," << j << "): ";
                     std::vector<std::string> v;
