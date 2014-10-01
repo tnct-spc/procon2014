@@ -107,26 +107,33 @@ Murakami::block_combination Murakami::eval_block(const block_type& block1, const
 		return ((x >= 0 && x < b2_width && y >= 0 && y < b2_height) && (block2[y][x].x != -1 || block2[y][x].y != -1));
 
 	};
-	auto const block_size_check = [b1_width, b1_height, b2_width, b2_height, width, height](int shift_x,int shift_y){
+	auto const block_size_check = [b1_width, b1_height, b2_width, b2_height, width, height](int shift_y,int shift_x){
+		/*
 		point_type lu, rd;
 		lu.x = std::min(0, shift_x);
 		lu.y = std::min(0, shift_y);
 		rd.x = std::max(b1_width, shift_x + b2_width);
 		rd.y = std::max(b1_height, shift_y + b2_height);
 		return ((rd.x - lu.x) <= width && (rd.y - lu.y) <= height);
+		*/
+		return (std::max(b1_width, shift_x + b2_width) - std::min(0, shift_x) <= width && std::max(b1_height, shift_y + b2_height) - std::min(0, shift_y) <= height);
 	};
-	boost::multiprecision::cpp_int best_block_c = std::numeric_limits<int_fast64_t>::min();
+	int_fast64_t best_block_c = std::numeric_limits<int_fast64_t>::min();
 	int best_shift_i = std::numeric_limits<int>::min();
 	int best_shift_j = std::numeric_limits<int>::min();
 	for (int i = -b2_height -1; i <= b1_height + b2_height + 1; i++){
 		for (int j = -b2_width -1; j <= b1_width + b2_width + 1; j++){
 			bool confliction = false;
-			boost::multiprecision::cpp_int block_c = 0;
+			if (!block_size_check(i, j)){
+
+				continue;
+			}
+			int_fast64_t block_c = 0;
 			bool empty_block_c = true;
 			int rank1_num = 0;//キャストが面倒くさいからint_fast64_tで
 			for (int k = 0; k < b1_height; k++){
 				for (int l = 0; l < b1_width; l++){
-					if (block2_exists(k - i, l - j) && block1_exists(k, l) && block_size_check(i, j)){
+					if (block2_exists(k - i, l - j) && block1_exists(k, l)){
 							confliction = true;
 							break;
 					}else if (block1_exists(k, l) && !block2_exists(k - i, l - j)){
@@ -157,9 +164,9 @@ Murakami::block_combination Murakami::eval_block(const block_type& block1, const
 				if (confliction)break;
 			}
 			if (!confliction && !empty_block_c){
-				//block_c *= rank1_num; //0を掛けるのは怖い
-				if(block_c < 0)block_c = -pow(block_c, rank1_num + 1);
-				if (block_c > 0)block_c = pow(block_c, rank1_num + 1);
+				block_c *= rank1_num; //0を掛けるのは怖い
+				//if(block_c < 0)block_c = -pow(block_c, rank1_num + 1);
+				//if (block_c > 0)block_c = pow(block_c, rank1_num + 1);
 				if (block_c >= best_block_c){
 					//block_size_check(i, j)
 					best_block_c = block_c;
