@@ -21,6 +21,13 @@ std::vector<answer_type_y> Murakami::operator() (){
 	auto const width = data_.split_num.first;
 	auto const height = data_.split_num.second;
 	//sort_compare();//sorted_comparation作成
+	#ifdef _OPENMP
+	//OpenMPを使ったコード
+	std::cout << "use openMP" << std::endl;
+	#else
+	//OpenMPを使わない場合のコード
+	std::cout << "no use openMP" << std::endl;
+	#endif
 	make_sorted_comparation();
 	std::cout << "make_ok" << std::endl;
 	std::vector<std::vector<std::vector<point_type>>> block_list(
@@ -50,13 +57,25 @@ std::vector<answer_type_y> Murakami::operator() (){
 
 			block_combination best_block_combination;//一番いいblockの組み合わせいれるところ
 			best_block_combination.score = std::numeric_limits<int_fast64_t>::min();
+			block_combination b;
+			/*
 			for (const auto& i : block_list){//ブロック同士を比較するループ
 				for (const auto& j : block_list){
 					if (i == j) continue;
-
-					block_combination b = std::move(eval_block(i, j));
+					b = eval_block(std::move(i), std::move(j));
 					if (best_block_combination.score < b.score){
 						best_block_combination = std::move(b); //TODO 同じ値があったらどうしよ
+					}
+				}
+			}
+			*/
+			#pragma omp parallel for
+			for (int i = 0; i < block_list.size(); i++){//ブロック比較ループ改良
+				for (int j = i; j < block_list.size(); j++){
+					if (i == j) continue;
+					b = eval_block(std::move(block_list[i]), std::move(block_list[j]));
+					if (best_block_combination.score < b.score){
+						best_block_combination = std::move(b); 
 					}
 				}
 			}
@@ -78,7 +97,7 @@ std::vector<answer_type_y> Murakami::operator() (){
 				}
 				std::cout << "\n";
 			}
-			gui::combine_show_image(data_, comp_, block_list);
+			//gui::combine_show_image(data_, comp_, block_list);
 
 		}
 		//-------------------------------------ここから第一閉塞----------------------------//
@@ -183,37 +202,13 @@ Murakami::block_combination Murakami::eval_block(const block_type& block1, const
 		std::cout << "結合すべきブロックがなかった" << std::endl;
 	}
 	block_combination return_struct{
-		block1,
-		block2,
+		std::move(block1),
+		std::move(block2),
 		best_shift_j,
 		best_shift_i,
 		best_block_c
 	};
 	return std::move(return_struct);
-}
-Murakami::block_combination Murakami::eval_block2(const block_type& block1, const block_type& block2){
-	auto const width = data_.split_num.first;
-	auto const height = data_.split_num.second;
-	int const b1_width = block1[0].size();
-	int const b1_height = block1.size();
-	int const b2_width = block2[0].size();
-	int const b2_height = block2.size();
-	auto const block1_exists = [b1_height, b1_width, &block1](int y, int x){
-		return ((x >= 0 && x < b1_width && y >= 0 && y < b1_height) && (block1[y][x].x != -1 || block1[y][x].y != -1));
-	};
-	auto const block2_exists = [b2_height, b2_width, &block2](int y, int x){
-		return ((x >= 0 && x < b2_width && y >= 0 && y < b2_height) && (block2[y][x].x != -1 || block2[y][x].y != -1));
-
-	};
-	auto const block_size_check = [b1_width, b1_height, b2_width, b2_height, width, height](int shift_x, int shift_y){
-		point_type lu, rd;
-		lu.x = std::min(0, shift_x);
-		lu.y = std::min(0, shift_y);
-		rd.x = std::max(b1_width, shift_x + b2_width);
-		rd.y = std::max(b1_height, shift_y + b2_height);
-		return ((rd.x - lu.x) <= width && (rd.y - lu.y) <= height);
-	};
-
 }
 std::int_fast64_t Murakami::eval_piece(const point_type& p1, const point_type& p2, direction dir){
 	int_fast64_t score = 0;
