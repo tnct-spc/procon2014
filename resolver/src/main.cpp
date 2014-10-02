@@ -72,6 +72,9 @@ private:
         auto sorter_resolve = sorter_(raw, splitted);
         formed.block = std::move(sorter_resolve);
 
+		// 手作業用のウィンドウの作成
+		auto future = gui::make_mansort_window(splitted, "exchange");
+
         // TODO: yrange5の実行
 
         return std::move(formed);
@@ -110,7 +113,7 @@ int main()
     auto const token     = "3935105806";
 
     analyzer        analyze(ploblemid, token);
-    algorithm       algo;
+    algorithm_2       algo;
     network::client client;
 
     // 原画像推測部
@@ -124,9 +127,6 @@ int main()
     // 1発目の提出
     auto submit_result = client.submit(ploblemid, token, answer.get());
     std::cout << submit_result.get() << std::endl;
-
-//    // 手作業用のウィンドウの作成
-//    auto future = gui::make_mansort_window(splitted, "test");
 
     // 2発目以降の提出など(yrange5)
     auto const second_suggested = analyze();

@@ -111,7 +111,7 @@ std::vector<answer_type_y> Murakami::operator() (){
 			std::cout << "\n";
 		}
 
-		gui::combine_show_image(data_, comp_, block_list.at(0));
+		//gui::combine_show_image(data_, comp_, block_list.at(0)); //完成画像を表示
 		return std::vector<answer_type_y>{ { block_list.at(0), 0, cv::Mat() } };
 		//-------------------------------------ここまで第一閉塞-----------------------------//
 
