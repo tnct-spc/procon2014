@@ -176,10 +176,13 @@ int main(int argc, char* argv[])
         // 画像貼り合わせと .ans ファイル文字列の作成
         output_image = cv::Mat(output_size, input_image.type());
         answer_stream.str("");
+        int index;
         for (int y = 0, i = 0; y < vertical_split; ++y) {
             for (int x = 0; x < horizontal_split; ++x, ++i) {
                 pieces[i].second.copyTo(output_image(cv::Rect(x * piece_width, y * piece_height, piece_width, piece_height)));
-                answer_stream << boost::format("(%1%,%2%) ") % pieces[i].first.x % pieces[i].first.y;
+                auto it = std::find_if(pieces.begin(), pieces.end(), [&x, &y](auto& piece){ return piece.first.x == x && piece.first.y == y; });
+                index = static_cast<int>(std::distance(pieces.begin(), it));
+                answer_stream << boost::format("(%1%,%2%) ") % (index % horizontal_split) % (index / horizontal_split);
             }
             answer_stream << std::endl;
         }
