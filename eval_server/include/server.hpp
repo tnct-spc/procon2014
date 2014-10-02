@@ -17,31 +17,28 @@ private:
     std::ostringstream outerr, output;
     bool sane;
 public:
-    pcserver()
+    pcserver() : sane(false)
     {
         problem_set = "default";
-        sane = false;
     }
-    pcserver(std::string s)
+    pcserver(std::string s) : sane(false)
     {
         problem_set = s;
-        sane = false;
     }
     inline std::string const get_problem_set()
     {
         return problem_set;
     }
     void parse(question_data const& problem, answer_type const& answer);
-    answer_type const string_to_answer(std::string const s);
     inline bool ok()
     {
         return sane;
     }
-    inline std::string && get_error()
+    inline std::string get_error()
     {
         return std::move(outerr.str());
     }
-    inline std::string && get_output()
+    inline std::string get_output()
     {
         return std::move(output.str());
     }
