@@ -8,6 +8,8 @@
 #include <vector>
 #include <algorithm>
 #include <cassert>
+#include <sstream>
+#include <string>
 #include <iostream>
 #include <iterator>
 #include <boost/bind.hpp>
@@ -173,7 +175,7 @@ algorithm_2::~algorithm_2()
 	delete[] agotable;
 }
 
-auto algorithm_2::get() -> boost::optional<return_type>
+auto algorithm_2::get() -> boost::optional<answer_type>
 {
 	std::cout << "algorythm_2 start" << std::endl;
 	// ‰æ‘œ
@@ -281,7 +283,41 @@ auto algorithm_2::get() -> boost::optional<return_type>
 	//stop
 	//int stdebug;
 	//std::cin >> stdebug;
-	return 0;
+	answer_type answerlist;
+	point_type position;
+	std::ostringstream stream;
+	answerlist.list.resize(1000);//‘å‚«‚³‚Í“K“–
+	int num = 0;
+	for (int i = 0; i < g_history_limit;){
+		position.y = g_history[i];
+		i++;
+		position.x = g_history[i];
+		i++;
+		for (; i < g_history_limit && g_history[i] >= 16; i++){
+			switch (g_history[i]){
+			case 16:
+			case 20:
+				stream << "U";
+				break;
+			case 17:
+			case 21:
+				stream << "R";
+				break;
+			case 18:
+			case 22:
+				stream << "D";
+				break;
+			case 19:
+			case 23:
+				stream << "L";
+				break;
+			}
+		}
+		answerlist.list[num] = { position, stream.str() };
+		stream.str("");
+		num++;
+	}
+	return answerlist;
 	//return pimpl_->get();
 }
 
