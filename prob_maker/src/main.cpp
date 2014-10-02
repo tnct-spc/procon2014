@@ -191,9 +191,9 @@ int main(int argc, char* argv[])
 
         // ヘッダ文字列の設定
         header.erase();
-        header += (boost::format("# %1% %2%\n") % horizontal_split % vertical_split).str();
-        header += (boost::format("# %1%\n") % selectable).str();
-        header += (boost::format("# %1% %2%\n") % select_cost % change_cost).str();
+        header += (boost::format("# %1% %2%\r\n") % horizontal_split % vertical_split).str();
+        header += (boost::format("# %1%\r\n") % selectable).str();
+        header += (boost::format("# %1% %2%\r\n") % select_cost % change_cost).str();
 
         // バッファへ書き込み
         cv::imencode(".ppm", output_image, output_buffer, std::vector<int>(CV_IMWRITE_PXM_BINARY));
