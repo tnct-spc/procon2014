@@ -62,31 +62,29 @@ std::vector<std::vector<point_type>> load_answer(std::string const& filename)
     std::string const src = oss.str();
     std::vector<std::string> lines;
     boost::algorithm::split(lines, src, boost::is_any_of("\r\n"));
+    lines.erase(std::remove(lines.begin(), lines.end(), ""));
 //    std::cerr << lines.size() << " lines\n";
     for(std::vector<std::string>::size_type i = 0; i < lines.size(); i++) {
-        if(lines[i] != "") {
-            std::vector<std::string> points;
-            boost::algorithm::split(points, lines[i], boost::is_any_of(" "));
-            // points[j]の例: "(0,0)"
-//            std::cerr << points.size() << " points\n";
-            for(std::vector<std::string>::size_type j = 0; j < points.size(); j++) {
-                if(points[j] != "") {
-//                    std::cerr << "(" << i << "," << j << "): ";
-                    std::vector<std::string> v;
-                    boost::algorithm::split(v, points[j], boost::is_any_of(","));
-                    int x = std::stoi(v[0].substr(1));
-                    int y = std::stoi(v[1].substr(0, v[1].size() - 1));
-//                    std::cerr << "(" << x << "," << y << ")\n";
-                    // r.size() == rows
-                    // r[foo].size() == cols
-                    if(r.size() < y + 1)
-                        r.resize(y + 1);
-                    if(r[y].size() < x + 1)
-                        r[y].resize(x + 1);
-                    r[y][x].x = j;
-                    r[y][x].y = i;
-                }
-            }
+        std::vector<std::string> points;
+        boost::algorithm::split(points, lines[i], boost::is_any_of(" "));
+        points.erase(std::remove(points.begin(), points.end(), ""));
+        // points[j]の例: "(0,0)"
+//        std::cerr << points.size() << " points\n";
+        for(std::vector<std::string>::size_type j = 0; j < points.size(); j++) {
+//            std::cerr << "(" << i << "," << j << "): ";
+            std::vector<std::string> v;
+            boost::algorithm::split(v, points[j], boost::is_any_of(","));
+            int x = std::stoi(v[0].substr(1));
+            int y = std::stoi(v[1].substr(0, v[1].size() - 1));
+//            std::cerr << "(" << x << "," << y << ")\n";
+            // r.size() == rows
+            // r[foo].size() == cols
+            if(r.size() < y + 1)
+                r.resize(y + 1);
+            if(r[y].size() < x + 1)
+                r[y].resize(x + 1);
+            r[y][x].x = j;
+            r[y][x].y = i;
         }
     }
     std::cerr << "answer loaded\n";

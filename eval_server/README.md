@@ -74,9 +74,10 @@ optionsはオプション(現時点で有効なのはquietのみ)(独自仕様)
 
 ## ファイル構成
 pcserverがリソースを見に行く場所は環境変数によって指定することができます  
-指定できるのは`PCS_RESPREF`、`PCS_RESDIR`、`PCS_PROBDIR`です  
+指定できるのは`PCS_RESPREF`、`PCS_RESDIR`、`PCS_PROBDIR`、そして`PCS_PROBSET`です  
 `PCS_RESPREF`はデフォルトでは`C:\pcserver` (Windows)、`/usr/share/pcserver` (それ以外)です  
 `PCS_RESDIR`はフォームとかのhtmlファイルが入っているディレクトリで、デフォルトでは`$(PCS_RESPREF)/res`です(`PCS_RESPREF`だけを指定した場合にはそれに従う)  
 `PCS_PROBDIR`は問題ファイルと位置ファイルが入っているディレクトリで、デフォルトでは`$(PCS_RESPREF)/problem_set`です(同上)  
+`PCS_PROBSET`は問題セットを指定します(デフォルトではdefault)  
 問題ファイルは`$(PCS_PROBDIR)/<問題セット>/problem/probXX.ppm`、位置ファイルは`$(PCS_PROBDIR)/<問題セット>/position/probXX.pos`みたいなところにあります
 

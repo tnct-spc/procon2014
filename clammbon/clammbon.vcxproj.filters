@@ -58,7 +58,10 @@
       <Filter>ソース ファイル\sort_algorithm</Filter>
     </ClCompile>
     <ClCompile Include="src\sort_algorithm\Murakami.cpp">
-      <Filter>ソース ファイル\sort_algorithm</Filter>
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="src\algorithm_2.cpp">
+      <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -102,7 +105,10 @@
       <Filter>ヘッダー ファイル\sort_algorithm</Filter>
     </ClInclude>
     <ClInclude Include="include\sort_algorithm\Murakami.hpp">
-      <Filter>ヘッダー ファイル\sort_algorithm</Filter>
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="include\algorithm_2.hpp">
+      <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
