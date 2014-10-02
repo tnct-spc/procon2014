@@ -92,15 +92,16 @@ cv::Mat yrange2::combine_image(answer_type_y const& answer)
 	splitter sp;//どこからか持ってきてたsplitter
 	split_image_type splitted = sp.split_image(data_);
 	cv::Mat comb_pic(cv::Size(data_.size.first, data_.size.second), CV_8UC3);
-		for (int i = 0; i < data_.split_num.second; ++i){
-			for (int j = 0; j < data_.split_num.first; ++j){
-				cv::Rect roi_rect(j*one_picx, i*one_picy, one_picx, one_picy);
-				cv::Mat roi_mat(comb_pic, roi_rect);
+#pragma omp parallel
+	for (int i = 0; i < data_.split_num.second; ++i){
+		for (int j = 0; j < data_.split_num.first; ++j){
+			cv::Rect roi_rect(j*one_picx, i*one_picy, one_picx, one_picy);
+			cv::Mat roi_mat(comb_pic, roi_rect);
 			splitted[answer.points[i][j].y][answer.points[i][j].x].copyTo(roi_mat);
-			}
 		}
-	return std::move(comb_pic.clone());
 	}
+	return std::move(comb_pic.clone());
+}
 
 yrange2::yrange2(question_raw_data const& data, compared_type const& comp)
     : data_(data), comp_(comp), adjacent_data_(select_minimum(comp))
@@ -135,12 +136,10 @@ std::vector<answer_type_y> yrange2::operator() ()
 
 
 	//すべてのピースから並べ始めるためのループ
-	#ifdef _OPENMP
-	#pragma omp parallel for
-	#endif
+#pragma omp parallel for
 	for (int c = 0; c < width*height; ++c)
 	{
-		sorted_matrix.at(c)[height - 1][width - 1] = point_type{ c%width, c/width };
+		sorted_matrix.at(c)[height - 1][width - 1] = point_type{ c%width, c / width };
 
 		//上に見ていく
 		for (int i = 0; i < height - 1; ++i)
@@ -215,59 +214,61 @@ std::vector<answer_type_y> yrange2::operator() ()
 			auto const& left = sorted_matrix.at(c)[height + i - 1][width - j - 2];
 
 			if (exists(center) && exists(lower) && exists(left))
-				sorted_matrix.at(c)[height + i][width  - j - 2] = dl_choose(comp_, left, center, lower);
+				sorted_matrix.at(c)[height + i][width - j - 2] = dl_choose(comp_, left, center, lower);
 			else
 				break;
 		}
+	}
 
+	for (int c = 0; c < height*width; ++c)
+	{
 		for (int y = 0; y < height; ++y) for (int x = 0; x < width; ++x)
 		{
 			if (array_sum(sorted_matrix.at(c), x, y, height, width) == ((width*height - 1)*(width*height) / 2) && get_kind_num(data_, sorted_matrix.at(c), x, y) == width*height)
 			{
-				std::vector<std::vector<point_type>> one_answer(height, std::vector<point_type>(width));
+				std::vector<std::vector<point_type>> one_answer(height, std::vector<point_type>(width, point_type{ -1, -1 }));
 				for (int i = 0; i < height; i++) for (int j = 0; j < width; j++)
 				{
 					one_answer[i][j] = sorted_matrix.at(c)[y + i][x + j];
 				}
-				answer_type_y temp;
-				temp.points = one_answer;
-				answer.push_back(std::move(temp));
+				answer.push_back(answer_type_y{ one_answer, 0, cv::Mat() });
 			}
 		}
 	}
-
 	//#########################################################yrange2.5#########################################################//
 
-	////現段階で重複しているものは1つに絞る
-	//// unique()を使う準備としてソートが必要
-	//std::sort(answer.begin(), answer.end(), [](answer_type_y a, answer_type_y b){return a.points < b.points; });
-	//// unique()をしただけでは後ろにゴミが残るので、eraseで削除する
-	//answer.erase(std::unique(answer.begin(), answer.end()), answer.end());
+	//現段階で重複しているものは1つに絞る
+	// unique()を使う準備としてソートが必要
+	std::sort(answer.begin(), answer.end(), [](answer_type_y a, answer_type_y b){return a.points < b.points; });
+	// unique()をしただけでは後ろにゴミが残るので、eraseで削除する
+	answer.erase(std::unique(answer.begin(), answer.end()), answer.end());
 
-	////縦入れ替え，横入れ替え
-	//for (auto &matrix : answer){
-	//	row_replacement(matrix);
-	//	column_replacement(matrix);
-	//	row_replacement(matrix);
-	//}
+	//縦入れ替え，横入れ替え
+#pragma omp parallel
+	for (auto &matrix : answer)
+	{
+		row_replacement(matrix);
+		column_replacement(matrix);
+	}
 
-	////もっかいやっとく
-	//std::sort(answer.begin(), answer.end(), [](answer_type_y a, answer_type_y b){return a.points < b.points; });
-	//answer.erase(std::unique(answer.begin(), answer.end()), answer.end());
+	//もっかいやっとく
+	std::sort(answer.begin(), answer.end(), [](answer_type_y a, answer_type_y b){return a.points < b.points; });
+	answer.erase(std::unique(answer.begin(), answer.end()), answer.end());
 
-	////無駄に多く返してもしょうがないので枝抜き
-	//int const yrange2_ans = answer.size();
-	//std::sort(answer.begin(), answer.end(), [](answer_type_y a, answer_type_y b){return a.score < b.score; });
-	//if (answer.size() >= yrange2_show_ans) answer.resize(yrange2_show_ans);
+	//無駄に多く返してもしょうがないので枝抜き
+	int const yrange2_ans = answer.size();
+	std::sort(answer.begin(), answer.end(), [](answer_type_y a, answer_type_y b){return a.score < b.score; });
+	if (answer.size() >= yrange2_show_ans) answer.resize(yrange2_show_ans);
 
 	//一枚のcv::Matにする
+#pragma omp parallel
 	for (auto& one_answer : answer)
 	{
 		one_answer.mat_image = std::move(combine_image(one_answer));
 	}
 
 #ifdef _DEBUG
-    std::cout << "There are " << /*yrange2_ans*/answer.size() << " solutions" << std::endl;
+    std::cout << "There are " << yrange2_ans << " solutions" << std::endl;
 	for (auto const& one_answer : answer)
 	{
 		for (int i = 0; i < one_answer.points.size(); ++i)
