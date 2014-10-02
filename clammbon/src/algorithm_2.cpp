@@ -279,8 +279,8 @@ auto algorithm_2::get() -> boost::optional<return_type>
 
 
 	//stop
-	int stdebug;
-	std::cin >> stdebug;
+	//int stdebug;
+	//std::cin >> stdebug;
 	return 0;
 	//return pimpl_->get();
 }

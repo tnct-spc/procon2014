@@ -99,7 +99,7 @@ int main()
     auto const data = analyze(1, "test token");
     auto const converted = convert_block(data);
 
-    algorithm_2 algo;
+    algorithm algo;
     algo.reset(converted);
 
     auto const answer = algo.get();
