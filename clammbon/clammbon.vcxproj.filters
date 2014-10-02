@@ -57,6 +57,9 @@
     <ClCompile Include="src\sort_algorithm\yrange5.cpp">
       <Filter>ソース ファイル\sort_algorithm</Filter>
     </ClCompile>
+    <ClCompile Include="src\sort_algorithm\Murakami.cpp">
+      <Filter>ソース ファイル\sort_algorithm</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\gui.hpp">
@@ -96,6 +99,9 @@
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="include\sort_algorithm\yrange5.hpp">
+      <Filter>ヘッダー ファイル\sort_algorithm</Filter>
+    </ClInclude>
+    <ClInclude Include="include\sort_algorithm\Murakami.hpp">
       <Filter>ヘッダー ファイル\sort_algorithm</Filter>
     </ClInclude>
   </ItemGroup>

@@ -64,7 +64,7 @@ private:
         auto rhs_it = rhs.begin(), rhs_end = rhs.end();
 
         int s = 0;
-		#pragma omp parallel for
+		//#pragma omp parallel for
         for(; lhs_it != lhs_end && rhs_it != rhs_end; ++lhs_it, ++rhs_it)
         {
             s += pixel_comparison(*lhs_it, *rhs_it);
