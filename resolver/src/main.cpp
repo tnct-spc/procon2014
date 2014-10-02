@@ -10,6 +10,7 @@
 #include "ppm_reader.hpp"
 #include "splitter.hpp"
 #include "algorithm.hpp"
+#include "algorithm_2.hpp"
 #include "gui.hpp"
 #include "network.hpp"
 
