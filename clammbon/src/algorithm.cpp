@@ -468,6 +468,7 @@ void algorithm::impl::brute_force()
             if (x == width - 1 && y == height - 1) {
                 continue;
             }
+            step_type first_step = {answer, selecting_cur, matrix};
             first_step.selecting_cur = point_type{x, y};
             first_step.answer.list.push_back({first_step.selecting_cur, ""});
             open.push(first_step);
