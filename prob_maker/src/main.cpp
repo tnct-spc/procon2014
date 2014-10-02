@@ -171,7 +171,9 @@ int main(int argc, char* argv[])
         }
 
         // シャッフル
-        std::shuffle(pieces.begin(), pieces.end(), std::mt19937());
+        std::random_device rand_device;
+        std::default_random_engine rand_engine(rand_device());
+        std::shuffle(pieces.begin(), pieces.end(), rand_engine);
 
         // 画像貼り合わせと .ans ファイル文字列の作成
         output_image = cv::Mat(output_size, input_image.type());
