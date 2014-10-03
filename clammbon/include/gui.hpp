@@ -7,14 +7,22 @@
 
 namespace gui
 {
-    void destroy_all_window();
+    namespace impl{ class MoveWindow; }
 
-    std::future<int> make_window(image_type const& image, std::string const& window_name = "Untitled");
+    int wait_all_window();
+    
+    boost::shared_ptr<impl::MoveWindow> make_mansort_window(
+        split_image_type const& splitted,
+        std::vector<std::vector<point_type>> const& default_position,
+        std::string const& window_name = ""
+        );
 
-    std::future<std::vector<std::vector<point_type>>> make_mansort_window(
+    boost::shared_ptr<impl::MoveWindow> make_mansort_window(
         split_image_type const& splitted,
         std::string const& window_name = ""
         );
+    
+    boost::optional<std::vector<std::vector<point_type>>> get_result(boost::shared_ptr<impl::MoveWindow>& ptr);
 
 	void combine_show_image(question_raw_data const& data_, compared_type const& comp_, std::vector<answer_type_y> const& answer);
 	void combine_show_image(question_raw_data const& data_, compared_type const& comp_, std::vector<std::vector<point_type>>const& matrix);

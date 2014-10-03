@@ -1,5 +1,6 @@
 ﻿#include <mutex>
 #include <vector>
+#include <boost/enable_shared_from_this.hpp>
 #include <FL/Fl.H>
 #include <FL/Fl_Window.H>
 #include <FL/Fl_Image.H>
@@ -22,13 +23,15 @@ namespace impl
         point_type const first_point_;
     };
 
-    class MoveWindow : public Fl_Window
+    class MoveWindow : public Fl_Window, public boost::enable_shared_from_this<MoveWindow>
     {
     public:
-        MoveWindow(split_image_type const& images, std::string const& window_name);
+        typedef std::vector<std::vector<point_type>> position_type;
+
+        MoveWindow(split_image_type const& images, position_type const& positions, std::string const& window_name);
         virtual ~MoveWindow() = default;
 
-        void set_data(std::vector<std::vector<point_type>> const& possitions);
+        void set_data(std::vector<std::vector<point_type>> const& positions);
 
         // 結果を返す関数であるが，期待通りの働きをしない
         std::vector<std::vector<point_type>> result() const;
@@ -49,6 +52,7 @@ namespace impl
         bool border_check(int const x, int const y);          // TrueならWindow内
         point_type window_to_point(int const x, int const y); // Window上の座標から，point_typeを算出
         int handle(int event) override;
+        void show() override;
 
     private:
         splitter const sp_;
@@ -70,6 +74,7 @@ namespace impl
         std::vector<std::vector<std::unique_ptr<MoveBox>>> boxes_;
 
         std::vector<std::vector<point_type>> positions_;
+        boost::shared_ptr<MoveWindow>        this_shared_;
     };
 
     MoveBox::MoveBox(point_type const& point, int const x, int const y, int const w, int const h)
@@ -83,8 +88,8 @@ namespace impl
     }
 
 
-    MoveWindow::MoveWindow(split_image_type const& images, std::string const& window_name)
-        : Fl_Window(/*temporary size*/10, 10), window_name_(window_name), sp_(), latest_button_(0),
+    MoveWindow::MoveWindow(split_image_type const& images, position_type const& positions, std::string const& window_name)
+        : Fl_Window(/*temporary size*/10, 10), window_name_(window_name), positions_(positions), sp_(), latest_button_(0), this_shared_(nullptr),
           select_begin_({-1,-1}), select_end_({-1,-1}),
           image_width_ (images[0][0].cols),
           image_height_(images[0][0].rows),
@@ -141,19 +146,6 @@ namespace impl
             boxes_.push_back(std::move(line));
         }
 
-        //
-        positions_.clear();
-        positions_.reserve(split_y_);
-        for(int i=0; i<split_y_; ++i)
-        {
-            std::vector<point_type> line;
-            line.reserve(split_x_);
-            for(int j=0; j<split_x_; ++j)
-            {
-                line.push_back(point_type{j, i});
-            }
-            positions_.push_back(std::move(line));
-        }
         boxes_redraw();
     }
     
@@ -170,8 +162,10 @@ namespace impl
 
     void MoveWindow::boxes_redraw()
     {
-        int const window_width  = positions_.at(0).size() * image_width_;
-        int const window_height = positions_.size() * image_height_;
+        int const pos_width     = positions_.at(0).size();
+        int const pos_height    = positions_.size();
+        int const window_width  = pos_width * image_width_;
+        int const window_height = pos_height * image_height_;
         this->size(window_width, window_height);
 
         for(int i = 0; i < positions_.size(); ++i)
@@ -182,9 +176,10 @@ namespace impl
 
                 auto& target_box = boxes_[positions_[i][j].y][positions_[i][j].x];
                 target_box->resize(image_width_*j, image_height_*i, image_width_, image_height_);
-                target_box->redraw();
             }
         }
+
+        redraw();
 
         return;
     }
@@ -232,6 +227,9 @@ namespace impl
     {
         if(latest_button_ == FL_LEFT_MOUSE)
         {
+            // 真横との交換でなければ実行しない
+            if(event_box.manhattan(move_begin_) != 1) return;
+
             // 交換
             if(select_begin_==point_type{-1,-1} || select_end_==point_type{-1,-1})
             {
@@ -242,77 +240,73 @@ namespace impl
             }
             else
             {
-                // 矩形交換
-                if(event_box.manhattan(move_begin_) == 1)
+                //　移動方向
+                point_type direction = event_box - move_begin_;
+
+                // 端チェック
+                if(
+                    (select_begin_.x + direction.x < 0) || (select_end_.x + direction.x >= positions_.at(0).size()) ||
+                    (select_begin_.y + direction.y < 0) || (select_end_.y + direction.y >= positions_.size())
+                    )
                 {
-                    //　移動方向
-                    point_type direction = event_box - move_begin_;
-
-                    // 端チェック
-                    if(
-                        (select_begin_.x + direction.x < 0) || (select_end_.x + direction.x >= split_x_) ||
-                        (select_begin_.y + direction.y < 0) || (select_end_.y + direction.y >= split_y_)
-                        )
-                    {
-                        // 移動不可
-                        return;
-                    }
-
-                    if(direction.x == 1)       // 右
-                    {
-                        for(int i=select_end_.x; i>=select_begin_.x; --i)
-                        {
-                            for(int j=select_begin_.y; j<=select_end_.y; ++j)
-                            {
-                                box_swap({i, j}, {i+1, j});
-                            }
-                        }
-                        
-                        ++select_begin_.x;
-                        ++select_end_.x;
-                    }
-                    else if(direction.x == -1) // 左
-                    {
-                        for(int i=select_begin_.x; i<=select_end_.x; ++i)
-                        {
-                            for(int j=select_begin_.y; j<=select_end_.y; ++j)
-                            {
-                                box_swap({i, j}, {i-1, j});
-                            }
-                        }
-                        
-                        --select_begin_.x;
-                        --select_end_.x;
-                    }
-                    else if(direction.y == 1)  // 下
-                    {
-                        for(int i=select_end_.y; i>=select_begin_.y; --i)
-                        {
-                            for(int j=select_begin_.x; j<=select_end_.x; ++j)
-                            {
-                                box_swap({j, i}, {j, i+1});
-                            }
-                        }
-
-                        ++select_begin_.y;
-                        ++select_end_.y;
-                    }
-                    else if(direction.y == -1) // 上
-                    {
-                        for(int i=select_begin_.y; i<=select_end_.y; ++i)
-                        {
-                            for(int j=select_begin_.x; j<=select_end_.x; ++j)
-                            {
-                                box_swap({j, i}, {j, i-1});
-                            }
-                        }
-
-                        --select_begin_.y;
-                        --select_end_.y;
-                    }
-                    boxes_redraw();
-                    move_begin_ = event_box;
+                    // 移動不可
+                    return;
                 }
+
+                if(direction.x == 1)       // 右
+                {
+                    for(int i=select_end_.x; i>=select_begin_.x; --i)
+                    {
+                        for(int j=select_begin_.y; j<=select_end_.y; ++j)
+                        {
+                            box_swap({i, j}, {i+1, j});
+                        }
+                    }
+                        
+                    ++select_begin_.x;
+                    ++select_end_.x;
+                }
+                else if(direction.x == -1) // 左
+                {
+                    for(int i=select_begin_.x; i<=select_end_.x; ++i)
+                    {
+                        for(int j=select_begin_.y; j<=select_end_.y; ++j)
+                        {
+                            box_swap({i, j}, {i-1, j});
+                        }
+                    }
+                        
+                    --select_begin_.x;
+                    --select_end_.x;
+                }
+                else if(direction.y == 1)  // 下
+                {
+                    for(int i=select_end_.y; i>=select_begin_.y; --i)
+                    {
+                        for(int j=select_begin_.x; j<=select_end_.x; ++j)
+                        {
+                            box_swap({j, i}, {j, i+1});
+                        }
+                    }
+
+                    ++select_begin_.y;
+                    ++select_end_.y;
+                }
+                else if(direction.y == -1) // 上
+                {
+                    for(int i=select_begin_.y; i<=select_end_.y; ++i)
+                    {
+                        for(int j=select_begin_.x; j<=select_end_.x; ++j)
+                        {
+                            box_swap({j, i}, {j, i-1});
+                        }
+                    }
+
+                    --select_begin_.y;
+                    --select_end_.y;
+                }
+                boxes_redraw();
+                move_begin_ = event_box;
             }
         }
     }
@@ -339,8 +333,8 @@ namespace impl
 
     bool MoveWindow::border_check(int const x, int const y)
     {
-        int const window_width  = image_width_  * split_x_;
-        int const window_height = image_height_ * split_y_;
+        int const window_width  = this->w();
+        int const window_height = this->h();
 
         return (x >= 0 && x < window_width && y >= 0 && y < window_height);
     }
@@ -384,9 +378,20 @@ namespace impl
                     return 1;
                 }
             }
+            case FL_HIDE:
+            {
+                this_shared_.reset();
+                return 1;
+            }
         }
 
         return 0;
+    }
+    
+    void MoveWindow::show()
+    {
+        this_shared_ = shared_from_this();
+        Fl_Window::show();
     }
 
 } // namespace impl
