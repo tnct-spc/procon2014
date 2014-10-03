@@ -182,9 +182,8 @@ int main(int argc, char* argv[])
                 pieces[i].second.copyTo(output_image(cv::Rect(x * piece_width, y * piece_height, piece_width, piece_height)));
                 auto it = std::find_if(pieces.begin(), pieces.end(), [&x, &y](auto& piece){ return piece.first.x == x && piece.first.y == y; });
                 index = static_cast<int>(std::distance(pieces.begin(), it));
-                answer_stream << boost::format("(%1%,%2%) ") % (index % horizontal_split) % (index / horizontal_split);
+                answer_stream << boost::format("%1%,%2%,") % (index / horizontal_split) % (index % horizontal_split);
             }
-            answer_stream << std::endl;
         }
 
         // ヘッダ文字列の設定

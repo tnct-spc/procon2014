@@ -1,0 +1,6 @@
+imoneg1,3*2,success,,
+imoneg2,2*3,failed,,
+imoneg3,3*3,success,,
+yjs,3*5,success,,
+onp,3*3,success,,
+bunpatsu,8*5,success,,

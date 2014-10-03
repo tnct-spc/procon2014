@@ -15,6 +15,8 @@
 #include "algorithm_2.hpp"
 #include "gui.hpp"
 #include "network.hpp"
+#include <shlwapi.h>
+#pragma comment(lib, "ShLwApi.Lib")
 
 #include <sort_algorithm/yrange2.hpp>
 #include <sort_algorithm/yrange5.hpp>
@@ -55,7 +57,7 @@ private:
 		question_raw_data raw;
 #if 1
 		// ファイルから
-		std::string const path(probname + ".ppm");
+		std::string const path("ppm/"+probname + ".ppm");
 		raw = reader_.from_file(path);
 #else
 		// ネットワーク通信から
@@ -120,7 +122,6 @@ question_data submain(std::string probname)
 	auto const token = "3935105806";
 
 	analyzer        analyze(ploblemid, token);
-	algorithm_2       algo;
 	network::client client;
 
 	analyze.get_probname(probname);
@@ -129,47 +130,63 @@ question_data submain(std::string probname)
 	auto const suggested = analyze();
 	//auto const converted = convert_block(suggested);
 	return suggested;
-
-	// 手順探索部
-	//algo.reset(converted);
-	auto const answer = algo.get();
-
-	// 1発目の提出
-	auto submit_result = client.submit(ploblemid, token, answer.get());
-	std::cout << submit_result.get() << std::endl;
-
-	// 2発目以降の提出など(yrange5)
-	//auto const second_suggested = analyze();
-	//algo.reset(convert_block(second_suggested));
-	//auto const second_answer = algo.get();
-	//
-	//auto submit_second_result = client.submit(ploblemid, token, second_answer.get());
-	//std::cout << submit_second_result.get() << std::endl;
-
-	std::cout << "■■■algorythm end■■■" << std::endl;
-	return suggested;
 }
 
 int main()
 {
 	while (1){
+		std::cout << "      name       y*x  Murakami   yrange2" << std::endl;
 		std::ifstream ifs("testdata.txt");
 		std::string str;
 		std::vector<std::string> column;
 		while (getline(ifs, str)) {
-			std::cout << str << std::endl;
 			boost::algorithm::split(column, str, boost::is_any_of(",")); // カンマで分割
 			for (int i = 0; i < column.size(); i++){
-				std::cout << "[" << column[i] << "]";
+				std::cout << std::setw(10) << column[i];
+				
 			}
+			std::cout << std::endl;
 		}
 		std::string probname;
-		std::cout << "prob number:";
-		std::cin >> probname;
+		int mode = 0;
+		//std::cout << "If you want run all, you write \"@sort_all\"\nIf you want run all failed, you write \"@sort_all_failed\"\nIf you want run all success, you write \"@sort_all_success\"\n";
+		while (1){
+			std::cout << "prob name:";
+			std::cin >> probname;
+			if (probname == "@sort_all"){
+				mode = 1;
+				break;
+			}
+			if (probname == "@sort_all_failed"){
+				mode = 2;
+				break;
+			}
+			if (probname == "@sort_all_success"){
+				mode = 3;
+				break;
+			}
+			//存在確認
+			int ppm = PathFileExists(("ppm/" + probname + ".ppm").c_str());
+			int ans = PathFileExists(("ans/" + probname + ".ans").c_str());
+			if (ppm == 1 && ans == 1){
+				break;
+			}
+			else if (ppm == 1 && ans != 1){
+				std::cout << "\"ans/" << probname << ".ans\"" << "does not exist" << std::endl;
+			}
+			else if (ppm != 1 && ans == 1){
+				std::cout << "\"ppm/" << probname << ".ppm\"" << "does not exist" << std::endl;
+			}
+			else{
+				std::cout << "\"ans/" << probname << ".ans\"" << "does not exist" << std::endl;
+				std::cout << "\"ppm/" << probname << ".ppm\"" << "does not exist" << std::endl;
+			}
+		}
+		//std::cout << "mode=" << mode << std::endl;
 		auto const& answer = submain(probname);
 		//比較
 		
-		std::ifstream fans(probname + ".ans");
+		std::ifstream fans("ans/"+probname + ".ans");
 		std::string sans;
 		fans >> sans;
 		std::vector<std::string> anscolumn;
@@ -185,42 +202,74 @@ int main()
 				ansy = answer.block[couy][coux].y;
 				ansx = answer.block[couy][coux].x;
 				std::cout << "ansy=" << ansy << " ansx=" << ansx << std::endl;
-				resy = std::atoi(anscolumn[(ansy*answer.size.first + ansx) * 2].c_str());
-				resx = std::atoi(anscolumn[(ansy*answer.size.first + ansx) * 2 +1].c_str());
+				resy = std::atoi(anscolumn[(couy*answer.size.first + coux) * 2].c_str());
+				resx = std::atoi(anscolumn[(couy*answer.size.first + coux) * 2 +1].c_str());
 				std::cout << "resy=" << resy << " resx=" << resx << std::endl;
 				std::cout << std::endl;
-				if (!(couy == resy&&coux == resx)){
+				if (!(ansy == resy&&ansx == resx)){
 					change = 1;
 					break;
 				}
 			}
 		}
-		
-		/*
-		for (int i = 0; i < anscolumn.size(); i++){
-			if (std::atoi(anscolumn[i].c_str()) != answer.block[i / answer.size.first][i % answer.size.first].y){
-				std::cout << "std::atoi(anscolumn[i].c_str())=" << std::atoi(anscolumn[i].c_str()) << std::endl;
-				std::cout << "answer.block[i / answer.size.first][i % answer.size.first].y=" << answer.block[i / answer.size.first][i % answer.size.first].y << std::endl;
-				std::cout << "i / answer.size.first=" << i / answer.size.first << std::endl;
-				std::cout << "i % answer.size.first=" << i % answer.size.first << std::endl;
-				std::cout << "answer.size.first=" << answer.size.first << std::endl;
-				std::cout << "answer.size.first=" << answer.size.first << std::endl;
-				change = 1;
-				break;
-			}
-			if (std::atoi(anscolumn[i].c_str()) != answer.block[i / answer.size.first][i % answer.size.first].x){
-				change = 1;
-				break;
-			}
-		}
-		*/
-		
+		int how = 0;
 		if (change == 1){
+			how = 1;
 			std::cout << "failed" << std::endl;
 		}
 		else{
 			std::cout << "success" << std::endl;
 		}
+		//書き込み
+		std::ifstream kifs("testdata.txt");
+		std::string kstr;
+		std::vector<std::vector<std::string>> kcolumn;
+		kcolumn.resize(256);
+		for (int i = 0; i < 256; i++)
+		{
+			kcolumn[i].resize(256);
+		}
 		
+		int kcount = 0;
+		while (getline(kifs, kstr)) {
+			boost::algorithm::split(kcolumn[kcount], kstr, boost::is_any_of(",")); // カンマで分割
+			kcount++;
+		}
+		int check = 0;
+		std::ofstream kkifs("testdata.txt");
+		for (int i = 0; i < kcount; i++)
+		{
+			if (kcolumn[i][0] == probname){
+				check = 1;
+				kkifs << probname << ",";
+				kkifs << answer.size.second << "*" << answer.size.first << ",";
+				if (how == 1){
+					kkifs << "failed,";
+				}
+				else{
+					kkifs << "success,";
+				}
+				kkifs << ",";
+			}
+			else{
+				for (int j = 0; j < 4; j++)
+				{
+					kkifs << kcolumn[i][j] << ",";
+				}
+			}
+			kkifs << std::endl;
+		}
+		if (check == 0){
+			kkifs << probname << ",";
+			kkifs << answer.size.second << "*" << answer.size.first << ",";
+			if (how == 1){
+				kkifs << "failed,";
+			}
+			else{
+				kkifs << "success,";
+			}
+			kkifs << ",";
+			kkifs << std::endl;
+		}	
 	}
 }
