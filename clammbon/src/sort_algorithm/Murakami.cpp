@@ -106,12 +106,12 @@ std::vector<answer_type_y> Murakami::operator() (){
 		//-------------------------------------ここから第一閉塞----------------------------//
 		for (int i = 0; i < height; i++){
 			for (int j = 0; j < width; j++){
-				std::cout << block_list[0][i][j].x << "," << block_list[0][i][j].y << "|";
+				std::cout << block_list[0][i][j].y << "," << block_list[0][i][j].x << "|";
 			}
 			std::cout << "\n";
 		}
 
-		//gui::combine_show_image(data_, comp_, block_list.at(0)); //完成画像を表示
+		gui::combine_show_image(data_, comp_, block_list.at(0)); //完成画像を表示
 		return std::vector<answer_type_y>{ { block_list.at(0), 0, cv::Mat() } };
 		//-------------------------------------ここまで第一閉塞-----------------------------//
 

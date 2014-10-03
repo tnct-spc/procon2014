@@ -1,6 +1,8 @@
 ﻿// MS WARNINGS MACRO
 #define _SCL_SECURE_NO_WARNINGS
 
+#include <string>
+#include <fstream>
 #include <iostream>
 #include <array>
 #include <vector>
@@ -42,18 +44,18 @@ public:
 		}
 	}
 
-	void get_probnum(std::string const& in_probnum){
-		probnum = in_probnum;
+	void get_probname(std::string const& in_probname){
+		probname = in_probname;
 	}
 private:
-	std::string probnum;
+	std::string probname;
 
 	question_data first_process(int const problem_id, std::string const& player_id)
 	{
 		question_raw_data raw;
 #if 1
 		// ファイルから
-		std::string const path(probnum);
+		std::string const path(probname + ".ppm");
 		raw = reader_.from_file(path);
 #else
 		// ネットワーク通信から
@@ -112,9 +114,8 @@ question_data convert_block(question_data const& data)
 
 // 問題の並び替えパズル自体は，人間が行うほうがいいかもしれない．
 
-int main()
+question_data submain(std::string probname)
 {
-	std::string probnum;
 	auto const ploblemid = 1;
 	auto const token = "3935105806";
 
@@ -122,16 +123,15 @@ int main()
 	algorithm_2       algo;
 	network::client client;
 
-	std::cout << "prob number:";
-	std::cin >> probnum;
-	analyze.get_probnum(probnum);
+	analyze.get_probname(probname);
 
 	// 原画像推測部
 	auto const suggested = analyze();
-	auto const converted = convert_block(suggested);
+	//auto const converted = convert_block(suggested);
+	return suggested;
 
 	// 手順探索部
-	algo.reset(converted);
+	//algo.reset(converted);
 	auto const answer = algo.get();
 
 	// 1発目の提出
@@ -146,7 +146,81 @@ int main()
 	//auto submit_second_result = client.submit(ploblemid, token, second_answer.get());
 	//std::cout << submit_second_result.get() << std::endl;
 
-	std::cout << "■■■algorythm end■■■";
-	return 0;
+	std::cout << "■■■algorythm end■■■" << std::endl;
+	return suggested;
 }
 
+int main()
+{
+	while (1){
+		std::ifstream ifs("testdata.txt");
+		std::string str;
+		std::vector<std::string> column;
+		while (getline(ifs, str)) {
+			std::cout << str << std::endl;
+			boost::algorithm::split(column, str, boost::is_any_of(",")); // カンマで分割
+			for (int i = 0; i < column.size(); i++){
+				std::cout << "[" << column[i] << "]";
+			}
+		}
+		std::string probname;
+		std::cout << "prob number:";
+		std::cin >> probname;
+		auto const& answer = submain(probname);
+		//比較
+		
+		std::ifstream fans(probname + ".ans");
+		std::string sans;
+		fans >> sans;
+		std::vector<std::string> anscolumn;
+		boost::algorithm::split(anscolumn, sans, boost::is_any_of(",")); // カンマで分割
+		int change = 0;
+		
+		int ansy, ansx, resy, resx;
+		std::cout << answer.size.second << "," << answer.size.first << std::endl;
+		for (int couy = 0; couy < answer.size.second; couy++){
+			if (change == 1)break;
+			for (int coux = 0; coux < answer.size.first; coux++){
+				std::cout << "couy=" << couy << " coux=" << coux << std::endl;
+				ansy = answer.block[couy][coux].y;
+				ansx = answer.block[couy][coux].x;
+				std::cout << "ansy=" << ansy << " ansx=" << ansx << std::endl;
+				resy = std::atoi(anscolumn[(ansy*answer.size.first + ansx) * 2].c_str());
+				resx = std::atoi(anscolumn[(ansy*answer.size.first + ansx) * 2 +1].c_str());
+				std::cout << "resy=" << resy << " resx=" << resx << std::endl;
+				std::cout << std::endl;
+				if (!(couy == resy&&coux == resx)){
+					change = 1;
+					break;
+				}
+			}
+		}
+		
+		/*
+		for (int i = 0; i < anscolumn.size(); i++){
+			if (std::atoi(anscolumn[i].c_str()) != answer.block[i / answer.size.first][i % answer.size.first].y){
+				std::cout << "std::atoi(anscolumn[i].c_str())=" << std::atoi(anscolumn[i].c_str()) << std::endl;
+				std::cout << "answer.block[i / answer.size.first][i % answer.size.first].y=" << answer.block[i / answer.size.first][i % answer.size.first].y << std::endl;
+				std::cout << "i / answer.size.first=" << i / answer.size.first << std::endl;
+				std::cout << "i % answer.size.first=" << i % answer.size.first << std::endl;
+				std::cout << "answer.size.first=" << answer.size.first << std::endl;
+				std::cout << "answer.size.first=" << answer.size.first << std::endl;
+				change = 1;
+				break;
+			}
+			if (std::atoi(anscolumn[i].c_str()) != answer.block[i / answer.size.first][i % answer.size.first].x){
+				change = 1;
+				break;
+			}
+		}
+		*/
+		
+		if (change == 1){
+			std::cout << "failed" << std::endl;
+		}
+		else{
+			std::cout << "success" << std::endl;
+		}
+		
+	}
+}

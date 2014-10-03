@@ -141,7 +141,7 @@ namespace gui
 			cv::namedWindow(outname.str(), CV_WINDOW_AUTOSIZE);
 			cv::imshow(outname.str(), comb_pic);
 
-		cvWaitKey(0);
+		cvWaitKey(1);
 	}
 
 	void combine_show_image(question_raw_data const& data_, compared_type const& comp_, std::vector<std::vector<point_type>>const& matrix, std::ostringstream const outname)
