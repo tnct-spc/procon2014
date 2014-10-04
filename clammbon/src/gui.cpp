@@ -178,7 +178,7 @@ namespace gui
 			cv::namedWindow(outname.str(), CV_WINDOW_AUTOSIZE);
 			cv::imshow(outname.str(), one_answer.mat_image);
 		}
-		cv::waitKey(10000);
+		cv::waitKey(1);
 	}
 
 } // namespace gui

@@ -260,7 +260,7 @@ std::vector<answer_type_y> yrange2::operator() ()
 		one_answer.mat_image = std::move(combine_image(one_answer));
 	}
 
-#ifdef _DEBUG
+//#ifdef _DEBUG
     std::cout << "There are " << yrange2_ans << " solutions" << std::endl;
 	for (auto const& one_answer : answer)
 	{
@@ -276,6 +276,6 @@ std::vector<answer_type_y> yrange2::operator() ()
 		std::cout << "score = " << one_answer.score << std::endl;
 	}
 	gui::show_image(data_, comp_, answer);
-#endif
+//#endif
 	return answer;
 }

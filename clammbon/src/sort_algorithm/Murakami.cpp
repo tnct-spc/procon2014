@@ -82,12 +82,16 @@ std::vector<answer_type_y> Murakami::operator() (){
 				}
 			}
 			
-			if (best_block_combination.score == std::numeric_limits<int_fast64_t>::min())std::cout << "本当に結合するブロックがなかった";
+			if (best_block_combination.score == std::numeric_limits<int_fast64_t>::min()){
+				std::cout << "本当に結合するブロックがなかった";
+				return std::vector<answer_type_y>{{ block_list.at(0), 0, cv::Mat() } };
+			}
 			block_type combined_block = std::move(combine_block(best_block_combination));//ブロックを結合する
 			boost::remove_erase_if(block_list, [best_block_combination](block_type it){//block_listから結合する前のブロックを消す
 				return (it == best_block_combination.block1 || it == best_block_combination.block2);
 			});
 			block_list.push_back(combined_block);//結合したのを入れる
+			/*
 			std::cout << "***" <<block_list.size() << "***" <<std::endl;
 			for (const auto& i : block_list){
 				for (const auto& j : i){
@@ -99,17 +103,20 @@ std::vector<answer_type_y> Murakami::operator() (){
 				}
 				std::cout << "\n";
 			}
+			*/
 			//gui::combine_show_image(data_, comp_, block_list);
 
 		}
 		std::cout << t.elapsed() << "s経過した" << std::endl;
 		//-------------------------------------ここから第一閉塞----------------------------//
+		/*
 		for (int i = 0; i < height; i++){
 			for (int j = 0; j < width; j++){
 				std::cout << block_list[0][i][j].y << "," << block_list[0][i][j].x << "|";
 			}
 			std::cout << "\n";
 		}
+		*/
 
 		gui::combine_show_image(data_, comp_, block_list.at(0)); //完成画像を表示
 		return std::vector<answer_type_y>{ { block_list.at(0), 0, cv::Mat() } };
