@@ -27,10 +27,10 @@ std::vector<answer_type_y> Murakami::operator() (){
 	std::cout << "use openMP" << std::endl;
 	#else
 	//OpenMPを使わない場合のコード
-	std::cout << "no use openMP" << std::endl;
+	//std::cout << "no use openMP" << std::endl;
 	#endif
 	make_sorted_comparation();
-	std::cout << "make_ok" << std::endl;
+	//std::cout << "make_ok" << std::endl;
 	boost::timer t;
 
 	std::vector<block_data_> block_list(height * width);
@@ -95,26 +95,18 @@ std::vector<answer_type_y> Murakami::operator() (){
 				}
 			}
 			
-<<<<<<< HEAD
-			if (best_block_combination.score == std::numeric_limits<int_fast64_t>::min()){
-				std::cout << "本当に結合するブロックがなかった";
-				return std::vector<answer_type_y>{{ block_list.at(0), 0, cv::Mat() } };
+if (best_block_combination.score == std::numeric_limits<bigint>::min()){
+				//std::cout << "本当に結合するブロックがなかった";
+				return std::vector<answer_type_y>{{ block_list.at(0).block, 0, cv::Mat() } };
 			}
-=======
-			if (best_block_combination.score == std::numeric_limits<bigint>::min())std::cout << "本当に結合するブロックがなかった";
->>>>>>> develop
 			block_type combined_block = std::move(combine_block(best_block_combination));//ブロックを結合する
 			boost::remove_erase_if(block_list, [&best_block_combination](block_data_ it){//block_listから結合する前のブロックを消す
 				return (it.block == best_block_combination.block1 || it.block == best_block_combination.block2);
 			});
-<<<<<<< HEAD
-			block_list.push_back(combined_block);//結合したのを入れる
-			/*
-=======
 			block_data_ p_b;
 			p_b.block = combined_block;
 			block_list.push_back(p_b);//結合したのを入れる
->>>>>>> develop
+			/*
 			std::cout << "***" <<block_list.size() << "***" <<std::endl;
 			for (const auto& i : block_list){
 				for (const auto& j : i.block){
@@ -126,36 +118,23 @@ std::vector<answer_type_y> Murakami::operator() (){
 				}
 				std::cout << "\n";
 			}
-<<<<<<< HEAD
 			*/
-=======
-			
->>>>>>> develop
 			//gui::combine_show_image(data_, comp_, block_list);
 
 		}
-		std::cout << t.elapsed() << "s経過した" << std::endl;
+		//std::cout << t.elapsed() << "s経過した" << std::endl;
 		//-------------------------------------ここから第一閉塞----------------------------//
 		/*
 		for (int i = 0; i < height; i++){
 			for (int j = 0; j < width; j++){
-<<<<<<< HEAD
-				std::cout << block_list[0][i][j].y << "," << block_list[0][i][j].x << "|";
-=======
 				std::cout << block_list[0].block[i][j].x << "," << block_list[0].block[i][j].y << "|";
->>>>>>> develop
 			}
 			std::cout << "\n";
 		}
 		*/
 
-<<<<<<< HEAD
-		gui::combine_show_image(data_, comp_, block_list.at(0)); //完成画像を表示
-		return std::vector<answer_type_y>{ { block_list.at(0), 0, cv::Mat() } };
-=======
 		gui::combine_show_image(data_, comp_, block_list.at(0).block);
 		return std::vector<answer_type_y>{ { block_list.at(0).block, 0, cv::Mat() } };
->>>>>>> develop
 		//-------------------------------------ここまで第一閉塞-----------------------------//
 
 }
@@ -238,7 +217,7 @@ Murakami::block_combination Murakami::eval_block(const block_type& block1, const
 		}
 	}
 	if (best_shift_i == std::numeric_limits<int>::min()){
-		std::cout << "結合すべきブロックがなかった" << std::endl;
+		//std::cout << "結合すべきブロックがなかった" << std::endl;
 	}
 	block_combination return_struct{
 		std::move(block1),

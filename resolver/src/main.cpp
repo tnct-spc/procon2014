@@ -46,13 +46,21 @@ public:
 		}
 	}
 
-	void get_set(std::string const& in_probname,int const& in_sort_algorythm){
+	void get_set(std::string const& in_probname,int const& in_sort_algorythm,int const& in_mode){
 		probname = in_probname;
 		sort_algorythm = in_sort_algorythm;
+		if (in_mode == 0){
+			run_mansort_window = true;
+		}
+		else{
+			run_mansort_window = false;
+		}
+		
 	}
 private:
 	std::string probname;
 	int sort_algorythm;
+	bool run_mansort_window;
 
 	question_data first_process(int const problem_id, std::string const& player_id)
 	{
@@ -90,7 +98,7 @@ private:
 		formed.block = std::move(sorter_resolve);
 
 		// 手作業用のウィンドウの作成
-		//auto future = gui::make_mansort_window(splitted, "exchange");
+		if (run_mansort_window==true) auto future = gui::make_mansort_window(splitted, "exchange");
 
 		// TODO: yrange5の実行
 
@@ -125,7 +133,7 @@ question_data convert_block(question_data const& data)
 
 // 問題の並び替えパズル自体は，人間が行うほうがいいかもしれない．
 
-question_data submain(std::string probname,int sort_algorythm)
+question_data submain(std::string probname,int sort_algorythm,int mode)
 {
 	auto const ploblemid = 1;
 	auto const token = "3935105806";
@@ -133,7 +141,7 @@ question_data submain(std::string probname,int sort_algorythm)
 	analyzer        analyze(ploblemid, token);
 	network::client client;
 
-	analyze.get_set(probname,sort_algorythm);
+	analyze.get_set(probname,sort_algorythm,mode);
 
 	// 原画像推測部
 	auto const suggested = analyze();
@@ -173,7 +181,7 @@ int main()
 			}
 			if (finish==0){
 				//finish
-				std::cout << "finish! problem is " << run_main_count<<" of "<<run_count << std::endl;
+				std::cout << "finish! run " << run_main_count<<" of "<<run_count << std::endl;
 				run_count = 0;
 				run_main_count = 0;
 				mode = 0;
@@ -186,11 +194,25 @@ int main()
 			std::cout << "            name       y*x  yrange2   Murakami" << std::endl;
 			while (getline(ifs2, str)) {
 				boost::algorithm::split(column, str, boost::is_any_of(",")); // カンマで分割
-				std::cout << std::setw(16) << column[0];
-				for (int i = 1; i < column.size(); i++){
-					std::cout << std::setw(10) << column[i];
+				int cppm = PathFileExists(("ppm/" + column[0] + ".ppm").c_str());
+				int cans = PathFileExists(("ans/" + column[0] + ".ans").c_str());
+				if (cppm == 1 && cans == 1){
+					std::cout << std::setw(16) << column[0];
+					for (int i = 1; i < column.size(); i++){
+						std::cout << std::setw(10) << column[i];
+					}
+					std::cout << std::endl;
 				}
-				std::cout << std::endl;
+				else if (cppm == 1 && cans != 1){
+					std::cout << "error: \"ans/" << column[0] << ".ans\"" << "does not exist" << std::endl;
+				}
+				else if (cppm != 1 && cans == 1){
+					std::cout << "\"error: \"ppm/" << column[0] << ".ppm\"" << "does not exist" << std::endl;
+				}
+				else{
+					std::cout << "error: \"ans/" << column[0] << ".ans\"" << "does not exist" << std::endl;
+					std::cout << "error: \"ppm/" << column[0] << ".ppm\"" << "does not exist" << std::endl;
+				}
 				count++;
 			}
 		}
@@ -235,8 +257,8 @@ int main()
 		//std::cout << "mode=" << mode << std::endl;
 		//実行
 		if (!(mode!=0 && run_count == 0)){
-			std::cout << probname << std::endl;
-			auto const& answer = submain(probname, sort_algorythm);
+			std::cout << std::setw(16) << probname;
+			auto const& answer = submain(probname, sort_algorythm,mode);
 			//比較
 			int change = 0;
 			if (answer.block.size() == 0){
@@ -272,10 +294,10 @@ int main()
 			int how = 0;
 			if (change == 1){
 				how = 1;
-				std::cout << "failed" << std::endl;
+				std::cout << std::setw(16) << "failed" << std::endl;
 			}
 			else{
-				std::cout << "success" << std::endl;
+				std::cout << std::setw(16) << "success" << std::endl;
 			}
 			//書き込み
 			std::ifstream kifs("testdata.txt");
