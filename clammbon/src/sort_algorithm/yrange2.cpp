@@ -137,7 +137,7 @@ std::vector<answer_type_y> yrange2::operator() ()
 
 	//すべてのピースから並べ始めるためのループ
 #pragma omp parallel for
-	for (int c = 0; c < width*height; ++c)
+	for (size_t c = 0; c < width*height; ++c)
 	{
 		sorted_matrix.at(c)[height - 1][width - 1] = point_type{ c%width, c / width };
 
@@ -244,11 +244,11 @@ std::vector<answer_type_y> yrange2::operator() ()
 	answer.erase(std::unique(answer.begin(), answer.end()), answer.end());
 
 	//縦入れ替え，横入れ替え
-#pragma omp parallel
-	for (auto &matrix : answer)
+#pragma omp parallel for
+	for (size_t c = 0; c < answer.size(); ++c)
 	{
-		row_replacement(matrix);
-		column_replacement(matrix);
+		row_replacement(answer.at(c));
+		column_replacement(answer.at(c));
 	}
 
 	//もっかいやっとく
@@ -261,10 +261,10 @@ std::vector<answer_type_y> yrange2::operator() ()
 	if (answer.size() >= yrange2_show_ans) answer.resize(yrange2_show_ans);
 
 	//一枚のcv::Matにする
-#pragma omp parallel
-	for (auto& one_answer : answer)
+#pragma omp parallel for
+	for (size_t c = 0; c < answer.size(); ++c)
 	{
-		one_answer.mat_image = std::move(combine_image(one_answer));
+		answer.at(c).mat_image = std::move(combine_image(answer.at(c)));
 	}
 
 #ifdef _DEBUG
