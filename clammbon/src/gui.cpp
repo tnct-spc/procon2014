@@ -10,6 +10,7 @@
 #include "splitter.hpp"
 #include "impl/gui_move.ipp"
 #include <sort_algorithm/compare.hpp>
+# include <random>
 
 namespace gui
 {
@@ -137,7 +138,8 @@ namespace gui
 				splitted[matrix[i][j].y][matrix[i][j].x].copyTo(roi_mat);
 			}
 		}
-		std::ostringstream outname("combine_show_image");
+		std::random_device rd;
+		std::ostringstream outname(std::to_string(rd()));
 			cv::namedWindow(outname.str(), CV_WINDOW_AUTOSIZE);
 			cv::imshow(outname.str(), comb_pic);
 

@@ -183,10 +183,11 @@ int main()
 		if (mode == 0){
 			std::ifstream ifs2("testdata.txt");
 			int count = 0;
-			std::cout << "      name       y*x  yrange2   Murakami" << std::endl;
+			std::cout << "            name       y*x  yrange2   Murakami" << std::endl;
 			while (getline(ifs2, str)) {
 				boost::algorithm::split(column, str, boost::is_any_of(",")); // カンマで分割
-				for (int i = 0; i < column.size(); i++){
+				std::cout << std::setw(16) << column[0];
+				for (int i = 1; i < column.size(); i++){
 					std::cout << std::setw(10) << column[i];
 				}
 				std::cout << std::endl;
