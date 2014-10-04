@@ -7,7 +7,8 @@ class Murakami
 {
 private:
 	typedef std::vector<std::vector<point_type>> return_type;
-	typedef boost::multiprecision::cpp_int bigint;//
+	//type/def boost::multiprecision::cpp_int bi gint;
+	typedef boost::multiprecision::int256_t bigint;
 	question_raw_data const& data_;
 	compared_type const& comp_;
 
@@ -29,14 +30,27 @@ private:
 		int shift_x;
 		int shift_y;
 		//あるブロックとの結合するとき(結合したあと)の評価値
-		int_fast64_t score; //評価値は結構大きいので32bitだとオーバーフローするかも?
+		bigint score; //評価値は結構大きいので32bitだとオーバーフローするかも?
+	};
+	struct score_data{
+		bigint score;
+		int shift_x;
+		int shift_y;
+	};
+	struct block_data_{
+		unsigned int u_this_number;
+		block_type block;
+		std::unordered_map < unsigned int, score_data > score_data_;
+		friend inline bool operator== (block_data_   lhs, block_data_  rhs){
+			return(lhs.block == rhs.block);
+		}
 	};
 	//ブロック対ブロックの評価,ブロックに持たせるべき?
 	block_combination eval_block(const block_type&, const block_type&);
 	block_combination eval_block2(const block_type&, const block_type&);
 	//ピース対ピースの評価,仕様をよく理解しないと書くのが辛い
-	std::int_fast64_t eval_piece(const point_type&, const point_type&, direction);
-	std::int_fast64_t eval_comp_(const point_type&, const point_type&, direction);
+	int_fast64_t eval_piece(const point_type&, const point_type&, direction);
+	int_fast64_t eval_comp_(const point_type&, const point_type&, direction);
 	block_type combine_block(const block_combination&);
 	void make_sorted_comparation();
 	typedef point_type block_size_type;
