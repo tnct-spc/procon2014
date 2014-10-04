@@ -13,7 +13,7 @@ void Answer::convert(std::string const& s)
     for(int i = 0; i < nl; i++) {
         std::string pos;
         ss >> pos;
-        point_type ipos = pos2int(pos);
+        point_type ipos{std::stoi(pos.substr(0, 1), nullptr, 16), std::stoi(pos.substr(1, 1), nullptr, 16)};
         if(ipos.x == -1 || ipos.y == -1) {
             outerr << "ERROR: illegal position: \"" + pos + "\"\n";
             return;

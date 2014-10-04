@@ -16,7 +16,7 @@ using namespace Mongoose;
 
 class MyController : public Controller
 {
-    std::string problem_set = std::getenv("PCS_PROBSET") ? std::string(std::getenv("PCS_PROBSET")) : "default";
+    std::string problem_set = std::getenv("PCS_PROBSET") ? std::getenv("PCS_PROBSET") : "default";
 public:
     void show_usage(Request &req, StreamResponse &res)
     {

@@ -6,14 +6,6 @@
 #include <sstream>
 #include <string>
 
-point_type const pos2int(std::string const pos)
-{
-    point_type p;
-    p.x = ('0' <= pos[0] && pos[0] <= '9') ? (pos[0] - '0') : (('A' <= pos[0] && pos[0] <= 'F') ? (pos[0] - 'A' + 10) : -1);
-    p.y = ('0' <= pos[1] && pos[1] <= '9') ? (pos[1] - '0') : (('A' <= pos[1] && pos[1] <= 'F') ? (pos[1] - 'A' + 10) : -1);
-    return p;
-}
-
 // *.ans をロードするやつ
 std::vector<std::vector<point_type>> load_answer(std::string const& filename)
 {
