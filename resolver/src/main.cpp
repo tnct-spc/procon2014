@@ -15,6 +15,7 @@
 #include "algorithm_2.hpp"
 #include "gui.hpp"
 #include "network.hpp"
+#include "test_tool.hpp"
 
 #include <sort_algorithm/yrange2.hpp>
 #include <sort_algorithm/yrange5.hpp>
@@ -212,16 +213,23 @@ int main()
         if(!manager.empty())
         {
             // 手順探索部
-            algo.reset(manager.get());
+            auto question = manager.get();
+            algo.reset(question);
             auto const answer = algo.get();
 
-            if(answer)
+            if(answer) // 解が見つかった
             {
-                // 解が見つかった
-                // TODO: 前より良くなったら提出など
-//                auto result = analyze.submit(answer.get());
-//                std::cout << "Submit Result: " << result << std::endl;
-                std::cout << "Test";
+#if ENABLE_NETWORK_IO
+                // TODO: 前より良くなったら提出など(普通にいらないかも．提出前に目grepしてるわけだし)
+                auto result = analyze.submit(answer.get());
+                std::cout << "Submit Result: " << result << std::endl;
+#else
+                test_tool::emulator emu(question);
+                auto result = emu.start(answer.get());
+                std::cout << "Wrong: " << result.wrong << std::endl;
+                std::cout << "Cost : " << result.cost  << std::endl;
+                std::cout << "---" << std::endl;
+#endif
             }
         }
     }
