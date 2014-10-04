@@ -26,3 +26,8 @@ sun,6*8,success,success,
 teigasitsu,6*6,failed,failed,
 tweet,4*6,failed,failed,
 venetia,16*16,failed,failed,
+densha,9*6,success,success,
+kouen,13*13,failed,failed,
+minecraft,7*10,failed,success,
+neko,4*7,success,success,
+toho,5*5,failed,success
