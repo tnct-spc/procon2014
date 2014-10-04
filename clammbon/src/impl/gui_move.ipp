@@ -1,6 +1,7 @@
 ﻿#include <mutex>
 #include <vector>
 #include <boost/enable_shared_from_this.hpp>
+#include <boost/range/irange.hpp>
 #include <FL/Fl.H>
 #include <FL/Fl_Window.H>
 #include <FL/Fl_Image.H>
@@ -39,14 +40,12 @@ namespace impl
         // boxes_配列に基づいて，各boxの位置を算出しなおして再描画する
         void boxes_redraw();
 
-        // boxの並び替え操作に関する関数群(内部でredrawするかどうかはランタイム的に検討)
+        // boxの並び替え操作に関する関数群
         void box_swap(point_type const& p1, point_type const& p2);
-        void box_x_line_swap(int const y1, int const y2);
-        void box_y_line_swap(int const x1, int const x2);
+        template<class Range> void range_swap(point_type const& p1, point_type const& p2, Range xrange, Range yrange);
 
         // boxからのイベントを受け取る関数群
         void click_box(int const button, point_type const& event_box);
-        void drag_box(point_type const& event_box);
         void release_box(int const button, point_type const& event_box);
 
         bool border_check(int const x, int const y);          // TrueならWindow内
@@ -188,17 +187,18 @@ namespace impl
     {
         std::swap(positions_[p1.y][p1.x], positions_[p2.y][p2.x]);
     }
-
-    void MoveWindow::box_x_line_swap(int const y1, int const y2)
+    
+    template<class Range>
+    void MoveWindow::range_swap(point_type const& p1, point_type const& p2, Range xrange, Range yrange)
     {
-        std::swap(positions_[y1], positions_[y2]);
-    }
-
-    void MoveWindow::box_y_line_swap(int const x1, int const x2)
-    {
-        for(int i=0; i<split_y_; ++i)
+        for(auto const y : yrange)
         {
-            std::swap(positions_[i][x1], positions_[i][x2]);
+            for(auto const x : xrange)
+            {
+                point_type const offset = {x, y};
+                std::cout << (p1 + offset) << "<-->" << (p2 + offset) << std::endl;
+                box_swap(p1 + offset, p2 + offset);
+            }
         }
     }
 
@@ -208,6 +208,15 @@ namespace impl
         {
             // 通常クリックは交換開始
             move_begin_ = event_box;
+
+            if(!(
+                select_begin_.x <= event_box.x && event_box.x <= select_end_.x &&
+                select_begin_.y <= event_box.y && event_box.y <= select_end_.y
+                ))
+            {
+                // 選択範囲内の選択でなければ，選択解除
+                select_begin_ = select_end_ = point_type{-1,-1};
+            }
         }
         else if(button == FL_MIDDLE_MOUSE)
         {
@@ -219,115 +228,69 @@ namespace impl
             // 右クリックは同時移動ブロックの選択開始
             select_begin_ = event_box;
         }
-
-        latest_button_ = button;
-    }
-
-    void MoveWindow::drag_box(point_type const& event_box)
-    {
-        if(latest_button_ == FL_LEFT_MOUSE)
-        {
-            // 真横との交換でなければ実行しない
-            if(event_box.manhattan(move_begin_) != 1) return;
-
-            // 交換
-            if(select_begin_==point_type{-1,-1} || select_end_==point_type{-1,-1})
-            {
-                // 1つのみ交換
-                box_swap(move_begin_, event_box);
-                move_begin_ = event_box;
-                boxes_redraw();
-            }
-            else
-            {
-                //　移動方向
-                point_type direction = event_box - move_begin_;
-
-                // 端チェック
-                if(
-                    (select_begin_.x + direction.x < 0) || (select_end_.x + direction.x >= positions_.at(0).size()) ||
-                    (select_begin_.y + direction.y < 0) || (select_end_.y + direction.y >= positions_.size())
-                    )
-                {
-                    // 移動不可
-                    return;
-                }
-
-                if(direction.x == 1)       // 右
-                {
-                    for(int i=select_end_.x; i>=select_begin_.x; --i)
-                    {
-                        for(int j=select_begin_.y; j<=select_end_.y; ++j)
-                        {
-                            box_swap({i, j}, {i+1, j});
-                        }
-                    }
-                        
-                    ++select_begin_.x;
-                    ++select_end_.x;
-                }
-                else if(direction.x == -1) // 左
-                {
-                    for(int i=select_begin_.x; i<=select_end_.x; ++i)
-                    {
-                        for(int j=select_begin_.y; j<=select_end_.y; ++j)
-                        {
-                            box_swap({i, j}, {i-1, j});
-                        }
-                    }
-                        
-                    --select_begin_.x;
-                    --select_end_.x;
-                }
-                else if(direction.y == 1)  // 下
-                {
-                    for(int i=select_end_.y; i>=select_begin_.y; --i)
-                    {
-                        for(int j=select_begin_.x; j<=select_end_.x; ++j)
-                        {
-                            box_swap({j, i}, {j, i+1});
-                        }
-                    }
-
-                    ++select_begin_.y;
-                    ++select_end_.y;
-                }
-                else if(direction.y == -1) // 上
-                {
-                    for(int i=select_begin_.y; i<=select_end_.y; ++i)
-                    {
-                        for(int j=select_begin_.x; j<=select_end_.x; ++j)
-                        {
-                            box_swap({j, i}, {j, i-1});
-                        }
-                    }
-
-                    --select_begin_.y;
-                    --select_end_.y;
-                }
-                boxes_redraw();
-                move_begin_ = event_box;
-            }
-        }
     }
 
     void MoveWindow::release_box(int const button, point_type const& event_box)
     {
-        latest_button_ = 0;
-        if(button == FL_RIGHT_MOUSE)
+        if(button == FL_LEFT_MOUSE)
+        {
+            if(select_begin_==point_type{-1,-1} || select_end_==point_type{-1,-1})
+            {
+                // 単一移動
+                box_swap(move_begin_, event_box);
+                boxes_redraw();
+            }
+            else
+            {
+                // 塊移動
+                point_type const direction  = event_box - move_begin_;
+                point_type const dest_begin = select_begin_ + direction;
+                point_type const dest_end   = select_end_   + direction;
+                
+                if(!border_check(dest_begin.x, dest_begin.y) || !border_check(dest_end.x, dest_end.y))
+                {
+                    // 移動が範囲外になる
+                    return;
+                }
+
+                // swap順序を決める
+                auto const xrange = (direction.x > 0)
+                    ? boost::irange<int>(direction.x, -1, -1)
+                    : boost::irange<int>(0, std::abs(direction.x) + 1, 1);
+                auto const yrange = (direction.y > 0)
+                    ? boost::irange<int>(direction.y, -1, -1)
+                    : boost::irange<int>(0, std::abs(direction.y) + 1, 1);
+
+                // swap及び，選択範囲の更新
+                range_swap(select_begin_, dest_begin, xrange, yrange);
+                select_begin_ = dest_begin;
+                select_end_   = dest_end;
+
+                boxes_redraw();
+            }
+        }
+        else if(button == FL_RIGHT_MOUSE)
         {
             // 右クリックは同時移動ブロックの選択終了
             select_end_ = event_box;
 
-            // 正格化: select_{begin,end}_を，beginが左上になるようにする
-            point_type new_begin, new_end;
-            new_begin.x = std::min(select_begin_.x, select_end_.x);
-            new_begin.y = std::min(select_begin_.y, select_end_.y);
-            new_end.x   = std::max(select_begin_.x, select_end_.x);
-            new_end.y   = std::max(select_begin_.y, select_end_.y);
+            if(select_begin_ == select_end_)
+            {
+                // 1マス範囲選択
+                select_begin_ = select_end_ = {-1, -1};
+            }
+            else
+            {
+                // 正格化: select_{begin,end}_を，beginが左上になるようにする
+                point_type new_begin, new_end;
+                new_begin.x = std::min(select_begin_.x, select_end_.x);
+                new_begin.y = std::min(select_begin_.y, select_end_.y);
+                new_end.x   = std::max(select_begin_.x, select_end_.x);
+                new_end.y   = std::max(select_begin_.y, select_end_.y);
 
-            select_begin_ = new_begin;
-            select_end_   = new_end;
+                select_begin_ = new_begin;
+                select_end_   = new_end;
+            }
         }
     }
 
@@ -356,15 +319,6 @@ namespace impl
                     auto const button = Fl::event_button();
                     auto const point = window_to_point(Fl::event_x(), Fl::event_y());
                     click_box(button, point);
-                    return 1;
-                }
-            }
-            case FL_DRAG:
-            {
-                if(border_check(Fl::event_x(), Fl::event_y()))
-                {
-                    auto const point = window_to_point(Fl::event_x(), Fl::event_y());
-                    drag_box(point);
                     return 1;
                 }
             }
