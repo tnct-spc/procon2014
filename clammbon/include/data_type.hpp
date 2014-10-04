@@ -112,10 +112,10 @@ struct point_type
 
     friend std::size_t hash_value(point_type const& point)
     {
-        std::size_t seed = 0;
-        boost::hash_combine(seed, point.x);
-        boost::hash_combine(seed, point.y);
-        return seed;
+        std::size_t result = 0;
+        boost::hash_combine(result, point.x);
+        boost::hash_combine(result, point.y);
+        return result;
     }
 };
 
@@ -301,21 +301,6 @@ struct cr_set{
 namespace std
 {
     template <>
-    struct hash<step_type>
-    {
-        std::size_t operator() (step_type const& step) const
-        {
-            std::size_t result;
-            for (auto row : step.matrix) {
-                for (auto point : row) {
-                    boost::hash_combine(result, point);
-                }
-            }
-            return result;
-        }
-    };
-
-    template <>
     struct hash<point_type>
     {
         std::size_t operator() (point_type const& point) const
@@ -323,7 +308,30 @@ namespace std
             return hash_value(point);
         }
     };
+
+    template<>
+    struct hash<std::vector<std::vector<point_type>>>
+    {
+        std::size_t operator() (std::vector<std::vector<point_type>> const& matrix) const
+        {
+            std::size_t result = 0;
+            for (auto const& row : matrix) for (auto const& point : row) {
+                boost::hash_combine(result, point);
+            }
+            return result;
+        }
+    };
+
+    template <>
+    struct hash<step_type>
+    {
+        std::size_t operator() (step_type const& step) const
+        {
+            return std::hash<std::vector<std::vector<point_type>>>()(step.matrix);
+        }
+    };
 }
+
 
 enum direction {
     up, right, down, left
