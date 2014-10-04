@@ -1,8 +1,10 @@
 ﻿// MS WARNINGS MACRO
 #define _SCL_SECURE_NO_WARNINGS
 
+// Macro: Program Settings
+#define ENABLE_NETWORK_IO 0
+
 #include <iostream>
-#include <array>
 #include <deque>
 #include <boost/noncopyable.hpp>
 #include "data_type.hpp"
@@ -19,7 +21,7 @@
 #include <sort_algorithm/genetic.hpp>
 #include <sort_algorithm/Murakami.hpp>
 
-class position_manager
+class position_manager : boost::noncopyable
 {
 public:
     typedef question_data position_type;
@@ -125,14 +127,14 @@ public:
 private:
     question_raw_data get_raw_question() const
     {
-#if 1
-        // ファイルから
-        std::string const path("prob01.ppm");
-        return ppm_reader().from_file(path);
-#else
+#if ENABLE_NETWORK_IO
         // ネットワーク通信から
         std::string const data = client_.get_problem(01).get();
         return ppm_reader().from_data(data);
+#else
+        // ファイルから
+        std::string const path("prob01.ppm");
+        return ppm_reader().from_file(path);
 #endif
     }
 
@@ -199,8 +201,8 @@ int main()
     auto const ploblemid = 1;
     auto const token     = "3935105806";
 
-    analyzer        analyze(ploblemid, token);
-    algorithm_2       algo;
+    analyzer         analyze(ploblemid, token);
+    algorithm_2      algo;
     position_manager manager;
 
     boost::thread thread(boost::bind(&analyzer::operator(), &analyze, std::ref(manager)));
