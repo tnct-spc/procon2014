@@ -47,6 +47,7 @@ namespace impl
         // boxからのイベントを受け取る関数群
         void click_box(int const button, point_type const& event_box);
         void release_box(int const button, point_type const& event_box);
+		void devmatrix(int event_key);
 
         bool border_check(int const x, int const y);          // TrueならWindow内
         point_type window_to_point(int const x, int const y); // Window上の座標から，point_typeを算出
@@ -202,6 +203,74 @@ namespace impl
         }
     }
 
+	void MoveWindow::devmatrix(int event_key)
+	{
+		int const pos_width     = positions_.at(0).size();
+		int const pos_height    = positions_.size();
+		point_type p1;
+		point_type p2;
+		if(event_key==FL_Down)
+		{
+			for (int ypos=pos_height -1; ypos > 0  ; ypos--)
+			{
+				for (int xpos=0; xpos < pos_width ; xpos++)
+				{
+					p1.y = ypos;
+					p1.x = xpos;
+					p2.y = ypos - 1;
+					p2.x = xpos;
+				box_swap(p1, p2);
+				}
+			}
+			boxes_redraw();
+		}
+		else if (event_key == FL_Up)
+		{
+			for (int ypos = 0; ypos < pos_height - 1; ypos++)
+			{
+				for (int xpos = 0; xpos < pos_width; xpos++)
+				{
+					p1.y = ypos;
+					p1.x = xpos;
+					p2.y = ypos + 1;
+					p2.x = xpos;
+					box_swap(p1, p2);
+				}
+			}
+			boxes_redraw();
+		}
+		else if (event_key == FL_Left)
+		{
+			for (int xpos = 0; xpos < pos_width - 1; xpos++)
+			{
+				for (int ypos = 0; ypos < pos_height; ypos++)
+				{
+					p1.y = ypos;
+					p1.x = xpos;
+					p2.y = ypos;
+					p2.x = xpos + 1;
+					box_swap(p1, p2);
+				}
+			}
+			boxes_redraw();
+		}
+		else if (event_key == FL_Right)
+		{
+			for (int xpos = pos_width - 1; xpos > 0; xpos--)
+			{
+				for (int ypos = 0; ypos < pos_height; ypos++)
+				{
+					p1.y = ypos;
+					p1.x = xpos;
+					p2.y = ypos;
+					p2.x = xpos - 1;
+					box_swap(p1, p2);
+				}
+			}
+			boxes_redraw();
+		}
+	}
+
     void MoveWindow::click_box(int const button, point_type const& event_box)
     {
         if(button == FL_LEFT_MOUSE)
@@ -312,6 +381,11 @@ namespace impl
         std::lock_guard<std::mutex> lock(handler_mutex_);
         switch(event)
         {
+			case FL_KEYDOWN:
+			{
+				devmatrix(Fl::event_key());
+				return 1;
+			}
             case FL_PUSH:
             {
                 if(border_check(Fl::event_x(), Fl::event_y()))
