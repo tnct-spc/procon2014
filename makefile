@@ -18,7 +18,7 @@ clean :
 	cd eval_position; buildtype=$(buildtype) make clean
 	cd eval_server  ; buildtype=$(buildtype) make clean
 	cd test         ; buildtype=$(buildtype) make clean
-	cd prob_maker   ; buildtype=$(buildtype) make
+	cd prob_maker   ; buildtype=$(buildtype) make clean
 
 test :
 	cd clammbon     ; buildtype=$(buildtype) make
