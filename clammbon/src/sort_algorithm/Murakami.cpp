@@ -204,7 +204,8 @@ Murakami::block_combination Murakami::eval_block(const block_type& block1, const
 				if (confliction)break;
 			}
 			if (!confliction && !empty_block_c){
-				block_c *= rank1_num + 1; //0を掛けるのは怖い
+				rank1_num++;
+				block_c *= rank1_num; //0を掛けるのは怖い
 				//if(block_c < 0)block_c = -pow(block_c, rank1_num + 1);
 				//if (block_c > 0)block_c = pow(block_c, rank1_num + 1);
 				if (block_c >= best_block_c){
