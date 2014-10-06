@@ -1,5 +1,5 @@
 onp,3*3,success,success,
-imoneg3,3*3,failed,success
+imoneg3,3*3,failed,success,
 imoneg2,2*3,failed,failed,
 imoneg1,3*2,failed,success,
 yjs,3*5,success,success,
@@ -30,8 +30,7 @@ densha,9*6,success,success,
 kouen,13*13,failed,failed,
 minecraft,7*10,failed,success,
 neko,4*7,success,success,
-toho,5*5,failed,success,
-oceanbeach,7*11,success,success,
+toho,5*5,failed,success
 columbia,5*6,failed,success,
 gerunika,3*7,success,success,
 itinoseki,7*9,success,failed,
