@@ -118,8 +118,11 @@ std::vector<answer_type_y> Murakami::operator() (){
 					}
 					std::cout << "\n";
 				}
-
-				//gui::combine_show_image(data_, comp_, block_list);
+				std::vector<std::vector<std::vector<point_type>>> raw_block_list;
+				for (auto const& block_it : block_list){
+					raw_block_list.push_back(block_it.block);
+				}
+				gui::combine_show_image(data_, comp_, raw_block_list);
 
 			}
 		}
