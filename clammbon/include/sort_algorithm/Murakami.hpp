@@ -8,7 +8,7 @@ class Murakami
 private:
 	typedef std::vector<std::vector<point_type>> return_type;
 	//type/def boost::multiprecision::cpp_int bi gint;
-	typedef boost::multiprecision::int256_t bigint;
+	typedef boost::multiprecision::int1024_t bigint;
 	question_raw_data const& data_;
 	compared_type const& comp_;
 

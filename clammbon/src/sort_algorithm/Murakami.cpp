@@ -56,67 +56,77 @@ std::vector<answer_type_y> Murakami::operator() (){
 		}
 		int a;//デバッグ用の変数
 		//std::cout << "b";
-		while (block_list.size() != 1){//メインループ
-			a = block_list.size();
+		try{
+			while (block_list.size() != 1){//メインループ
+				a = block_list.size();
 
-			block_combination best_block_combination;//一番いいblockの組み合わせいれるところ
-			best_block_combination.score = std::numeric_limits<bigint>::min();
-			block_combination b;
-			/*
-			for (const auto& i : block_list){//ブロック同士を比較するループ
+				block_combination best_block_combination;//一番いいblockの組み合わせいれるところ
+				best_block_combination.score = std::numeric_limits<bigint>::min();
+				block_combination b;
+				/*
+				for (const auto& i : block_list){//ブロック同士を比較するループ
 				for (const auto& j : block_list){
-					if (i == j) continue;
-					b = eval_block(std::move(i), std::move(j));
-					if (best_block_combination.score < b.score){
-						best_block_combination = std::move(b); //TODO 同じ値があったらどうしよ
-					}
+				if (i == j) continue;
+				b = eval_block(std::move(i), std::move(j));
+				if (best_block_combination.score < b.score){
+				best_block_combination = std::move(b); //TODO 同じ値があったらどうしよ
 				}
-			}
-			*/
-			for (int i = 0; i < block_list.size(); i++){//ブロック比較ループ改良
-				for (int j = i; j < block_list.size(); j++){
-					if (i == j) continue;
+				}
+				}
+				*/
+				for (int i = 0; i < block_list.size(); i++){//ブロック比較ループ改良
+					for (int j = i; j < block_list.size(); j++){
+						if (i == j) continue;
 						std::unordered_map<unsigned int, score_data>::iterator m_it = block_list[i].score_data_.find(block_list[j].u_this_number);
-					if (m_it != block_list[i].score_data_.end()){
-						b.block1 = block_list[i].block;
-						b.block2 = block_list[j].block;
-						b.score = block_list[i].score_data_[m_it->first].score;
-						b.shift_x = block_list[i].score_data_[m_it->first].shift_x;
-						b.shift_y = block_list[i].score_data_[m_it->first].shift_y;
-						
-					}
-					else{
-						b = eval_block(block_list[i].block, block_list[j].block);
-					}
-					if (best_block_combination.score < b.score){
-						best_block_combination = std::move(b);
-						//std::cout << "d";
+						if (m_it != block_list[i].score_data_.end()){
+							b.block1 = block_list[i].block;
+							b.block2 = block_list[j].block;
+							b.score = block_list[i].score_data_[m_it->first].score;
+							b.shift_x = block_list[i].score_data_[m_it->first].shift_x;
+							b.shift_y = block_list[i].score_data_[m_it->first].shift_y;
+
+						}
+						else{
+							b = eval_block(block_list[i].block, block_list[j].block);
+						}
+						if (best_block_combination.score < b.score){
+							best_block_combination = std::move(b);
+							//std::cout << "d";
+						}
 					}
 				}
-			}
-			
-			if (best_block_combination.score == std::numeric_limits<bigint>::min())std::cout << "本当に結合するブロックがなかった";
-			block_type combined_block = std::move(combine_block(best_block_combination));//ブロックを結合する
-			boost::remove_erase_if(block_list, [&best_block_combination](block_data_ it){//block_listから結合する前のブロックを消す
-				return (it.block == best_block_combination.block1 || it.block == best_block_combination.block2);
-			});
-			block_data_ p_b;
-			p_b.block = combined_block;
-			block_list.push_back(p_b);//結合したのを入れる
-			std::cout << "***" <<block_list.size() << "***" <<std::endl;
-			for (const auto& i : block_list){
-				for (const auto& j : i.block){
-					for (const auto& k : j){
-						//std::cout << k.x << "," << k.y << " ";
-						std::cout << boost::format("(%2d,%2d)") % k.x % k.y;
+
+				if (best_block_combination.score == std::numeric_limits<bigint>::min()){
+					std::cout << "本当に結合するブロックがなかったので解を出さずにMurakamiは終了";
+					throw std::runtime_error("本当に結合するブロックがなかった");
+				}
+				block_type combined_block = std::move(combine_block(best_block_combination));//ブロックを結合する
+				boost::remove_erase_if(block_list, [&best_block_combination](block_data_ it){//block_listから結合する前のブロックを消す
+					return (it.block == best_block_combination.block1 || it.block == best_block_combination.block2);
+				});
+				block_data_ p_b;
+				p_b.block = combined_block;
+				block_list.push_back(p_b);//結合したのを入れる
+				std::cout << "***" << block_list.size() << "***" << std::endl;
+				for (const auto& i : block_list){
+					for (const auto& j : i.block){
+						for (const auto& k : j){
+							//std::cout << k.x << "," << k.y << " ";
+							std::cout << boost::format("(%2d,%2d)") % k.x % k.y;
+						}
+						std::cout << "\n";
 					}
 					std::cout << "\n";
 				}
-				std::cout << "\n";
-			}
-			
-			//gui::combine_show_image(data_, comp_, block_list);
 
+				//gui::combine_show_image(data_, comp_, block_list);
+
+			}
+		}
+		catch (...){
+			std::cerr << "Murakamiダメでした";
+			std::vector<std::vector<point_type>>exception_array;
+			return std::vector<answer_type_y>{ { std::move(exception_array), 0, cv::Mat() } }; 
 		}
 		std::cout << t.elapsed() << "s経過した" << std::endl;
 		//-------------------------------------ここから第一閉塞----------------------------//
@@ -198,9 +208,10 @@ Murakami::block_combination Murakami::eval_block(const block_type& block1, const
 				if (confliction)break;
 			}
 			if (!confliction && !empty_block_c){
+				block_c += 1;
 				block_c *= rank1_num; //0を掛けるのは怖い
-				//if(block_c < 0)block_c = -pow(block_c, rank1_num + 1);
-				//if (block_c > 0)block_c = pow(block_c, rank1_num + 1);
+				//if(block_c < 0)block_c = -pow(block_c, rank1_num);
+				//if (block_c > 0)block_c = pow(block_c, rank1_num);
 				if (block_c >= best_block_c){
 					//block_size_check(i, j)
 					best_block_c = block_c;
