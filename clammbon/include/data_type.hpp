@@ -254,6 +254,7 @@ struct answer_type
 
 struct step_type {
     answer_type answer;
+    point_type selecting;
     point_type selecting_cur;
     std::vector<std::vector<point_type>> matrix;
 

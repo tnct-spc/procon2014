@@ -233,7 +233,7 @@ void algorithm::impl::add_step<'U'>()
     std::swap(step.matrix[step.selecting_cur.y][step.selecting_cur.x], step.matrix[step.selecting_cur.y - 1][step.selecting_cur.x]);
     step.selecting_cur.y -= 1;
     step.answer.list.back().actions.push_back('U');
-    if (!closed[step.matrix[step.selecting_cur.y][step.selecting_cur.x]].count(step)) {
+    if (!closed[step.selecting].count(step)) {
         open.push(step);
     }
 }
@@ -245,7 +245,7 @@ void algorithm::impl::add_step<'R'>()
     std::swap(step.matrix[step.selecting_cur.y][step.selecting_cur.x], step.matrix[step.selecting_cur.y][step.selecting_cur.x + 1]);
     step.selecting_cur.x += 1;
     step.answer.list.back().actions.push_back('R');
-    if (!closed[step.matrix[step.selecting_cur.y][step.selecting_cur.x]].count(step)) {
+    if (!closed[step.selecting].count(step)) {
         open.push(step);
     }
 }
@@ -257,7 +257,7 @@ void algorithm::impl::add_step<'D'>()
     std::swap(step.matrix[step.selecting_cur.y][step.selecting_cur.x], step.matrix[step.selecting_cur.y + 1][step.selecting_cur.x]);
     step.selecting_cur.y += 1;
     step.answer.list.back().actions.push_back('D');
-    if (!closed[step.matrix[step.selecting_cur.y][step.selecting_cur.x]].count(step)) {
+    if (!closed[step.selecting].count(step)) {
         open.push(step);
     }
 }
@@ -269,7 +269,7 @@ void algorithm::impl::add_step<'L'>()
     std::swap(step.matrix[step.selecting_cur.y][step.selecting_cur.x], step.matrix[step.selecting_cur.y][step.selecting_cur.x - 1]);
     step.selecting_cur.x -= 1;
     step.answer.list.back().actions.push_back('L');
-    if (!closed[step.matrix[step.selecting_cur.y][step.selecting_cur.x]].count(step)) {
+    if (!closed[step.selecting].count(step)) {
         open.push(step);
     }
 }
@@ -461,15 +461,14 @@ void algorithm::impl::brute_force()
 {
     // Brute-Force Algorithm
 
-    step_type first_step = {answer, selecting_cur, matrix};
+    step_type first_step = {answer, matrix[selecting_cur.y][selecting_cur.x], selecting_cur, matrix};
     open.push(first_step);
     for (int y = height - BFS_NUM; y < height; ++y) {
         for (int x = width - BFS_NUM; x < width; ++x) {
             if (x == width - 1 && y == height - 1) {
                 continue;
             }
-            step_type first_step = {answer, selecting_cur, matrix};
-            first_step.selecting_cur = point_type{x, y};
+            step_type first_step = {answer, matrix[y][x], {x, y}, matrix};
             first_step.answer.list.push_back({first_step.selecting_cur, ""});
             open.push(first_step);
         }
@@ -505,12 +504,13 @@ void algorithm::impl::brute_force()
             add_step<'D'>();
             add_step<'U'>();
         }
-        closed[current.matrix[current.selecting_cur.y][current.selecting_cur.x]].insert(current);
+        closed[current.selecting].insert(current);
     }
 
     // 和集合を求めてみる
     std::unordered_set<step_type> hoge;
     for (auto const& fuga : closed) {
+        std::cout << fuga.second.size() << std::endl;
         for (step_type const& piyo : fuga.second) {
             hoge.insert(piyo);
         }
