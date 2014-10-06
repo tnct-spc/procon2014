@@ -365,13 +365,51 @@ int algorithm_2::puzzle(std::vector<int> &out_history, int &out_cost){
 		}
 		//★★★★ここまで★★★★
 #else
-		harray.push(&cost, table, history, &history_limit);
+
 #endif
+		while (1){
+			while (1){
+				harray.push(&cost, table, history, &history_limit);
+				int buff = 0;
+				for (i = 0; i < size; i++){
+					if (sub_table[i] == table[i])buff++;
+				}
+				for (i = 0; i < size; i++){
+					sub_table[i] = table[i];
+				}
+				if (buff != size){
+					//前回と違うマス位置
+					break;
+				}
+			}
+			//完成判定
+			count = 0;
+			for (i = 0; i<size; i++){
+				if (table[i] == i) count++;
+			}
+			if (count == size){
+				//完成
+				out_cost = cost;
+				out_history.resize(history_limit);
+				for (i = 0; i < history_limit; i++){
+					out_history[i] = history[i];
+				}
+				return 0;
+			}
+			int S = 0;
+			for (i = 0; i < history_limit; i++){
+				if (history[i] < 16){
+					S++;
+				}
+			}
+			S /= 2;
+			if (S < 4) break;
+		}
 		//debug
-		/*
+		
 		for (int i = 0; i < 3; i++){
-			for (int j = 0; j < 3; j++){
-				std::cout << table[i * 3 + j] << ",";
+			for (int j = 0; j < 6; j++){
+				std::cout << table[i * 6 + j] << ",";
 			}
 			std::cout<<std::endl;
 		}
@@ -379,24 +417,9 @@ int algorithm_2::puzzle(std::vector<int> &out_history, int &out_cost){
 			std::cout << history[i] << ",";
 		}
 		std::cout << std::endl;
-		std::cout << "count=" << count<<std::endl;
 		int f;
 		std::cin >> f;
-		*/
-		//完成判定
-		count=0;
-		for (i=0;i<size;i++){
-			if (table[i] == i) count++;
-		}
-		if (count == size){
-			//完成
-			out_cost = cost;
-			out_history.resize(history_limit);
-			for (i = 0; i < history_limit; i++){
-				out_history[i] = history[i];
-			}
-			return 0;
-		}
+		
 	}
 }
 
