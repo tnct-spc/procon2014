@@ -488,54 +488,22 @@ void algorithm::impl::brute_force()
             break;
         }
 
-        if (current.selecting_cur.y == height - BFS_NUM) {
-            if (current.selecting_cur.x == width - BFS_NUM) {
-                // 右と下
-                add_step<'R'>();
-                add_step<'D'>();
-            } else if (current.selecting_cur.x == width - 1) {
-                // 左と下
-                add_step<'L'>();
-                add_step<'D'>();
-            } else {
-                // 左右下
-                add_step<'L'>();
-                add_step<'R'>();
-                add_step<'D'>();
-            }
-        } else if (current.selecting_cur.y == height - 1) {
-            if (current.selecting_cur.x == width - BFS_NUM) {
-                // 右と上
-                add_step<'R'>();
-                add_step<'U'>();
-            } else if (current.selecting_cur.x == width - 1) {
-                // 左と上
-                add_step<'L'>();
-                add_step<'U'>();
-            } else {
-                // 左右上
-                add_step<'L'>();
-                add_step<'R'>();
-                add_step<'U'>();
-            }
+        if (current.selecting_cur.x == width - BFS_NUM) {
+            add_step<'R'>();
+        } else if (current.selecting_cur.x == width - 1) {
+            add_step<'L'>();
         } else {
-            if (current.selecting_cur.x == width - BFS_NUM) {
-                // 右上下
-                add_step<'R'>();
-                add_step<'U'>();
-                add_step<'D'>();
-            } else if (current.selecting_cur.x == width - 1) {
-                // 左上下
-                add_step<'L'>();
-                add_step<'U'>();
-                add_step<'D'>();
-            } else {
-                // 四方
-                add_step<'U'>();
-                add_step<'R'>();
-                add_step<'D'>();
-                add_step<'L'>();
-            }
+            add_step<'L'>();
+            add_step<'R'>();
+        }
+
+        if (current.selecting_cur.y == height - BFS_NUM) {
+            add_step<'D'>();
+        } else if (current.selecting_cur.y == height - 1) {
+            add_step<'U'>();
+        } else {
+            add_step<'D'>();
+            add_step<'U'>();
         }
         closed[current.matrix[current.selecting_cur.y][current.selecting_cur.x]].insert(current);
     }
