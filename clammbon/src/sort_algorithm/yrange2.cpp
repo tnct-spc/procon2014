@@ -119,16 +119,18 @@ std::vector<answer_type_y> yrange2::operator() ()
 		return 0 <= p.x && p.x < width && 0 <= p.y && p.y < height;
 	};
 
-	std::vector<std::vector<std::vector<point_type>>> sorted_matrix(
-		width*height,
+    std::vector<std::vector<std::vector<point_type>>>& sorted_matrix = sorted_matrix_;
+    sorted_matrix.clear();
+    sorted_matrix.resize(
+        width*height,
 		std::vector<std::vector<point_type>>(
-		height * 2 - 1,
-		std::vector<point_type>(
-		width * 2 - 1,
-		{ std::numeric_limits<int>::max(), std::numeric_limits<int>::max() }
-		)
-		)
-		);
+		    height * 2 - 1,
+		    std::vector<point_type>(
+		        width * 2 - 1,
+                { std::numeric_limits<int>::max(), std::numeric_limits<int>::max() }
+                )
+            )
+        );
 
 	std::vector<answer_type_y> answer;
 	answer.reserve(width*height * 2);
@@ -285,4 +287,9 @@ std::vector<answer_type_y> yrange2::operator() ()
 	gui::show_image(data_, comp_, answer);
 #endif
 	return answer;
+}
+
+std::vector<std::vector<std::vector<point_type>>> const& yrange2::sorted_matrix()
+{
+    return sorted_matrix_;
 }

@@ -106,7 +106,7 @@ yrange5::yrange5(question_raw_data const& data, compared_type const& comp)
 {
 }
 
-std::vector<answer_type_y> yrange5::operator() ()
+std::vector<answer_type_y> yrange5::operator() (std::vector<std::vector<std::vector<point_type>>> const& sorted_matrix)
 {
 	auto const width = data_.split_num.first;
 	auto const height = data_.split_num.second;
