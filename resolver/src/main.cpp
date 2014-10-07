@@ -1,76 +1,190 @@
 ﻿// MS WARNINGS MACRO
 #define _SCL_SECURE_NO_WARNINGS
 
+// Macro: Program Settings
+#define ENABLE_NETWORK_IO 0
+
 #include <iostream>
-#include <array>
-#include <vector>
+#include <deque>
 #include <boost/noncopyable.hpp>
 #include "data_type.hpp"
 #include "pixel_sorter.hpp"
 #include "ppm_reader.hpp"
 #include "splitter.hpp"
 #include "algorithm.hpp"
+#include "algorithm_2.hpp"
 #include "gui.hpp"
 #include "network.hpp"
+#include "test_tool.hpp"
 
 #include <sort_algorithm/yrange2.hpp>
 #include <sort_algorithm/yrange5.hpp>
 #include <sort_algorithm/genetic.hpp>
 #include <sort_algorithm/Murakami.hpp>
+
+class position_manager : boost::noncopyable
+{
+public:
+    typedef question_data position_type;
+
+    position_manager() = default;
+    virtual ~position_manager() = default;
+
+    template<class T>
+    void add(T && pos)
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        items_.push_back(std::forward<T>(pos));
+    }
+
+    position_type get()
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        auto res = items_.front();
+        items_.pop_front();
+        return res;
+    }
+
+    bool empty()
+    {
+        return items_.empty();
+    }
+
+private:
+    std::mutex mutex_;
+    std::deque<position_type> items_;
+};
+
 class analyzer : boost::noncopyable
 {
 public:
-    explicit analyzer()
-        : netclient_()
+    explicit analyzer(int const problem_id, std::string const& player_id)
+        : client_(), problem_id_(problem_id), player_id_(player_id)
     {
     }
     virtual ~analyzer() = default;
 
-    question_data operator() (int const problem_id, std::string const& player_id)
+    void operator() (position_manager& manager)
     {
-        question_raw_data raw;
-#if 1
+        // 問題文の入手
+        raw_data_ = get_raw_question();
+        data_     = get_skelton_question(raw_data_);
+        
+        // 2次元画像に分割
+        split_image_ = splitter().split_image(raw_data_);
+        // 原画像推測部
+        // TODO: yrangeなどの実行
+        auto sorter_resolve = sorter_(raw_data_, split_image_);
+        //data_.block = std::move(sorter_resolve);
+        data_.block = sorter_resolve;
+        if(!data_.block.empty())manager.add(convert_block(data_)); // 解答
+
+        // TODO: yrange5の実行(並列化)
+        
+        // 画面表示をいくつか(yrange/Murakmi/yrange5/algo2 etc.)
+        std::vector<boost::shared_ptr<gui::impl::MoveWindow>> windows;
+		if (!data_.block.empty())windows.push_back(
+            gui::make_mansort_window(split_image_, sorter_resolve, "Murakami")
+            );
+		if (!data_.block.empty())windows.push_back(
+            gui::make_mansort_window(split_image_, sorter_resolve, "Murakami")
+            );
+		if (data_.block.empty() && data_.block.empty()){//どっちもダメだった時
+			windows.push_back(
+				gui::make_mansort_window(split_image_, "Yor are the sorter!!! Sort this!")
+				);
+		}
+        boost::thread th(
+            [&]()
+            {
+                // futureリストでvalidを巡回し，閉じられたWindowから解とする
+                while(!windows.empty())
+                {
+                    for(auto it = windows.begin(); it != windows.end();)
+                    {
+                        auto res = gui::get_result(*it);
+                        if(res)
+                        {
+							if (res.get().size() == 0)
+							{
+								//TODO:man sorterの答え受け取るのはこのタイミングが良いのではないだろうか．
+								continue;
+							}
+                            data_.block = res.get();
+                            manager.add(convert_block(data_)); // 解答
+
+                            it = windows.erase(it);
+                        }
+                        else ++it;
+                    }
+                }
+            });
+
+        gui::wait_all_window();
+
+        th.join();
+        
+    }
+
+    std::string submit(answer_type const& ans) const
+    {
+        auto submit_result = client_.submit(problem_id_, player_id_, ans);
+        return submit_result.get();
+    }
+
+private:
+    question_raw_data get_raw_question() const
+    {
+#if ENABLE_NETWORK_IO
+        // ネットワーク通信から
+        std::string const data = client_.get_problem(problem_id_).get();
+        return ppm_reader().from_data(data);
+#else
         // ファイルから
         std::string const path("prob01.ppm");
-        raw = reader_.from_file(path);
-#else
-        // ネットワーク通信から
-        std::string const data = netclient_.get_problem(01).get();
-        raw = reader_.from_data(data);
+        return ppm_reader().from_file(path);
 #endif
-        splitter sp;
-        auto splitted = sp.split_image(raw);
+    }
 
-		// 手作業用のウィンドウの作成
-        auto future = gui::make_mansort_window(splitted, "test");
-
-        // yrangeなどの実行
+    question_data get_skelton_question(question_raw_data const& raw) const
+    {
         question_data formed = {
-            problem_id,
-            player_id,
+            problem_id_,
+            player_id_,
             raw.split_num,
             raw.selectable_num,
             raw.cost.first,
             raw.cost.second,
-            sorter_(raw, splitted)
+            std::vector<std::vector<point_type>>()
         };
 
-        // TODO: ここで，sorter_(raw)の結果がイマイチなら，
-        // man_resolvedが結果を置き換える可能性を考慮．
-
-		if (formed.block.size() == 0){
-			//手作業のデータはこっちで受ける
-			auto man_resolved = future.get();
-
-			formed.block = man_resolved;
-		}
-
-        return std::move(formed);    
+        return formed;
     }
 
-private:
-    ppm_reader reader_;
-    network::client netclient_;
+    question_data convert_block(question_data const& data) const
+    {
+        auto res = data.clone();
+
+        for(int i = 0; i < data.size.second; ++i)
+        {
+            for(int j = 0; j < data.size.first; ++j)
+            {
+                auto const& target = data.block[i][j];
+                res.block[target.y][target.x] = point_type{j, i};
+		}
+        }
+
+        return res;
+    }
+
+    int const problem_id_;
+    std::string const player_id_;
+
+    question_raw_data raw_data_;
+    question_data         data_;
+    split_image_type  split_image_;
+
+    mutable network::client client_;
     pixel_sorter<yrange2> sorter_;
 };
 
@@ -90,19 +204,45 @@ question_data convert_block(question_data const& data)
     return res;
 }
 
-// 問題の並び替えパズル自体は，人間が行うほうがいいかもしれない．
-
 int main()
 {
-    analyzer analyze;
-    auto const data = analyze(1, "test token");
-    auto const converted = convert_block(data);
+    auto const ploblemid = 1;
+    auto const token     = "3935105806";
 
-    algorithm algo;
-    algo.reset(converted);
+    analyzer         analyze(ploblemid, token);
+    algorithm_2      algo;
+    position_manager manager;
 
+    boost::thread thread(boost::bind(&analyzer::operator(), &analyze, std::ref(manager)));
+
+    while(true)
+    {
+        if(!manager.empty())
+        {
+            // 手順探索部
+            auto question = manager.get();
+            algo.reset(question);
     auto const answer = algo.get();
-    // 送信処理をしたり，結果を見て再実行(algo.get())したり．
 
+            if(answer) // 解が見つかった
+            {
+#if ENABLE_NETWORK_IO
+                // TODO: 前より良くなったら提出など(普通にいらないかも．提出前に目grepしてるわけだし)
+                auto result = analyze.submit(answer.get());
+                std::cout << "Submit Result: " << result << std::endl;
+#else
+                test_tool::emulator emu(question);
+                auto result = emu.start(answer.get());
+                std::cout << "Wrong: " << result.wrong << std::endl;
+                std::cout << "Cost : " << result.cost  << std::endl;
+                std::cout << "---" << std::endl;
+#endif
+            }
+        }
+    }
+
+    thread.join();
+    
     return 0;
 }
+

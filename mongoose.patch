@@ -1,0 +1,53 @@
+diff --git mongoose/Request.cpp mongoose/Request.cpp
+index 5d9def0..b85ddc8 100644
+--- mongoose/Request.cpp
++++ mongoose/Request.cpp
+@@ -128,7 +128,7 @@ namespace Mongoose
+ 
+     bool Request::match(string pattern)
+     {   
+-        key = method + ":" + url;
++        string key = method + ":" + url;
+         return regex_match(key, matches, regex(pattern));
+     }   
+ #endif
+diff --git mongoose/Request.h mongoose/Request.h
+index e51ec9e..8c93407 100644
+--- mongoose/Request.h
++++ mongoose/Request.h
+@@ -81,6 +81,9 @@ namespace Mongoose
+             string getData();
+ 
+ #ifdef ENABLE_REGEX_URL
++        protected:
++            smatch matches;
++        public:
+             smatch getMatches();
+             bool match(string pattern);
+ #endif
+diff --git mongoose/Response.cpp mongoose/Response.cpp
+index 809e621..3bd53b8 100644
+--- mongoose/Response.cpp
++++ mongoose/Response.cpp
+@@ -28,7 +28,7 @@ namespace Mongoose
+         string body = getBody();
+         ostringstream data;
+ 
+-        data << "HTTP/1.0 " << code << "\r\n";
++        data << "HTTP/1.0 " << code << " " << (code == 200) ? "OK" : "Not found" << "\r\n";
+ 
+         if (!hasHeader("Content-Length")) {
+             ostringstream length;
+diff --git mongoose/Utils.cpp mongoose/Utils.cpp
+index ec8c3ba..d808e90 100644
+--- mongoose/Utils.cpp
++++ mongoose/Utils.cpp
+@@ -1,7 +1,7 @@
+ #include <iostream>
+ #include <sstream>
+ #include "Utils.h"
+-#ifndef MSVC
++#ifndef WIN32
+ #include <unistd.h>
+ #endif
+ #ifdef WIN32

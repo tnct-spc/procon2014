@@ -11,10 +11,9 @@ private:
     void convert(std::string const& s);
     bool sane;
 public:
-    Answer(std::string s)
+    Answer(std::string s) : sane(false)
     {
         convert(s);
-        sane = false;
     }
 //    answer()
 //    {
@@ -22,7 +21,7 @@ public:
 //    }
     inline std::string get_error()
     {
-        return outerr.str();
+        return std::move(outerr.str());
     }
     inline answer_type const& get()
     {
