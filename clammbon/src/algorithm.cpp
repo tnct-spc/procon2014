@@ -60,6 +60,7 @@ private:
     point_type selecting_cur;
     std::queue<step_type> open;
     std::unordered_set<step_type> closed;
+    std::unordered_map<std::vector<std::vector<point_type>>, step_type> visited;
     int width;
     int height;
     int cost_select;
@@ -231,6 +232,7 @@ void algorithm::impl::add_step<'U'>(step_type step)
     std::swap(step.matrix[step.selecting_cur.y][step.selecting_cur.x], step.matrix[step.selecting_cur.y - 1][step.selecting_cur.x]);
     step.selecting_cur.y -= 1;
     step.answer.list.back().actions.push_back('U');
+    visited[step.matrix] = step;
     if (!closed.count(step)) {
         open.push(std::move(step));
     }
@@ -242,6 +244,7 @@ void algorithm::impl::add_step<'R'>(step_type step)
     std::swap(step.matrix[step.selecting_cur.y][step.selecting_cur.x], step.matrix[step.selecting_cur.y][step.selecting_cur.x + 1]);
     step.selecting_cur.x += 1;
     step.answer.list.back().actions.push_back('R');
+    visited[step.matrix] = step;
     if (!closed.count(step)) {
         open.push(std::move(step));
     }
@@ -253,6 +256,7 @@ void algorithm::impl::add_step<'D'>(step_type step)
     std::swap(step.matrix[step.selecting_cur.y][step.selecting_cur.x], step.matrix[step.selecting_cur.y + 1][step.selecting_cur.x]);
     step.selecting_cur.y += 1;
     step.answer.list.back().actions.push_back('D');
+    visited[step.matrix] = step;
     if (!closed.count(step)) {
         open.push(std::move(step));
     }
@@ -264,6 +268,7 @@ void algorithm::impl::add_step<'L'>(step_type step)
     std::swap(step.matrix[step.selecting_cur.y][step.selecting_cur.x], step.matrix[step.selecting_cur.y][step.selecting_cur.x - 1]);
     step.selecting_cur.x -= 1;
     step.answer.list.back().actions.push_back('L');
+    visited[step.matrix] = step;
     if (!closed.count(step)) {
         open.push(std::move(step));
     }
@@ -455,18 +460,19 @@ void algorithm::impl::greedy()
 void algorithm::impl::brute_force()
 {
     // Brute-Force Algorithm
+    // 双方向探索
 
-    step_type first_step = {answer, matrix[selecting_cur.y][selecting_cur.x], selecting_cur, matrix};
+    step_type first_step = {true, answer, matrix[selecting_cur.y][selecting_cur.x], selecting_cur, matrix};
     open.push(std::move(first_step));
-    for (int y = height - BFS_NUM; y < height; ++y) {
-        for (int x = width - BFS_NUM; x < width; ++x) {
-            if (x == width - 1 && y == height - 1) {
-                continue;
-            }
-            step_type first_step = {answer, matrix[y][x], {x, y}, matrix};
-            first_step.answer.list.push_back({first_step.selecting_cur, ""});
-            open.push(std::move(first_step));
-        }
+
+    auto goal_matrix = matrix;
+    for (int y = height - BFS_NUM; y < height; ++y) for (int x = width - BFS_NUM; x < width; ++x) {
+        matrix[y][x] = {x, y};
+    }
+
+    for (int y = height - BFS_NUM; y < height; ++y) for (int x = width - BFS_NUM; x < width; ++x) {
+        step_type goal_step = {false, {{{{x, y}, ""}}}, matrix[y][x], {x, y}, goal_matrix};
+        open.push(std::move(goal_step));
     }
 
     // 解答発見フラグ
@@ -475,10 +481,45 @@ void algorithm::impl::brute_force()
     while (open.size() > 0) {
         step_type current = std::move(open.front());
         open.pop();
-        if (is_finished(current.matrix)) {
-            answer = std::move(current.answer);
-            finished = true;
-            break;
+
+        if (visited.count(current.matrix)) {
+            if (visited.at(current.matrix).direction != current.direction) {
+                step_type* backward_p;
+                step_type* forward_p;
+                if (visited.at(current.matrix).direction == false) {
+                    forward_p = &current;
+                    backward_p = &visited.at(current.matrix);
+                } else {
+                    forward_p = &visited.at(current.matrix);
+                    backward_p = &current;
+                }
+                step_type& forward = *forward_p;
+                step_type& backward = *backward_p;
+
+                std::reverse(backward.answer.list.front().actions.begin(), backward.answer.list.front().actions.end());
+                for (char& action : backward.answer.list.front().actions) {
+                    switch (action) {
+                        case 'U':
+                            action = 'D';
+                            break;
+                        case 'R':
+                            action = 'L';
+                            break;
+                        case 'D':
+                            action = 'U';
+                            break;
+                        case 'L':
+                            action = 'R';
+                            break;
+                    }
+                }
+                backward.answer.list.front().position = backward.selecting_cur;
+                forward.answer.list.push_back(std::move(backward.answer.list.front()));
+
+                answer = std::move(forward.answer);
+                finished = true;
+                break;
+            }
         }
 
         if (current.selecting_cur.x == width - BFS_NUM) {
@@ -500,14 +541,6 @@ void algorithm::impl::brute_force()
         }
         closed.insert(std::move(current));
     }
-
-    // 和集合を求めてみる
-    std::unordered_set<std::vector<std::vector<point_type>>> hoge;
-    for (auto const& fuga : closed) {
-        hoge.insert(fuga.matrix);
-    }
-    std::cout << closed.size() << std::endl;
-    std::cout << hoge.size() << std::endl;
 
     if (!finished) {
         throw std::runtime_error("Couldn't solve the problem.");
