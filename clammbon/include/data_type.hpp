@@ -253,6 +253,7 @@ struct answer_type
 };
 
 struct step_type {
+    bool direction;
     answer_type answer;
     point_type selecting;
     point_type selecting_cur;
@@ -260,7 +261,7 @@ struct step_type {
 
     friend bool operator== (step_type const& lhs, step_type const& rhs)
     {
-        return lhs.matrix == rhs.matrix;
+        return lhs.selecting == rhs.selecting && lhs.matrix == rhs.matrix;
     }
 };
 
@@ -316,6 +317,7 @@ namespace std
         std::size_t operator() (std::vector<std::vector<point_type>> const& matrix) const
         {
             std::size_t result = 0;
+            boost::hash_combine(result, matrix.size());
             for (auto const& row : matrix) for (auto const& point : row) {
                 boost::hash_combine(result, point);
             }
@@ -328,7 +330,10 @@ namespace std
     {
         std::size_t operator() (step_type const& step) const
         {
-            return std::hash<std::vector<std::vector<point_type>>>()(step.matrix);
+            std::size_t result = 0;
+            boost::hash_combine(result, step.selecting);
+            boost::hash_combine(result, step.matrix);
+            return result;
         }
     };
 }

@@ -51,7 +51,7 @@ private:
     void move_selecting();
 
     template <char T>
-    void add_step();
+    void add_step(step_type step);
 
     std::vector<std::vector<point_type>> matrix;
     std::unordered_set<point_type> sorted_points;
@@ -59,8 +59,7 @@ private:
     point_type selecting;
     point_type selecting_cur;
     std::queue<step_type> open;
-    std::unordered_map<point_type, std::unordered_set<step_type>> closed;
-    step_type current;
+    std::unordered_set<step_type> closed;
     int width;
     int height;
     int cost_select;
@@ -227,50 +226,46 @@ void algorithm::impl::move_selecting()
 
 // add_step {{{2
 template <>
-void algorithm::impl::add_step<'U'>()
+void algorithm::impl::add_step<'U'>(step_type step)
 {
-    step_type step = current;
     std::swap(step.matrix[step.selecting_cur.y][step.selecting_cur.x], step.matrix[step.selecting_cur.y - 1][step.selecting_cur.x]);
     step.selecting_cur.y -= 1;
     step.answer.list.back().actions.push_back('U');
-    if (!closed[step.selecting].count(step)) {
-        open.push(step);
+    if (!closed.count(step)) {
+        open.push(std::move(step));
     }
 }
 
 template <>
-void algorithm::impl::add_step<'R'>()
+void algorithm::impl::add_step<'R'>(step_type step)
 {
-    step_type step = current;
     std::swap(step.matrix[step.selecting_cur.y][step.selecting_cur.x], step.matrix[step.selecting_cur.y][step.selecting_cur.x + 1]);
     step.selecting_cur.x += 1;
     step.answer.list.back().actions.push_back('R');
-    if (!closed[step.selecting].count(step)) {
-        open.push(step);
+    if (!closed.count(step)) {
+        open.push(std::move(step));
     }
 }
 
 template <>
-void algorithm::impl::add_step<'D'>()
+void algorithm::impl::add_step<'D'>(step_type step)
 {
-    step_type step = current;
     std::swap(step.matrix[step.selecting_cur.y][step.selecting_cur.x], step.matrix[step.selecting_cur.y + 1][step.selecting_cur.x]);
     step.selecting_cur.y += 1;
     step.answer.list.back().actions.push_back('D');
-    if (!closed[step.selecting].count(step)) {
-        open.push(step);
+    if (!closed.count(step)) {
+        open.push(std::move(step));
     }
 }
 
 template <>
-void algorithm::impl::add_step<'L'>()
+void algorithm::impl::add_step<'L'>(step_type step)
 {
-    step_type step = current;
     std::swap(step.matrix[step.selecting_cur.y][step.selecting_cur.x], step.matrix[step.selecting_cur.y][step.selecting_cur.x - 1]);
     step.selecting_cur.x -= 1;
     step.answer.list.back().actions.push_back('L');
-    if (!closed[step.selecting].count(step)) {
-        open.push(step);
+    if (!closed.count(step)) {
+        open.push(std::move(step));
     }
 }
 
@@ -462,7 +457,7 @@ void algorithm::impl::brute_force()
     // Brute-Force Algorithm
 
     step_type first_step = {answer, matrix[selecting_cur.y][selecting_cur.x], selecting_cur, matrix};
-    open.push(first_step);
+    open.push(std::move(first_step));
     for (int y = height - BFS_NUM; y < height; ++y) {
         for (int x = width - BFS_NUM; x < width; ++x) {
             if (x == width - 1 && y == height - 1) {
@@ -470,7 +465,7 @@ void algorithm::impl::brute_force()
             }
             step_type first_step = {answer, matrix[y][x], {x, y}, matrix};
             first_step.answer.list.push_back({first_step.selecting_cur, ""});
-            open.push(first_step);
+            open.push(std::move(first_step));
         }
     }
 
@@ -478,43 +473,40 @@ void algorithm::impl::brute_force()
     bool finished = false;
 
     while (open.size() > 0) {
-        current = open.front();
+        step_type current = std::move(open.front());
         open.pop();
         if (is_finished(current.matrix)) {
-            // 終了
-            answer = current.answer;
+            answer = std::move(current.answer);
             finished = true;
             break;
         }
 
         if (current.selecting_cur.x == width - BFS_NUM) {
-            add_step<'R'>();
+            add_step<'R'>(current);
         } else if (current.selecting_cur.x == width - 1) {
-            add_step<'L'>();
+            add_step<'L'>(current);
         } else {
-            add_step<'L'>();
-            add_step<'R'>();
+            add_step<'L'>(current);
+            add_step<'R'>(current);
         }
 
         if (current.selecting_cur.y == height - BFS_NUM) {
-            add_step<'D'>();
+            add_step<'D'>(current);
         } else if (current.selecting_cur.y == height - 1) {
-            add_step<'U'>();
+            add_step<'U'>(current);
         } else {
-            add_step<'D'>();
-            add_step<'U'>();
+            add_step<'D'>(current);
+            add_step<'U'>(current);
         }
-        closed[current.selecting].insert(current);
+        closed.insert(std::move(current));
     }
 
     // 和集合を求めてみる
-    std::unordered_set<step_type> hoge;
+    std::unordered_set<std::vector<std::vector<point_type>>> hoge;
     for (auto const& fuga : closed) {
-        std::cout << fuga.second.size() << std::endl;
-        for (step_type const& piyo : fuga.second) {
-            hoge.insert(piyo);
-        }
+        hoge.insert(fuga.matrix);
     }
+    std::cout << closed.size() << std::endl;
     std::cout << hoge.size() << std::endl;
 
     if (!finished) {
