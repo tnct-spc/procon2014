@@ -9,7 +9,7 @@ namespace test_tool
     {
     }
 
-    auto emulator::start(answer_list const& answer) -> return_type
+    auto emulator::start(answer_type const& answer) -> return_type
     {
         auto const emulated = emulate_movement(answer);
         auto const cost     = count_cost(answer);
@@ -35,13 +35,31 @@ namespace test_tool
         }
         throw std::runtime_error("emulator::target_point: Undefined identifier");
     }
-
-    auto emulator::emulate_movement(answer_list const& answer) -> locate_type
+    
+    auto emulator::create_default() -> locate_type
     {
-        locate_type state = question_.block;
+        locate_type locate(
+            question_.size.second,
+            std::vector<point_type>(question_.size.first, point_type{-1, -1})
+            );
+
+        for(int i = 0; i < question_.size.second; ++i)
+        {
+            for(int j = 0; j < question_.size.first; ++j)
+            {
+                locate[i][j] = point_type{j, i};
+            }
+        }
+
+        return locate;
+    }
+
+    auto emulator::emulate_movement(answer_type const& answer) -> locate_type
+    {
+        locate_type state = create_default();
         point_type selected{-1, -1};
 
-        for(auto const& select : answer)
+        for(auto const& select : answer.list)
         {
             selected = select.position;
             for(const char action : select.actions)
@@ -61,11 +79,11 @@ namespace test_tool
         return state;
     }
 
-    int emulator::count_cost(answer_list const& answer)
+    int emulator::count_cost(answer_type const& answer)
     {
         int cost = 0;
 
-        for(auto const& select : answer)
+        for(auto const& select : answer.list)
         {
             cost += question_.cost_select;
             for(char const action : select.actions)
@@ -84,7 +102,7 @@ namespace test_tool
         {
             for(int j = 0; j < locate.at(i).size(); ++j)
             {
-                if(locate.at(i).at(j) == point_type{j, i}) ++correct;
+                if(locate.at(i).at(j) == question_.block[i][j]) ++correct;
             }
         }
         return correct;

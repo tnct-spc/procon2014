@@ -1,4 +1,4 @@
-﻿#ifndef RESOLVER_ALGORITHM_HPP
+#ifndef RESOLVER_ALGORITHM_HPP
 #define RESOLVER_ALGORITHM_HPP
 
 #include <boost/optional.hpp>
@@ -7,7 +7,7 @@
 class algorithm
 {
 public:
-    typedef answer_list return_type; // TODO: あとで相談とか
+    typedef answer_type return_type;
 
     algorithm();
     virtual ~algorithm();
@@ -15,7 +15,7 @@ public:
     auto get() -> boost::optional<return_type>;
     void reset(question_data const& data);
 
-private:    
+private:
     class impl;
     impl *pimpl_;
 };

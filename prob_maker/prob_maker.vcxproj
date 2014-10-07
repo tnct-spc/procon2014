@@ -19,33 +19,33 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{A8EE0710-0A8D-4910-BB42-2BD617A5AEAB}</ProjectGuid>
-    <RootNamespace>resolver</RootNamespace>
+    <ProjectGuid>{A1F96496-0C87-4677-9B1D-458FD74E15C2}</ProjectGuid>
+    <RootNamespace>prob_maker</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>CTP_Nov2013</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>CTP_Nov2013</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>CTP_Nov2013</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>CTP_Nov2013</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
@@ -65,39 +65,16 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>$(ProjectDir)include;$(SolutionDir)clammbon\include;$(LIBRARIES_INCLUDE);$(IncludePath)</IncludePath>
-    <OutDir>$(SolutionDir)lib\</OutDir>
-    <IntDir>obj\$(Configuration)\</IntDir>
-    <TargetName>$(ProjectName)d</TargetName>
-    <LibraryPath>$(SolutionDir)lib;$(LIBRARIES_LIB_X86_DEBUG);$(LIBRARIES_LIB);$(LibraryPath)</LibraryPath>
-  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IncludePath>$(ProjectDir)include;$(SolutionDir)clammbon\include;$(LIBRARIES_INCLUDE);$(IncludePath)</IncludePath>
-    <OutDir>$(SolutionDir)lib\</OutDir>
-    <IntDir>obj\$(Configuration)\</IntDir>
-    <TargetName>$(ProjectName)d</TargetName>
     <LibraryPath>$(SolutionDir)lib;$(LIBRARIES_LIB_X64_DEBUG);$(LIBRARIES_LIB);$(LibraryPath)</LibraryPath>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <OutDir>$(SolutionDir)lib\</OutDir>
-    <IntDir>obj\$(Configuration)\</IntDir>
-    <IncludePath>$(ProjectDir)include;$(SolutionDir)clammbon\include;$(LIBRARIES_INCLUDE);$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)lib;$(LIBRARIES_LIB_X86_RELEASE);$(LIBRARIES_LIB);$(LibraryPath)</LibraryPath>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>$(SolutionDir)lib\</OutDir>
-    <IntDir>obj\$(Configuration)\</IntDir>
-    <IncludePath>$(ProjectDir)include;$(SolutionDir)clammbon\include;$(LIBRARIES_INCLUDE);$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)lib;$(LIBRARIES_LIB_X64_RELEASE);$(LIBRARIES_LIB);$(LibraryPath)</LibraryPath>
+    <ExecutablePath>$(VC_CTP_Nov2013_ExecutablePath_x64);$(ExecutablePath)</ExecutablePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_WINSOCK_DEPRECATED_NO_WARNINGS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -108,12 +85,10 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_WINSOCK_DEPRECATED_NO_WARNINGS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <OpenMPSupport>true</OpenMPSupport>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>clammbond.lib;fltkd.lib;opencv_core249d.lib;opencv_highgui249d.lib;opencv_imgproc249d.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -123,8 +98,6 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_WINSOCK_DEPRECATED_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -139,8 +112,6 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_WINSOCK_DEPRECATED_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -149,37 +120,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src\algorithm.cpp" />
-    <ClCompile Include="src\gui.cpp" />
-    <ClCompile Include="src\network.cpp" />
-    <ClCompile Include="src\ppm_reader.cpp" />
-    <ClCompile Include="src\sort_algorithm\adjacent.cpp" />
-    <ClCompile Include="src\sort_algorithm\compare.cpp" />
-    <ClCompile Include="src\sort_algorithm\genetic.cpp" />
-    <ClCompile Include="src\sort_algorithm\Murakami.cpp" />
-    <ClCompile Include="src\sort_algorithm\yrange2.cpp" />
-    <ClCompile Include="src\sort_algorithm\yrange5.cpp" />
-    <ClCompile Include="src\splitter.cpp" />
-    <ClCompile Include="src\test_tool.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="include\gui.hpp" />
-    <ClInclude Include="include\algorithm.hpp" />
-    <ClInclude Include="include\data_type.hpp" />
-    <ClInclude Include="include\network.hpp" />
-    <ClInclude Include="include\pixel_sorter.hpp" />
-    <ClInclude Include="include\ppm_reader.hpp" />
-    <ClInclude Include="include\sort_algorithm\adjacent.hpp" />
-    <ClInclude Include="include\sort_algorithm\compare.hpp" />
-    <ClInclude Include="include\sort_algorithm\genetic.hpp" />
-    <ClInclude Include="include\sort_algorithm\Murakami.hpp" />
-    <ClInclude Include="include\sort_algorithm\yrange2.hpp" />
-    <ClInclude Include="include\sort_algorithm\yrange5.hpp" />
-    <ClInclude Include="include\splitter.hpp" />
-    <ClInclude Include="include\test_tool.hpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="src\impl\gui_move.ipp" />
+    <ClCompile Include="src\main.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

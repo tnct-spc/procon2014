@@ -11,8 +11,9 @@ int main(int argc, char* argv[])
     std::string const output_filename = "report_movement";
 
     if(argc != 2 || argc != 4)\
+    if(argc != 2 && argc != 4)
     {
-        std::cout << "Usage: " << argv[0] << "試行回数 [分割数タテ 分割数ヨコ]" << std::endl;
+        std::cout << "Usage: " << argv[0] << " 試行回数 [分割数タテ 分割数ヨコ]" << std::endl;
         //std::quick_exit(-1);
         return -1;
     }
@@ -23,7 +24,7 @@ int main(int argc, char* argv[])
 
     std::mt19937 mt;
     std::uniform_int_distribution<int> select_dist(1, 20); // 選択可能回数生成器
-    std::uniform_int_distribution<int> size_dist  (1, 16); // サイズ生成器
+    std::uniform_int_distribution<int> size_dist  (2, 16); // サイズ生成器
     std::uniform_int_distribution<int> cost_dist  (1, 50); // コスト生成器
 
     for(int n=0; n<try_num; ++n)

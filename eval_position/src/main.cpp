@@ -148,7 +148,8 @@ int main(int argc, char *argv[])
 
         // 問題を解く
         auto const raw_question = reader.from_file(filepath.string());
-        auto const proposed_answers = sorter.proposed_answer(raw_question); // TODO: sorterはただ1つの解答を返すべき
+        auto const splitted = splitter().split_image(raw_question);
+        auto const proposed_answers = sorter.proposed_answer(raw_question, splitted); // TODO: sorterはただ1つの解答を返すべき
 
         // 解答ファイルを読み取る
         auto const correct_answer = read_answer(answer_filename, raw_question.split_num.first, raw_question.split_num.second);

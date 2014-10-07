@@ -19,7 +19,18 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\http.cpp" />
+    <ClCompile Include="src\answer.cpp" />
+    <ClCompile Include="src\http-mongoose.cpp" />
+    <ClCompile Include="src\problem.cpp" />
+    <ClCompile Include="src\server.cpp" />
+    <ClCompile Include="src\test_tool.cpp" />
+    <ClCompile Include="src\tools.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\answer.hpp" />
+    <ClInclude Include="include\problem.hpp" />
+    <ClInclude Include="include\server.hpp" />
+    <ClInclude Include="include\tools.hpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{A02096B9-461F-4395-80D0-FB709E764621}</ProjectGuid>
@@ -75,10 +86,10 @@
     <IntDir>obj\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(ProjectDir)include;$(SolutionDir)clammbon\include;$(LIBRARIES_INCLUDE);$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)include;$(SolutionDir)clammbon\include;$(LIBRARIES_INCLUDE);$(IncludePath);C:\mongoose-cpp</IncludePath>
     <IntDir>obj\$(Configuration)\</IntDir>
     <OutDir>$(SolutionDir)bin\$(Configuration)\</OutDir>
-    <LibraryPath>$(SolutionDir)lib;$(LIBRARIES_LIB_X64_DEBUG);$(LIBRARIES_LIB);$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(SolutionDir)lib;$(LIBRARIES_LIB_X64_DEBUG);$(LIBRARIES_LIB);$(LibraryPath);C:\mongoose-cpp</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>$(SolutionDir)bin\$(Configuration)\</OutDir>

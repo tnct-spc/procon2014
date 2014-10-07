@@ -124,96 +124,8 @@ std::vector<answer_type_y> yrange5::operator() ()
 	answer.reserve(height*width * 2);
 	splitter sp;
 
-	//すべてのピースから並べ始めるためのループ
-	for (int c_y = 0; c_y < height; ++c_y) for (int c_x = 0; c_x < width; ++c_x)
+	for (int c = 0; c < sorted_matrix.size(); ++c)
 	{
-		std::vector<std::vector<point_type>> sorted_matrix(
-			height * 2 - 1,
-			std::vector<point_type>(
-			width * 2 - 1,
-			{ std::numeric_limits<int>::max(), std::numeric_limits<int>::max() }
-			)
-			);
-
-		sorted_matrix[height - 1][width - 1] = point_type{ c_x, c_y };
-
-		//上に見ていく
-		for (int i = 0; i < height - 1; ++i)
-		{
-			auto const& adjacent = sorted_matrix[height - 1 - i][width - 1];
-			sorted_matrix[height - 2 - i][width - 1] = adjacent_data_[adjacent.y][adjacent.x].up;
-			if (sorted_matrix[height - 2 - i][width - 1].y < 0 || sorted_matrix[height - 2 - i][width - 1].y >= height) break;
-		}
-		//下に見ていく
-		for (int i = 0; i < height - 1; ++i)
-		{
-			auto const& adjacent = sorted_matrix[height - 1 + i][width - 1];
-			sorted_matrix[height + i][width - 1] = adjacent_data_[adjacent.y][adjacent.x].down;
-			if (sorted_matrix[height + i][width - 1].y < 0 || sorted_matrix[height + i][width - 1].y >= height) break;
-		}
-		//右に見ていく
-		for (int i = 0; i < width - 1; ++i)
-		{
-			auto const& adjacent = sorted_matrix[height - 1][width - 1 + i];
-			sorted_matrix[height - 1][width + i] = adjacent_data_[adjacent.y][adjacent.x].right;
-			if (sorted_matrix[height - 1][width + i].x < 0 || sorted_matrix[height - 1][width + i].x >= width) break;
-		}
-		//左に見ていく
-		for (int i = 0; i < width - 1; ++i)
-		{
-			auto const& adjacent = sorted_matrix[height - 1][width - 1 - i];
-			sorted_matrix[height - 1][width - 2 - i] = adjacent_data_[adjacent.y][adjacent.x].left;
-			if (sorted_matrix[height - 1][width - 2 - i].x < 0 || sorted_matrix[height - 1][width - 2 - i].x >= width) break;
-		}
-
-		//中心を除き上に向かってループ，右に見ていく
-		for (int i = 0; i < height - 1; ++i) for (int j = 0; j < width - 1; ++j)
-		{
-			auto const& center = sorted_matrix[height - i - 1][width + j - 1];
-			auto const& upper = sorted_matrix[height - i - 2][width + j - 1];
-			auto const& right = sorted_matrix[height - i - 1][width + j];
-
-			if (exists(center) && exists(upper) && exists(right))
-				sorted_matrix[height - i - 2][width + j] = ur_choose(comp_, upper, center, right);
-			else
-				break;
-		}
-		//中心を除き上に向かってループ，左に見ていく
-		for (int i = 0; i < height - 1; ++i) for (int j = 0; j < width - 1; ++j)
-		{
-			auto const& center = sorted_matrix[height - i - 1][width - j - 1];
-			auto const& upper = sorted_matrix[height - i - 2][width - j - 1];
-			auto const& left = sorted_matrix[height - i - 1][width - j - 2];
-
-			if (exists(center) && exists(upper) && exists(left))
-				sorted_matrix[height - i - 2][width - j - 2] = ul_choose(comp_, upper, left, center);
-			else
-				break;
-		}
-		//中心を除き下に向かってループ，右に見ていく
-		for (int i = 0; i < height - 1; ++i) for (int j = 0; j < width - 1; ++j)
-		{
-			auto const& center = sorted_matrix[height + i - 1][width + j - 1];
-			auto const& lower = sorted_matrix[height + i][width + j - 1];
-			auto const& right = sorted_matrix[height + i - 1][width + j];
-
-			if (exists(center) && exists(lower) && exists(right))
-				sorted_matrix[height + i][width + j] = dr_choose(comp_, center, right, lower);
-			else
-				break;
-		}
-		//中心を除き下に向かってループ，左に見ていく
-		for (int i = 0; i < height - 1; ++i) for (int j = 0; j < width - 1; ++j)
-		{
-			auto const& center = sorted_matrix[height + i - 1][width - j - 1];
-			auto const& lower = sorted_matrix[height + i][width - j - 1];
-			auto const& left = sorted_matrix[height + i - 1][width - j - 2];
-
-			if (exists(center) && exists(lower) && exists(left))
-				sorted_matrix[height + i][width - j - 2] = dl_choose(comp_, left, center, lower);
-			else
-				break;
-		}
 
 		//kind_rgb選考
 		for (int i = 0; i < height; i++)	for (int j = 0; j < width; j++){
@@ -222,118 +134,117 @@ std::vector<answer_type_y> yrange5::operator() ()
 			kind_rgb_vector[j * height + i].kind = get_kind_num(data_, sorted_matrix, j, i);
 			kind_rgb_vector[j * height + i].score = (width*height - kind_rgb_vector[j * height + i].kind + 1) * range_evaluate(data_, comp_, sorted_matrix, j, i);
 		}
-
-		std::sort(kind_rgb_vector.begin(), kind_rgb_vector.end());
-
-		for (int k = 0; k < kind_rgb_vector.size() / paramerter; k++){
-			std::vector<std::vector <point_type>> ans_temp2;
-			for (int i = 0; i < height; ++i){
-				std::vector<point_type>ans_temp1;
-				for (int j = 0; j < width; ++j){
-					ans_temp1.push_back(sorted_matrix[kind_rgb_vector[k].y + i][kind_rgb_vector[k].x + j]);
-				}
-				ans_temp2.push_back(ans_temp1);
-			}
-			to_iddfs.push_back(answer_type_y{ ans_temp2, 0, cv::Mat() });
-		}
 	}
+		
+	std::sort(kind_rgb_vector.begin(), kind_rgb_vector.end());
 
+	for (int k = 0; k < kind_rgb_vector.size() / paramerter; k++){
+		std::vector<std::vector <point_type>> ans_temp2;
+		for (int i = 0; i < height; ++i){
+			std::vector<point_type>ans_temp1;
+			for (int j = 0; j < width; ++j){
+				ans_temp1.push_back(sorted_matrix[kind_rgb_vector[k].y + i][kind_rgb_vector[k].x + j]);
+			}
+			ans_temp2.push_back(ans_temp1);
+		}
+		to_iddfs.push_back(answer_type_y{ ans_temp2, 0, cv::Mat() });
+	}
+	
 	//yrange5メインループ
 	for (auto& matrix : to_iddfs){
-		//重複して入っているもののうち，悪い方を{width,height}に置き換え,今使われていないものを返す
-		std::vector<point_type> usable =std::move(duplicate_delete(comp_, matrix.points));
-		//gui::combine_show_image(data_, comp_, matrix.points);
-		//I'ts show time!
-		for (int i = 0; i < height; ++i)for (int j = 0; j < width; ++j){
-			std::vector<std::vector<point_type>> sorted_matrix(height, std::vector<point_type>(width, point_type{ width, height }));
-			//全部並べ切れたら
-			if (!try_matrix_copy(sorted_matrix, matrix.points, point_type{ j, i }))
+	//重複して入っているもののうち，悪い方を{width,height}に置き換え,今使われていないものを返す
+	std::vector<point_type> usable = std::move(duplicate_delete(comp_, matrix.points));
+	//gui::combine_show_image(data_, comp_, matrix.points);
+	//I'ts show time!
+	for (int i = 0; i < height; ++i)for (int j = 0; j < width; ++j){
+		std::vector<std::vector<point_type>> sorted_matrix(height, std::vector<point_type>(width, point_type{ width, height }));
+		//全部並べ切れたら
+		if (!try_matrix_copy(sorted_matrix, matrix.points, point_type{ j, i }))
+		{
+			//抜けてるところを並べていく
+			point_type const invalid_val = { width, height };
+			int const u_height = (height % 2 == 0) ? height / 2 + 1 : height / 2;
+			int const r_width = width / 2;
+			int const d_height = height / 2;
+			int const l_width = (width % 2 == 0) ? height / 2 + 1 : width / 2;
+
+			//上に見ていく
+			for (int i = 0; i < height - 1; ++i)
 			{
-				//抜けてるところを並べていく
-				point_type const invalid_val = { width, height };
-				int const u_height = (height % 2 == 0) ? height / 2 + 1 : height / 2;
-				int const r_width  = width / 2;
-				int const d_height = height / 2;
-				int const l_width  = (width % 2 == 0) ? height / 2 + 1 : width / 2;
+				auto const& adjacent = sorted_matrix[height - 1 - i][width / 2];
+				auto      & target = sorted_matrix[height - 2 - i][width / 2];
+				if (target == invalid_val && adjacent != invalid_val) target = u_choose(comp_, adjacent, usable);
+			}
+			//下に見ていく
+			for (int i = 0; i < height - 1; ++i)
+			{
+				auto const& adjacent = sorted_matrix[i][width / 2];
+				auto      & target = sorted_matrix[i + 1][width / 2];
+				if (target == invalid_val && adjacent != invalid_val) target = d_choose(comp_, adjacent, usable);
+			}
+			//右に見ていく
+			for (int i = 0; i < width - 1; ++i)
+			{
+				auto const& adjacent = sorted_matrix[height / 2][i];
+				auto      & target = sorted_matrix[height / 2][i + 1];
+				if (target == invalid_val && adjacent != invalid_val) target = r_choose(comp_, adjacent, usable);
+			}
+			//左に見ていく
+			for (int i = 0; i < width - 1; ++i)
+			{
+				auto const& adjacent = sorted_matrix[height / 2][width - 1 - i];
+				auto      & target = sorted_matrix[height / 2][width - 2 - i];
+				if (target == invalid_val && adjacent != invalid_val) target = l_choose(comp_, adjacent, usable);
+			}
 
-				//上に見ていく
-				for (int i = 0; i < height - 1; ++i)
-				{
-					auto const& adjacent = sorted_matrix[height - 1 - i][width / 2];
-					auto      & target   = sorted_matrix[height - 2 - i][width / 2];
-					if (target == invalid_val && adjacent != invalid_val) target = u_choose(comp_, adjacent, usable);
-				}
-				//下に見ていく
-				for (int i = 0; i < height - 1; ++i)
-				{
-					auto const& adjacent = sorted_matrix[i][width / 2];
-					auto      & target   = sorted_matrix[i + 1][width / 2];
-					if (target == invalid_val && adjacent != invalid_val) target = d_choose(comp_, adjacent, usable);
-				}
-				//右に見ていく
-				for (int i = 0; i < width - 1; ++i)
-				{
-					auto const& adjacent = sorted_matrix[height / 2][i];
-					auto      & target   = sorted_matrix[height / 2][i + 1];
-					if (target == invalid_val && adjacent != invalid_val) target = r_choose(comp_, adjacent, usable);
-				}
-				//左に見ていく
-				for (int i = 0; i < width - 1; ++i)
-				{
-					auto const& adjacent = sorted_matrix[height / 2][width - 1 - i];
-					auto      & target   = sorted_matrix[height / 2][width - 2 - i];
-					if (target == invalid_val && adjacent != invalid_val) target = l_choose(comp_, adjacent, usable);
-				}
+			//中心を除き上に向かってループ，右に見ていく
+			for (int i = 0; i < u_height - 1; ++i) for (int j = 0; j < r_width - 1; ++j)
+			{
+				auto      & target = sorted_matrix[height / 2 - 1 - i][width / 2 + 1 + j];
+				auto const& center = sorted_matrix[height / 2 - i][width / 2 + j];
+				auto const& upper = sorted_matrix[height / 2 - i - 1][width / 2 + j];
+				auto const& right = sorted_matrix[height / 2 - i][width / 2 + j + 1];
 
-				//中心を除き上に向かってループ，右に見ていく
-				for (int i = 0; i < u_height - 1; ++i) for (int j = 0; j < r_width - 1; ++j)
-				{
-					auto      & target = sorted_matrix[height / 2 - 1 - i][width / 2 + 1 + j];
-					auto const& center = sorted_matrix[height / 2 - i    ][width / 2 + j    ];
-					auto const& upper  = sorted_matrix[height / 2 - i - 1][width / 2 + j    ];
-					auto const& right  = sorted_matrix[height / 2 - i    ][width / 2 + j + 1];
+				if (target == invalid_val && (exists(center) && exists(upper) && exists(right)))
+					target = ur_choose(comp_, upper, center, right, usable);
+			}
+			//中心を除き上に向かってループ，左に見ていく
+			for (int i = 0; i < u_height - 1; ++i) for (int j = 0; j < l_width - 1; ++j)
+			{
+				auto      & target = sorted_matrix[height / 2 - i - 1][width / 2 - j - 1];
+				auto const& center = sorted_matrix[height / 2 - i][width / 2 - j];
+				auto const& upper = sorted_matrix[height / 2 - i - 1][width / 2 - j];
+				auto const& left = sorted_matrix[height / 2 - i][width / 2 - j - 1];
 
-					if (target == invalid_val && (exists(center) && exists(upper) && exists(right)))
-						target = ur_choose(comp_, upper, center, right,usable);
-				}
-				//中心を除き上に向かってループ，左に見ていく
-				for (int i = 0; i < u_height - 1; ++i) for (int j = 0; j < l_width - 1; ++j)
-				{
-					auto      & target = sorted_matrix[height / 2 - i - 1][width / 2 - j - 1];
-					auto const& center = sorted_matrix[height / 2 - i    ][width / 2 - j];
-					auto const& upper  = sorted_matrix[height / 2 - i - 1][width / 2 - j];
-					auto const& left   = sorted_matrix[height / 2 - i    ][width / 2 - j - 1];
+				if (target == invalid_val && (exists(center) && exists(upper) && exists(left)))
+					target = ul_choose(comp_, upper, left, center, usable);
+			}
+			//中心を除き下に向かってループ，右に見ていく
+			for (int i = 0; i < d_height - 1; ++i) for (int j = 0; j < r_width - 1; ++j)
+			{
+				auto	  & target = sorted_matrix[height / 2 + i + 1][width / 2 + j + 1];
+				auto const& center = sorted_matrix[height / 2 + i][width / 2 + j];
+				auto const& lower = sorted_matrix[height / 2 + i + 1][width / 2 + j];
+				auto const& right = sorted_matrix[height / 2 + i][width / 2 + j + 1];
 
-					if (target == invalid_val && (exists(center) && exists(upper) && exists(left)))
-						target = ul_choose(comp_, upper, left, center,usable);
-				}
-				//中心を除き下に向かってループ，右に見ていく
-				for (int i = 0; i < d_height - 1; ++i) for (int j = 0; j < r_width - 1; ++j)
-				{
-					auto	  & target = sorted_matrix[height / 2 + i + 1][width / 2 + j + 1];
-					auto const& center = sorted_matrix[height / 2 + i    ][width / 2 + j];
-					auto const& lower  = sorted_matrix[height / 2 + i + 1][width / 2 + j];
-					auto const& right  = sorted_matrix[height / 2 + i    ][width / 2 + j + 1];
+				if (target == invalid_val && (exists(center) && exists(lower) && exists(right)))
+					target = dr_choose(comp_, center, right, lower, usable);
+			}
+			//中心を除き下に向かってループ，左に見ていく
+			for (int i = 0; i < d_height - 1; ++i) for (int j = 0; j < l_width - 1; ++j)
+			{
+				auto      & target = sorted_matrix[height / 2 + i + 1][width / 2 - j - 1];
+				auto const& center = sorted_matrix[height / 2 + i][width / 2 - j];
+				auto const& lower = sorted_matrix[height / 2 + i + 1][width / 2 - j];
+				auto const& left = sorted_matrix[height / 2 + i][width / 2 - j - 1];
 
-					if (target == invalid_val && (exists(center) && exists(lower) && exists(right)))
-						target = dr_choose(comp_, center, right, lower,usable);
-				}
-				//中心を除き下に向かってループ，左に見ていく
-				for (int i = 0; i < d_height - 1; ++i) for (int j = 0; j < l_width - 1; ++j)
-				{
-					auto      & target = sorted_matrix[height / 2 + i + 1][width / 2 - j - 1];
-					auto const& center = sorted_matrix[height / 2 + i    ][width / 2 - j];
-					auto const& lower  = sorted_matrix[height / 2 + i + 1][width / 2 - j];
-					auto const& left   = sorted_matrix[height / 2 + i    ][width / 2 - j - 1];
-
-					if (target == invalid_val && (exists(center) && exists(lower) && exists(left)))
-						target = dl_choose(comp_, left, center, lower,usable);
-				}
-				//gui::combine_show_image(data_, comp_, sorted_matrix);
-				if (array_sum(sorted_matrix, 0, 0, height, width) == ((width*height - 1)*(width*height) / 2) && get_kind_num(data_, sorted_matrix, 0, 0) == width*height)
-				{
-					answer.push_back(answer_type_y{ sorted_matrix, 0, cv::Mat() });
-				}
+				if (target == invalid_val && (exists(center) && exists(lower) && exists(left)))
+					target = dl_choose(comp_, left, center, lower, usable);
+			}
+			//gui::combine_show_image(data_, comp_, sorted_matrix);
+			if (array_sum(sorted_matrix, 0, 0, height, width) == ((width*height - 1)*(width*height) / 2) && get_kind_num(data_, sorted_matrix, 0, 0) == width*height)
+			{
+				answer.push_back(answer_type_y{ sorted_matrix, 0, cv::Mat() });
 			}
 		}
 	}

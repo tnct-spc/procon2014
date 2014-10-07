@@ -10,12 +10,13 @@ namespace gui
     std::future<int> make_window(image_type const& image, std::string const& window_name = "Untitled");
 
     std::future<std::vector<std::vector<point_type>>> make_mansort_window(
-        question_raw_data const& data,
+        split_image_type const& splitted,
         std::string const& window_name = ""
         );
 
 	void combine_show_image(question_raw_data const& data_, compared_type const& comp_, std::vector<answer_type_y> const& answer);
 	void combine_show_image(question_raw_data const& data_, compared_type const& comp_, std::vector<std::vector<point_type>>const& matrix);
+	void combine_show_image(question_raw_data const& data_, compared_type const& comp_, std::vector<std::vector<std::vector<point_type>>> const& matrix);
 	void combine_show_image(question_raw_data const& data_, compared_type const& comp_, std::vector<std::vector<point_type>>const& matrix,std::ostringstream const outname);
 
 	void show_image(question_raw_data const& data_, compared_type const& comp_, std::vector<answer_type_y> const& answer);
