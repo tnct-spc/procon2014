@@ -137,7 +137,7 @@ private:
     {
 #if ENABLE_NETWORK_IO
         // ネットワーク通信から
-        std::string const data = client_.get_problem(01).get();
+        std::string const data = client_.get_problem(problem_id_).get();
         return ppm_reader().from_data(data);
 #else
         // ファイルから
