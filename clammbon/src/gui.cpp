@@ -1,56 +1,66 @@
 ﻿#include <iostream>
 #include <memory>
+#include <boost/make_shared.hpp>
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
+#include <FL/Fl.H>
+#include <FL/Fl_Window.H>
 #include "gui.hpp"
 #include "data_type.hpp"
 #include "splitter.hpp"
 #include "impl/gui_move.ipp"
 #include <sort_algorithm/compare.hpp>
 
+#include <boost/thread.hpp>
+
 namespace gui
 {
-    std::future<int> make_window(image_type const& image, std::string const& window_name)
+    int wait_all_window()
     {
-        splitter sp;
+        return Fl::run();
+    }
 
-        auto const cloned_image = std::make_shared<unfold_image_type>(sp.unfold_image(image));
-        auto const height = image.rows;
-        auto const width  = image.cols;
+    boost::shared_ptr<impl::MoveWindow> make_mansort_window(
+        split_image_type const& splitted,
+        std::vector<std::vector<point_type>> const& default_position,
+        std::string const& window_name
+        )
+    {
+        auto window = boost::make_shared<impl::MoveWindow>(splitted, default_position, window_name);
+        window->show();
 
-        return std::async(
-            std::launch::async,
-            [=]() -> int
-            {
-                auto window = std::make_unique<Fl_Window>(width, height, window_name.c_str());
-                auto box    = std::make_unique<Fl_Box>(0, 0, width, height);
-
-                Fl_RGB_Image image(cloned_image->data(), width, height);
-                box->image(image);
-
-                window->show();
-                return Fl::run();
-            }
-        );
+        return window;
     }
     
-    std::future<std::vector<std::vector<point_type>>> make_mansort_window(
+    boost::shared_ptr<impl::MoveWindow> make_mansort_window(
         split_image_type const& splitted,
         std::string const& window_name
         )
     {
-        return std::async(
-            std::launch::async,
-            [=/*, splitted=std::move(splitted)*/]() -> std::vector<std::vector<point_type>>
-            {
-                impl::MoveWindow window(splitted, window_name);
-                window.show();
+        int const split_x = splitted.at(0).size();
+        int const split_y = splitted.size();
 
-                Fl::run();
-                return window.result();
+        std::vector<std::vector<point_type>> position;
+        position.reserve(split_y);
+        for(int i=0; i<split_y; ++i)
+        {
+            std::vector<point_type> line;
+            line.reserve(split_x);
+            for(int j=0; j<split_x; ++j)
+            {
+                line.push_back(point_type{j, i});
             }
-        );
+            position.push_back(std::move(line));
+        }
+
+        return make_mansort_window(splitted, position, window_name);
+    }
+
+    boost::optional<std::vector<std::vector<point_type>>> get_result(boost::shared_ptr<impl::MoveWindow>& ptr)
+    {
+        if(ptr->visible()) return boost::none;
+        else               return ptr->result();
     }
 
 	void combine_show_image(question_raw_data const& data_, compared_type const& comp_, std::vector<answer_type_y> const& answer)
