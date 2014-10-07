@@ -72,26 +72,28 @@ public:
         
         // 2次元画像に分割
         split_image_ = splitter().split_image(raw_data_);
-        
         // 原画像推測部
         // TODO: yrangeなどの実行
         auto sorter_resolve = sorter_(raw_data_, split_image_);
         //data_.block = std::move(sorter_resolve);
         data_.block = sorter_resolve;
-        manager.add(convert_block(data_)); // 解答
+        if(!data_.block.empty())manager.add(convert_block(data_)); // 解答
 
         // TODO: yrange5の実行(並列化)
         
         // 画面表示をいくつか(yrange/Murakmi/yrange5/algo2 etc.)
         std::vector<boost::shared_ptr<gui::impl::MoveWindow>> windows;
-
-        windows.push_back(
+		if (!data_.block.empty())windows.push_back(
             gui::make_mansort_window(split_image_, sorter_resolve, "Murakami")
             );
-        windows.push_back(
+		if (!data_.block.empty())windows.push_back(
             gui::make_mansort_window(split_image_, sorter_resolve, "Murakami")
             );
-
+		if (data_.block.empty() && data_.block.empty()){//どっちもダメだった時
+			windows.push_back(
+				gui::make_mansort_window(split_image_, "Yor are the sorter!!! Sort this!")
+				);
+		}
         boost::thread th(
             [&]()
             {
