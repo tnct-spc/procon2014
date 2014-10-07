@@ -101,6 +101,11 @@ public:
                     for(auto it = windows.begin(); it != windows.end();)
                     {
                         auto res = gui::get_result(*it);
+						if (res.get().size() == 0)
+						{
+							//TODO:man sorterの答え受け取るのはこのタイミングが良いのではないだろうか．
+							continue;
+						}
                         if(res)
                         {
                             data_.block = res.get();
