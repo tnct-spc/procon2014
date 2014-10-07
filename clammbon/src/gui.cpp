@@ -136,7 +136,7 @@ namespace gui
 
 		for (int i = 0; i < matrix.size(); ++i){
 			for (int j = 0; j < matrix.at(0).size(); ++j){
-				if (matrix.at(c)[i][j].y >= data_.split_num.second || matrix.at(c)[i][j].y < 0 || matrix.at(c)[i][j].x >= data_.split_num.first || matrix.at(c)[i][j].x < 0)
+				if (matrix[i][j].y >= data_.split_num.second || matrix[i][j].y < 0 || matrix[i][j].x >= data_.split_num.first || matrix[i][j].x < 0)
 				{
 					cv::rectangle(comb_pic, cv::Point(j*one_picx, i*one_picy), cv::Point((j + 1)*one_picx, (i + 1)*one_picy), cv::Scalar(128, 128, 128), 3, 4);
 					continue;
@@ -164,7 +164,7 @@ namespace gui
 
 		for (int i = 0; i < matrix.size(); ++i){
 			for (int j = 0; j < matrix.at(0).size(); ++j){
-				if (matrix.at(c)[i][j].y >= data_.split_num.second || matrix.at(c)[i][j].y < 0 || matrix.at(c)[i][j].x >= data_.split_num.first || matrix.at(c)[i][j].x < 0)
+				if (matrix[i][j].y >= data_.split_num.second || matrix[i][j].y < 0 || matrix[i][j].x >= data_.split_num.first || matrix[i][j].x < 0)
 				{
 					cv::rectangle(comb_pic, cv::Point(j*one_picx, i*one_picy), cv::Point((j + 1)*one_picx, (i + 1)*one_picy), cv::Scalar(128, 128, 128), 3, 4);
 					continue;
