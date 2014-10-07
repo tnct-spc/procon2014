@@ -101,11 +101,14 @@ namespace gui
 			cv::Mat comb_pic(cv::Size(one_picx*matrix.at(c).at(0).size(), one_picy*matrix.at(c).size()), CV_8UC3);
 			for (int i = 0; i < matrix.at(c).size(); ++i){
 				for (int j = 0; j < matrix.at(c).at(0).size(); ++j){
-					if (matrix.at(c)[i][j].y >= data_.split_num.second || matrix.at(c)[i][j].y <0 || matrix.at(c)[i][j].x >= data_.split_num.first || matrix.at(c)[i][j].x < 0) continue;
+					if (matrix.at(c)[i][j].y >= data_.split_num.second || matrix.at(c)[i][j].y < 0 || matrix.at(c)[i][j].x >= data_.split_num.first || matrix.at(c)[i][j].x < 0)
+					{
+						cv::rectangle(comb_pic, cv::Point(j*one_picx, i*one_picy), cv::Point((j + 1)*one_picx, (i + 1)*one_picy), cv::Scalar(128, 128, 128), 3, 4);
+						continue;
+					}
 					cv::Rect roi_rect(j*one_picx, i*one_picy, one_picx, one_picy);
 					cv::Mat roi(comb_pic, roi_rect);
 					splitted[matrix.at(c)[i][j].y][matrix.at(c)[i][j].x].copyTo(roi);
-					roi_rect.x += (data_.size.first / data_.split_num.first);
 				}
 			}
 			std::ostringstream outname;
@@ -133,7 +136,11 @@ namespace gui
 
 		for (int i = 0; i < matrix.size(); ++i){
 			for (int j = 0; j < matrix.at(0).size(); ++j){
-				if (matrix[i][j].y >= data_.split_num.second || matrix[i][j].y <0 || matrix[i][j].x >= data_.split_num.first || matrix[i][j].x < 0) continue;
+				if (matrix[i][j].y >= data_.split_num.second || matrix[i][j].y < 0 || matrix[i][j].x >= data_.split_num.first || matrix[i][j].x < 0)
+				{
+					cv::rectangle(comb_pic, cv::Point(j*one_picx, i*one_picy), cv::Point((j + 1)*one_picx, (i + 1)*one_picy), cv::Scalar(128, 128, 128), 3, 4);
+					continue;
+				}
 				cv::Rect roi_rect(j*one_picx, i*one_picy, one_picx, one_picy);
 				cv::Mat roi_mat(comb_pic, roi_rect);
 				splitted[matrix[i][j].y][matrix[i][j].x].copyTo(roi_mat);
@@ -157,7 +164,11 @@ namespace gui
 
 		for (int i = 0; i < matrix.size(); ++i){
 			for (int j = 0; j < matrix.at(0).size(); ++j){
-				if (matrix[i][j].y >= data_.split_num.second || matrix[i][j].x >= data_.split_num.first) continue;
+				if (matrix[i][j].y >= data_.split_num.second || matrix[i][j].y < 0 || matrix[i][j].x >= data_.split_num.first || matrix[i][j].x < 0)
+				{
+					cv::rectangle(comb_pic, cv::Point(j*one_picx, i*one_picy), cv::Point((j + 1)*one_picx, (i + 1)*one_picy), cv::Scalar(128, 128, 128), 3, 4);
+					continue;
+				}
 				cv::Rect roi_rect(j*one_picx, i*one_picy, one_picx, one_picy);
 				cv::Mat roi_mat(comb_pic, roi_rect);
 				splitted[matrix[i][j].y][matrix[i][j].x].copyTo(roi_mat);

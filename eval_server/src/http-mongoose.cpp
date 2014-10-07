@@ -16,7 +16,7 @@ using namespace Mongoose;
 
 class MyController : public Controller
 {
-    std::string problem_set = std::getenv("PCS_PROBSET") ? std::string(std::getenv("PCS_PROBSET")) : "default";
+    std::string problem_set = std::getenv("PCS_PROBSET") ? std::getenv("PCS_PROBSET") : "default";
 public:
     void show_usage(Request &req, StreamResponse &res)
     {
@@ -64,6 +64,7 @@ public:
     }
     void dl_problem(Request &req, StreamResponse &res)
     {
+        std::cerr << req.getUrl() << std::endl;
         std::string const file = req.getUrl().substr(req.getUrl().find("/problem/") + 9);
         std::string const path = PCS_PROBDIR + "/" + problem_set + "/problem/" + file;
         std::ifstream ifs(path);
@@ -79,6 +80,7 @@ public:
     }
     void dl_position(Request &req, StreamResponse &res)
     {
+        std::cerr << req.getUrl() << std::endl;
         std::string const file = req.getUrl().substr(req.getUrl().find("/position/") + 10);
         std::string const path = PCS_PROBDIR + "/" + problem_set + "/position/" + file;
         std::ifstream ifs(path);
@@ -94,6 +96,7 @@ public:
     }
     void dl_answer(Request &req, StreamResponse &res)
     {
+        std::cerr << req.getUrl() << std::endl;
         std::string const file = req.getUrl().substr(req.getUrl().find("/answer/") + 8);
         std::string const path = PCS_PROBDIR + "/" + problem_set + "/answer/" + file;
         std::ifstream ifs(path);
@@ -109,6 +112,7 @@ public:
     }
     void config(Request &req, StreamResponse &res)
     {
+        std::cerr << req.getUrl() << std::endl;
         if(req.get("problem_set") != "") {
             problem_set = req.get("problem_set");
             res << "Problem set set to " + req.get("problem_set") << std::endl;
@@ -141,16 +145,19 @@ public:
             std::ostringstream oss;
             oss << "/problem/prob" << std::setw(2) << std::setfill('0') << i << ".ppm";
             addRoute("GET", oss.str(), MyController, dl_problem);
+            addRoute("POST", oss.str(), MyController, dl_problem);
         }
         for(int i = 0; i < 100; i++) {
             std::ostringstream oss;
             oss << "/position/prob" << std::setw(2) << std::setfill('0') << i << ".pos";
             addRoute("GET", oss.str(), MyController, dl_position);
+            addRoute("POST", oss.str(), MyController, dl_position);
         }
         for(int i = 0; i < 100; i++) {
             std::ostringstream oss;
             oss << "/answer/prob" << std::setw(2) << std::setfill('0') << i << ".ans";
             addRoute("GET", oss.str(), MyController, dl_answer);
+            addRoute("POST", oss.str(), MyController, dl_answer);
         }
     }
 };

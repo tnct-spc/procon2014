@@ -49,6 +49,7 @@ int main(int argc, char* argv[])
         (",n",  boost::program_options::value<int>(&selectable)                             ->default_value(selectable_default),        "選択可能回数")
         (",s",  boost::program_options::value<int>(&select_cost)                            ->default_value(select_cost_default),       "選択コスト変換レート")
         (",c",  boost::program_options::value<int>(&change_cost)                            ->default_value(change_cost_default),       "交換コスト変換レート")
+        ("no-shuffle",                                                                                                                  "シャッフルを行わない")
     ;
 
     // コマンドラインオプションのチェック
@@ -171,9 +172,11 @@ int main(int argc, char* argv[])
         }
 
         // シャッフル
-        std::random_device rand_device;
-        std::default_random_engine rand_engine(rand_device());
-        std::shuffle(pieces.begin(), pieces.end(), rand_engine);
+        if(!options_map.count("no-shuffle")) {
+            std::random_device rand_device;
+            std::default_random_engine rand_engine(rand_device());
+            std::shuffle(pieces.begin(), pieces.end(), rand_engine);
+        }
 
         // 画像貼り合わせと .ans ファイル文字列の作成
         output_image = cv::Mat(output_size, input_image.type());
