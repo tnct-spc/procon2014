@@ -34,7 +34,7 @@ index 809e621..3bd53b8 100644
          ostringstream data;
  
 -        data << "HTTP/1.0 " << code << "\r\n";
-+        data << "HTTP/1.0 " << code << (code == 200) ? "OK" : "Not found" << "\r\n";
++        data << "HTTP/1.0 " << code << " " << (code == 200) ? "OK" : "Not found" << "\r\n";
  
          if (!hasHeader("Content-Length")) {
              ostringstream length;
