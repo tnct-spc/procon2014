@@ -261,13 +261,15 @@ struct answer_type
 };
 
 struct step_type {
+	bool direction;
 	answer_type answer;
+	point_type selecting;
 	point_type selecting_cur;
 	std::vector<std::vector<point_type>> matrix;
 
 	friend bool operator== (step_type const& lhs, step_type const& rhs)
 	{
-		return lhs.matrix == rhs.matrix;
+		return lhs.direction == rhs.direction && lhs.selecting == rhs.selecting && lhs.matrix == rhs.matrix;
 	}
 };
 
@@ -318,26 +320,38 @@ struct point_score{
 namespace std
 {
 	template <>
-	struct hash<step_type>
+	struct hash<point_type>
 	{
-		std::size_t operator() (step_type const& step) const
+		std::size_t operator() (point_type const& point) const
 		{
-			std::size_t result;
-			for (auto row : step.matrix) {
-				for (auto point : row) {
-					boost::hash_combine(result, point);
-				}
+			return hash_value(point);
+		}
+	};
+
+	template<>
+	struct hash<std::vector<std::vector<point_type>>>
+	{
+		std::size_t operator() (std::vector<std::vector<point_type>> const& matrix) const
+		{
+			std::size_t result = 0;
+			boost::hash_combine(result, matrix.size());
+			for (auto const& row : matrix) for (auto const& point : row) {
+				boost::hash_combine(result, point);
 			}
 			return result;
 		}
 	};
 
 	template <>
-	struct hash<point_type>
+	struct hash<step_type>
 	{
-		std::size_t operator() (point_type const& point) const
+		std::size_t operator() (step_type const& step) const
 		{
-			return hash_value(point);
+			std::size_t result = 0;
+			boost::hash_combine(result, step.direction);
+			boost::hash_combine(result, step.selecting);
+			boost::hash_combine(result, step.matrix);
+			return result;
 		}
 	};
 }
