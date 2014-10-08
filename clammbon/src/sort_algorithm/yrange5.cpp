@@ -47,6 +47,7 @@ void yrange5::row_column_replacement(answer_type_y& answer)
 	good_set good;
 
 	std::vector<std::vector<point_type>>sort_matrix(answer.points.size() * 2, std::vector<point_type>(answer.points.at(0).size() * 2));
+#pragma omp parallel for
 	for (int i = 0; i < answer.points.size(); ++i)for (int j = 0; j < answer.points.at(0).size(); ++j)
 	{
 		sort_matrix[i][j] = answer.points[i][j];
@@ -63,6 +64,7 @@ void yrange5::row_column_replacement(answer_type_y& answer)
 	}
 
 	std::vector<std::vector<point_type>>temp_matrix(sepy, std::vector<point_type>(sepx));
+#pragma omp parallel for
 	for (int i = 0; i < sepy; ++i)for (int j = 0; j < sepx; ++j)
 	{
 		temp_matrix[i][j] = sort_matrix[i][j];
@@ -249,7 +251,12 @@ std::vector<answer_type_y> yrange5::operator() (std::vector<std::vector<std::vec
 	// unique()をしただけでは後ろにゴミが残るので、eraseで削除する
 	answer.erase(std::unique(answer.begin(), answer.end()), answer.end());
 
-
+#pragma omp parallel for
+	for (int c = 0; c < answer.size(); ++c)
+	{
+		row_column_replacement(answer.at(c));
+	}
+	
 	//無駄に多く返してもしょうがないので枝抜き
 	size_t yrange5_ans = answer.size();
 	std::sort(answer.begin(), answer.end(), [](answer_type_y a, answer_type_y b){return a.score < b.score; });
