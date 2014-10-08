@@ -224,7 +224,7 @@ int main()
 #if ENABLE_NETWORK_IO
                 // TODO: 前より良くなったら提出など(普通にいらないかも．提出前に目grepしてるわけだし)
                 auto result = analyze.submit(answer.get());
-                //std::cout << "Submit Result: " << result << std::endl;
+                std::cout << "Submit Result: " << result << std::endl;
 #else
                 test_tool::emulator emu(question);
                 auto result = emu.start(answer.get());
