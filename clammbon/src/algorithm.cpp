@@ -43,6 +43,7 @@ private:
     void move_target(point_type const& target, char const& direction);
     void move_to(point_type const& to);
     bool must_chagne_select(step_type const& step) const;
+    void add_step(step_type& step);
 
     template <char T>
     void move_selecting();
@@ -50,7 +51,7 @@ private:
     void move_selecting();
 
     template <char T>
-    void add_step(step_type step);
+    void generate_next_step(step_type step);
 
     void print(std::vector<std::vector<point_type>> const& mat) const;
     void print(answer_type const& answer) const;
@@ -229,52 +230,51 @@ void algorithm::impl::move_selecting()
 }
 
 // add_step {{{2
+void algorithm::impl::add_step(step_type& step)
+{
+    if (!visited.count(step.matrix)) {
+        visited[step.matrix] = step;
+    }
+    if (!closed.count(step)) {
+        open.push(std::move(step));
+    }
+}
+
+// generate_next_step {{{2
 template <>
-void algorithm::impl::add_step<'U'>(step_type step)
+void algorithm::impl::generate_next_step<'U'>(step_type step)
 {
     std::swap(step.matrix[step.selecting_cur.y][step.selecting_cur.x], step.matrix[step.selecting_cur.y - 1][step.selecting_cur.x]);
     step.selecting_cur.y -= 1;
     step.answer.list.back().actions.push_back('U');
-    visited[step.matrix] = step;
-    if (!closed.count(step)) {
-        open.push(std::move(step));
-    }
+    add_step(step);
 }
 
 template <>
-void algorithm::impl::add_step<'R'>(step_type step)
+void algorithm::impl::generate_next_step<'R'>(step_type step)
 {
     std::swap(step.matrix[step.selecting_cur.y][step.selecting_cur.x], step.matrix[step.selecting_cur.y][step.selecting_cur.x + 1]);
     step.selecting_cur.x += 1;
     step.answer.list.back().actions.push_back('R');
-    visited[step.matrix] = step;
-    if (!closed.count(step)) {
-        open.push(std::move(step));
-    }
+    add_step(step);
 }
 
 template <>
-void algorithm::impl::add_step<'D'>(step_type step)
+void algorithm::impl::generate_next_step<'D'>(step_type step)
 {
     std::swap(step.matrix[step.selecting_cur.y][step.selecting_cur.x], step.matrix[step.selecting_cur.y + 1][step.selecting_cur.x]);
     step.selecting_cur.y += 1;
     step.answer.list.back().actions.push_back('D');
-    visited[step.matrix] = step;
-    if (!closed.count(step)) {
-        open.push(std::move(step));
-    }
+    add_step(step);
 }
 
 template <>
-void algorithm::impl::add_step<'L'>(step_type step)
+void algorithm::impl::generate_next_step<'L'>(step_type step)
 {
     std::swap(step.matrix[step.selecting_cur.y][step.selecting_cur.x], step.matrix[step.selecting_cur.y][step.selecting_cur.x - 1]);
     step.selecting_cur.x -= 1;
     step.answer.list.back().actions.push_back('L');
-    visited[step.matrix] = step;
-    if (!closed.count(step)) {
-        open.push(std::move(step));
-    }
+    add_step(step);
 }
 
 // current_point {{{2
@@ -526,21 +526,21 @@ void algorithm::impl::brute_force()
         }
 
         if (current.selecting_cur.x == width - BFS_NUM) {
-            add_step<'R'>(current);
+            generate_next_step<'R'>(current);
         } else if (current.selecting_cur.x == width - 1) {
-            add_step<'L'>(current);
+            generate_next_step<'L'>(current);
         } else {
-            add_step<'L'>(current);
-            add_step<'R'>(current);
+            generate_next_step<'L'>(current);
+            generate_next_step<'R'>(current);
         }
 
         if (current.selecting_cur.y == height - BFS_NUM) {
-            add_step<'D'>(current);
+            generate_next_step<'D'>(current);
         } else if (current.selecting_cur.y == height - 1) {
-            add_step<'U'>(current);
+            generate_next_step<'U'>(current);
         } else {
-            add_step<'D'>(current);
-            add_step<'U'>(current);
+            generate_next_step<'D'>(current);
+            generate_next_step<'U'>(current);
         }
         closed.insert(std::move(current));
     }
