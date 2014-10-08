@@ -471,7 +471,7 @@ void algorithm::impl::brute_force()
 
     auto goal_matrix = matrix;
     for (int y = height - BFS_NUM; y < height; ++y) for (int x = width - BFS_NUM; x < width; ++x) {
-        matrix[y][x] = {x, y};
+        goal_matrix[y][x] = {x, y};
     }
 
     for (int y = height - BFS_NUM; y < height; ++y) for (int x = width - BFS_NUM; x < width; ++x) {
