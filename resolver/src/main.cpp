@@ -75,20 +75,20 @@ std::cout << "Start";
         split_image_ = splitter().split_image(raw_data_);
         // 原画像推測部
         // TODO: yrangeなどの実行
-//        auto sorter_resolve = sorter_(raw_data_, split_image_);
-        //data_.block = std::move(sorter_resolve);
-//        data_.block = sorter_resolve;
- //       if(!data_.block.empty())manager.add(convert_block(data_)); // 解答
+        auto sorter_resolve = sorter_(raw_data_, split_image_);
+	data_.block = std::move(sorter_resolve);
+        //data_.block = sorter_resolve;
+        if(!data_.block.empty())manager.add(convert_block(data_)); // 解答
         // TODO: yrange5の実行(並列化)
         
         // 画面表示をいくつか(yrange/Murakmi/yrange5/algo2 etc.)
         std::vector<boost::shared_ptr<gui::impl::MoveWindow>> windows;
-//		if (!data_.block.empty())windows.push_back(
-//            gui::make_mansort_window(split_image_, sorter_resolve, "Murakami")
-//            );
-//		if (!data_.block.empty())windows.push_back(
-//            gui::make_mansort_window(split_image_, sorter_resolve, "Murakami")
-//            );
+		if (!data_.block.empty())windows.push_back(
+            gui::make_mansort_window(split_image_, sorter_resolve, "Murakami")
+            );
+		if (!data_.block.empty())windows.push_back(
+            gui::make_mansort_window(split_image_, sorter_resolve, "Murakami")
+            );
 		if (data_.block.empty() && data_.block.empty()){//どっちもダメだった時
 			windows.push_back(
 				gui::make_mansort_window(split_image_, "Yor are the sorter!!! Sort this!")
@@ -105,11 +105,6 @@ std::cout << "Start";
                         auto res = gui::get_result(*it);
                         if(res)
                         {
-							if (res.get().size() == 0)
-							{
-								//TODO:man sorterの答え受け取るのはこのタイミングが良いのではないだろうか．
-								continue;
-							}
                             data_.block = res.get();
                             manager.add(convert_block(data_)); // 解答
 
@@ -144,7 +139,7 @@ private:
         std::string const path("prob01.ppm");
         return ppm_reader().from_file(path);
 #endif
-    }
+     }
 
     question_data get_skelton_question(question_raw_data const& raw) const
     {
@@ -185,7 +180,7 @@ private:
     split_image_type  split_image_;
 
     mutable network::client client_;
-    pixel_sorter<Murakami> sorter_;
+    pixel_sorter<yrange2> sorter_;
 };
 
 question_data convert_block(question_data const& data)
@@ -229,7 +224,7 @@ int main()
 #if ENABLE_NETWORK_IO
                 // TODO: 前より良くなったら提出など(普通にいらないかも．提出前に目grepしてるわけだし)
                 auto result = analyze.submit(answer.get());
-                std::cout << "Submit Result: " << result << std::endl;
+                //std::cout << "Submit Result: " << result << std::endl;
 #else
                 test_tool::emulator emu(question);
                 auto result = emu.start(answer.get());
