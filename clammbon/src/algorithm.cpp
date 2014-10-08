@@ -319,7 +319,7 @@ const answer_type algorithm::impl::solve()
     }
 
 #ifndef NDEBUG
-    std::cout << answer.serialize() << std::endl;
+    print(answer);
 #endif
 
     return answer;
