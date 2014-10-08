@@ -158,7 +158,7 @@ std::vector<answer_type_y> yrange5::operator() (std::vector<std::vector<std::vec
 		//重複して入っているもののうち，悪い方を{width,height}に置き換え,今使われていないものを返す
 		std::vector<point_type> usable = std::move(duplicate_delete(comp_, matrix.points));
 		//gui::combine_show_image(data_, comp_, matrix.points);
-		//I'ts show time!
+		//It's show time!
 		for (int i = 0; i < height; ++i)for (int j = 0; j < width; ++j)
 		{
 			std::vector<std::vector<point_type>> sorted_matrix(height, std::vector<point_type>(width, point_type{ width, height }));
@@ -282,7 +282,7 @@ std::vector<answer_type_y> yrange5::operator() (std::vector<std::vector<std::vec
 		}
 
 #ifdef _DEBUG
-		std::cout << "There are " << yrange5_ans << " solutions by yrange5." << std::endl;
+		std::cout << "There are " << /*yrange5_ans <<*/ " solutions by yrange5." << std::endl;
 		for (auto const& one_answer : answer)
 		{
 			for (int i = 0; i < one_answer.points.size(); ++i)
@@ -301,3 +301,4 @@ std::vector<answer_type_y> yrange5::operator() (std::vector<std::vector<std::vec
 		return answer;
 	}
 }
+

@@ -317,3 +317,100 @@ uint_fast64_t range_evaluate(question_raw_data const& data_, compared_type const
 	}
 	return s;
 }
+
+//matrixの重複しているものを{width,height}に置き換える
+std::vector<point_type> duplicate_delete(compared_type const& comp_, std::vector<std::vector<point_type> >& matrix)
+{
+	struct overlap_set{
+		uint_fast64_t score;
+		point_type point;
+		bool operator<(const overlap_set& right) const {
+			return (score == right.score) ? point < right.point : score < right.score;
+		}
+	};
+	int const sepx = matrix.at(0).size();
+	int const sepy = matrix.size();
+	point_type const invalid_val = { sepx, sepy };
+	std::vector<point_type> usable;
+	std::vector<std::vector<overlap_set>>overlap_vec(sepx*sepy);
+
+	//targetを基準に分類
+	for (int i = 0; i < sepy; i++) for (int j = 0; j < sepx; j++)
+	{
+		overlap_vec[matrix[i][j].y*sepy + matrix[i][j].x].push_back(overlap_set{ 0, { j, i } });
+	}
+	//被りを見つけ，その中で最小のものだけを残す
+	for (auto& one_overlap_vec : overlap_vec)
+	{
+		//被りがあったら
+		if (one_overlap_vec.size() != 0 && one_overlap_vec.size() != 1)
+		{
+			//それらそれぞれのスコアを調べ
+			for (auto& one_overlap_set : one_overlap_vec)
+			{
+				one_overlap_set.score = one_side_val(comp_, matrix, one_overlap_set.point);
+			}
+			//スコアが最小のものを見つけ
+			auto min_overlap_set = *std::min_element(one_overlap_vec.begin(), one_overlap_vec.end());
+			//それ以外のものをinvalid_valにする
+			for (auto& one_overlap_set : one_overlap_vec)
+			{
+				if (one_overlap_set.score != min_overlap_set.score)
+				{
+					matrix[one_overlap_set.point.y][one_overlap_set.point.x] = invalid_val;
+				}
+			}
+		}
+	}
+	for (int i = 0; i < sepy; ++i)for (int j = 0; j < sepx; ++j)
+	{
+		if (overlap_vec[i*sepy + j].size() == 0) usable.push_back(point_type{ j, i });
+	}
+	return std::move(usable);
+}
+
+/*1辺あたりのdifference of rgb dataを返す関数*/
+int one_side_val(compared_type const& comp_, std::vector<std::vector<point_type> >matrix, point_type point)
+{
+	point_type invalid_val = { static_cast<int>(matrix.at(0).size()), static_cast<int>(matrix.size()) };
+	int const sepx = matrix.at(0).size();
+	int const sepy = matrix.size();
+	uint_fast64_t s = 0;
+	int count = 0;
+	//上
+	if (point.y - 1 >= 0 && matrix[point.y - 1][point.x] != invalid_val){
+		s += comp_[matrix[point.y][point.x].y][matrix[point.y][point.x].x][matrix[point.y - 1][point.x].y][matrix[point.y - 1][point.x].x].up;
+		count++;
+	}
+	//下
+	if (point.y + 1 < sepy && matrix[point.y + 1][point.x] != invalid_val){
+		s += comp_[matrix[point.y][point.x].y][matrix[point.y][point.x].x][matrix[point.y + 1][point.x].y][matrix[point.y + 1][point.x].x].down;
+		count++;
+	}
+	//左
+	if (point.x - 1 >= 0 && matrix[point.y][point.x - 1] != invalid_val){
+		s += comp_[matrix[point.y][point.x].y][matrix[point.y][point.x].x][matrix[point.y][point.x - 1].y][matrix[point.y][point.x - 1].x].left;
+		count++;
+	}
+	//右
+	if (point.x + 1 < sepx && matrix[point.y][point.x + 1] != invalid_val){
+		s += comp_[matrix[point.y][point.x].y][matrix[point.y][point.x].x][matrix[point.y][point.x + 1].y][matrix[point.y][point.x + 1].x].right;
+		count++;
+	}
+	return (count == 0) ? std::numeric_limits<int_fast64_t>::max() : s / count;
+}
+
+//与えられたsorted_matrixに与えられたmatrixを与えられた点からコピーしようと試みる
+int try_matrix_copy(std::vector<std::vector<point_type>>& sorted_matrix, std::vector<std::vector<point_type>>const& matrix, point_type point)
+{
+	int const sepx = sorted_matrix.at(0).size();
+	int const sepy = sorted_matrix.size();
+	point_type const invalid_val = { sepx, sepy };
+
+	for (int k = 0; k < sepy; ++k)for (int l = 0; l < sepx; ++l){
+		if (matrix[k][l] == invalid_val) continue;
+		if (point.x + l >= sepx || point.y + k >= sepy)return -1;
+		sorted_matrix[point.y + k][point.x + l] = matrix[k][l];
+	}
+	return 0;
+}
