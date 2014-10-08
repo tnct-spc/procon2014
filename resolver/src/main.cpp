@@ -2,7 +2,7 @@
 #define _SCL_SECURE_NO_WARNINGS
 
 // Macro: Program Settings
-#define ENABLE_NETWORK_IO 0
+#define ENABLE_NETWORK_IO 1
 
 #include <iostream>
 #include <deque>
@@ -206,7 +206,7 @@ question_data convert_block(question_data const& data)
 
 int main()
 {
-    auto const ploblemid = 1;
+    auto const ploblemid = 0;
     auto const token     = "3935105806";
 
     analyzer         analyze(ploblemid, token);
