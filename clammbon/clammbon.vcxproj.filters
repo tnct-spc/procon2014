@@ -57,11 +57,11 @@
     <ClCompile Include="src\sort_algorithm\yrange5.cpp">
       <Filter>ソース ファイル\sort_algorithm</Filter>
     </ClCompile>
-    <ClCompile Include="src\sort_algorithm\Murakami.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="src\algorithm_2.cpp">
       <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sort_algorithm\Murakami.cpp">
+      <Filter>ソース ファイル\sort_algorithm</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

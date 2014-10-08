@@ -119,11 +119,13 @@ if (best_block_combination.score == std::numeric_limits<bigint>::min()){
 				std::cout << "\n";
 			}
 			*/
+			/*
 			std::vector<std::vector<std::vector<point_type>>> raw_block_list; 
 			for (auto const& block_it : block_list){
 				raw_block_list.push_back(block_it.block);
 			}
 			gui::combine_show_image(data_, comp_, raw_block_list);
+			*/
 
 		}
 		//std::cout << t.elapsed() << "s経過した" << std::endl;
@@ -137,7 +139,7 @@ if (best_block_combination.score == std::numeric_limits<bigint>::min()){
 		}
 		*/
 
-		gui::combine_show_image(data_, comp_, block_list.at(0).block);
+		//gui::combine_show_image(data_, comp_, block_list.at(0).block);
 		return std::vector<answer_type_y>{ { block_list.at(0).block, 0, cv::Mat() } };
 		//-------------------------------------ここまで第一閉塞-----------------------------//
 

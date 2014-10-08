@@ -53,8 +53,8 @@ private:
     int pixel_comparison(pixel_type const& lhs, pixel_type const& rhs) const
     {
         int s = 0;
-        for(int i=0; i<3; ++i) s += static_cast<int>(std::abs(lhs[i] - rhs[i]));
-        return s;
+        for(int i=0; i<3; ++i) s += std::pow(static_cast<int>(lhs[i] - rhs[i]),2);
+        return (std::sqrt(s));
     }
 
     //2つのピクセル列を比較した値を返す

@@ -273,9 +273,9 @@ int main()
 
 				int ansy, ansx, resy, resx;
 				//std::cout << answer.size.second << "," << answer.size.first << std::endl;
-				for (int couy = 0; couy < answer.size.second; couy++){
+				for (int couy = 0; couy < answer.block.size(); couy++){
 					if (change == 1)break;
-					for (int coux = 0; coux < answer.size.first; coux++){
+					for (int coux = 0; coux < answer.block[0].size(); coux++){
 						//std::cout << "couy=" << couy << " coux=" << coux << std::endl;
 						ansy = answer.block[couy][coux].y;
 						ansx = answer.block[couy][coux].x;
