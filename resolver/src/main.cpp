@@ -2,7 +2,7 @@
 #define _SCL_SECURE_NO_WARNINGS
 
 // Macro: Program Settings
-#define ENABLE_NETWORK_IO 1
+#define ENABLE_NETWORK_IO 0
 
 #include <iostream>
 #include <deque>
@@ -84,10 +84,10 @@ std::cout << "Start";
         // 画面表示をいくつか(yrange/Murakmi/yrange5/algo2 etc.)
         std::vector<boost::shared_ptr<gui::impl::MoveWindow>> windows;
 		if (!data_.block.empty())windows.push_back(
-            gui::make_mansort_window(split_image_, sorter_resolve, "Murakami")
+			gui::make_mansort_window(split_image_, data_.block, "Murakami")
             );
 		if (!data_.block.empty())windows.push_back(
-            gui::make_mansort_window(split_image_, sorter_resolve, "Murakami")
+			gui::make_mansort_window(split_image_, data_.block, "Murakami")
             );
         boost::thread th(
             [&]()
