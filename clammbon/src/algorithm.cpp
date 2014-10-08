@@ -246,7 +246,12 @@ void algorithm::impl::generate_next_step<'U'>(step_type step)
 {
     std::swap(step.matrix[step.selecting_cur.y][step.selecting_cur.x], step.matrix[step.selecting_cur.y - 1][step.selecting_cur.x]);
     step.selecting_cur.y -= 1;
-    step.answer.list.back().actions.push_back('U');
+    std::string& actions = step.answer.list.back().actions;
+    if (step.forward) {
+        actions += 'U';
+    } else {
+        actions = 'D' + actions;
+    }
     add_step(step);
 }
 
@@ -255,7 +260,12 @@ void algorithm::impl::generate_next_step<'R'>(step_type step)
 {
     std::swap(step.matrix[step.selecting_cur.y][step.selecting_cur.x], step.matrix[step.selecting_cur.y][step.selecting_cur.x + 1]);
     step.selecting_cur.x += 1;
-    step.answer.list.back().actions.push_back('R');
+    std::string& actions = step.answer.list.back().actions;
+    if (step.forward) {
+        actions += 'R';
+    } else {
+        actions = 'L' + actions;
+    }
     add_step(step);
 }
 
@@ -264,7 +274,12 @@ void algorithm::impl::generate_next_step<'D'>(step_type step)
 {
     std::swap(step.matrix[step.selecting_cur.y][step.selecting_cur.x], step.matrix[step.selecting_cur.y + 1][step.selecting_cur.x]);
     step.selecting_cur.y += 1;
-    step.answer.list.back().actions.push_back('D');
+    std::string& actions = step.answer.list.back().actions;
+    if (step.forward) {
+        actions += 'D';
+    } else {
+        actions = 'U' + actions;
+    }
     add_step(step);
 }
 
@@ -273,7 +288,12 @@ void algorithm::impl::generate_next_step<'L'>(step_type step)
 {
     std::swap(step.matrix[step.selecting_cur.y][step.selecting_cur.x], step.matrix[step.selecting_cur.y][step.selecting_cur.x - 1]);
     step.selecting_cur.x -= 1;
-    step.answer.list.back().actions.push_back('L');
+    std::string& actions = step.answer.list.back().actions;
+    if (step.forward) {
+        actions += 'L';
+    } else {
+        actions = 'R' + actions;
+    }
     add_step(step);
 }
 
@@ -486,36 +506,19 @@ void algorithm::impl::brute_force()
         open.pop();
 
         if (visited.count(current.matrix)) {
-            if (visited.at(current.matrix).direction != current.direction) {
+            if (visited.at(current.matrix).forward != current.forward) {
                 step_type* backward_p;
                 step_type* forward_p;
-                if (visited.at(current.matrix).direction == false) {
-                    forward_p = &current;
-                    backward_p = &visited.at(current.matrix);
-                } else {
+                if (visited.at(current.matrix).forward) {
                     forward_p = &visited.at(current.matrix);
                     backward_p = &current;
+                } else {
+                    forward_p = &current;
+                    backward_p = &visited.at(current.matrix);
                 }
                 step_type& forward = *forward_p;
                 step_type& backward = *backward_p;
 
-                std::reverse(backward.answer.list.front().actions.begin(), backward.answer.list.front().actions.end());
-                for (char& action : backward.answer.list.front().actions) {
-                    switch (action) {
-                        case 'U':
-                            action = 'D';
-                            break;
-                        case 'R':
-                            action = 'L';
-                            break;
-                        case 'D':
-                            action = 'U';
-                            break;
-                        case 'L':
-                            action = 'R';
-                            break;
-                    }
-                }
                 backward.answer.list.front().position = backward.selecting_cur;
                 forward.answer.list.push_back(std::move(backward.answer.list.front()));
 
