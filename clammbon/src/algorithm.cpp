@@ -37,7 +37,6 @@ private:
     const answer_type solve();
     void greedy();
     void brute_force();
-    void print() const;
     const point_type current_point(point_type const& point) const;
     bool is_sorted(point_type const& point) const;
     bool is_finished(std::vector<std::vector<point_type>> const& mat) const;
@@ -52,6 +51,10 @@ private:
 
     template <char T>
     void add_step(step_type step);
+
+    void print(std::vector<std::vector<point_type>> const& mat) const;
+    void print(answer_type const& answer) const;
+    void print(step_type const& step) const;
 
     std::vector<std::vector<point_type>> matrix;
     std::unordered_set<point_type> sorted_points;
@@ -160,7 +163,8 @@ void algorithm::impl::operator() (boost::coroutines::coroutine<return_type>::pus
 
     // GO
 #ifndef NDEBUG
-    print();
+    print(matrix);
+    print(answer);
 #endif
     try {
         yield(solve());
@@ -178,7 +182,7 @@ void algorithm::impl::move_selecting<'U'>()
     --selecting_cur.y;
     answer.list.back().actions.push_back('U');
 #ifndef NDEBUG
-    print();
+    print(matrix);
 #endif
 }
 
@@ -190,7 +194,7 @@ void algorithm::impl::move_selecting<'R'>()
     ++selecting_cur.x;
     answer.list.back().actions.push_back('R');
 #ifndef NDEBUG
-    print();
+    print(matrix);
 #endif
 }
 
@@ -202,7 +206,7 @@ void algorithm::impl::move_selecting<'D'>()
     ++selecting_cur.y;
     answer.list.back().actions.push_back('D');
 #ifndef NDEBUG
-    print();
+    print(matrix);
 #endif
 }
 
@@ -214,7 +218,7 @@ void algorithm::impl::move_selecting<'L'>()
     --selecting_cur.x;
     answer.list.back().actions.push_back('L');
 #ifndef NDEBUG
-    print();
+    print(matrix);
 #endif
 }
 
@@ -315,7 +319,7 @@ const answer_type algorithm::impl::solve()
     }
 
 #ifndef NDEBUG
-    std::cout << answer.serialize() << std::endl;
+    print(answer);
 #endif
 
     return answer;
@@ -467,7 +471,7 @@ void algorithm::impl::brute_force()
 
     auto goal_matrix = matrix;
     for (int y = height - BFS_NUM; y < height; ++y) for (int x = width - BFS_NUM; x < width; ++x) {
-        matrix[y][x] = {x, y};
+        goal_matrix[y][x] = {x, y};
     }
 
     for (int y = height - BFS_NUM; y < height; ++y) for (int x = width - BFS_NUM; x < width; ++x) {
@@ -879,19 +883,27 @@ bool algorithm::impl::must_chagne_select(step_type const& step) const
 }
 
 // print {{{2
-void algorithm::impl::print() const
+void algorithm::impl::print(std::vector<std::vector<point_type>> const& mat) const
 {
-    // 具合をいい感じに表示
-    std::cout << std::endl;
-    std::cout << "-----------------------------------------------" << std::endl;
-    std::cout << std::endl;
-    for (std::vector<point_type> const& row : matrix) {
-        for (point_type const& tile : row) {
-            std::cout << boost::format("%1$02X ") % tile.num();
+    for (std::vector<point_type> const& row : mat) {
+        for (point_type const& point : row) {
+            std::cout << boost::format("%1$02X ") % point.num();
         }
         std::cout << std::endl;
     }
-    //std::cin.ignore();
+    std::cout << std::endl;
+}
+
+void algorithm::impl::print(answer_type const& answer) const
+{
+    std::cout << answer.serialize() << std::endl;
+    std::cout << std::endl;
+}
+
+void algorithm::impl::print(step_type const& step) const
+{
+    print(step.matrix);
+    print(step.answer);
 }
 
 // vim: set ts=4 sw=4 et fdm=marker:
