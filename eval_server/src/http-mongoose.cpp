@@ -1,4 +1,4 @@
-#include <signal.h>
+﻿#include <signal.h>
 #include <mongoose/Server.h>
 #include <mongoose/Controller.h>
 #include <mongoose/Utils.h>

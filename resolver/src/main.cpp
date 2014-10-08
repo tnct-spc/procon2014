@@ -201,7 +201,7 @@ private:
     split_image_type  split_image_;
 
     mutable network::client client_;
-    pixel_sorter<yrange2> sorter_;
+    pixel_sorter<yrange5> sorter_;
 };
 
 question_data convert_block(question_data const& data)
