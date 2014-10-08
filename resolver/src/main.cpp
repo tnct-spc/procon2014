@@ -2,7 +2,7 @@
 #define _SCL_SECURE_NO_WARNINGS
 
 // Macro: Program Settings
-#define ENABLE_NETWORK_IO 0
+#define ENABLE_NETWORK_IO 1
 
 #include <iostream>
 #include <deque>
@@ -89,11 +89,6 @@ public:
 		if (!data_.block.empty())windows.push_back(
             gui::make_mansort_window(split_image_, sorter_resolve, "Murakami")
             );
-		if (data_.block.empty() && data_.block.empty()){//どっちもダメだった時
-			windows.push_back(
-				gui::make_mansort_window(split_image_, "Yor are the sorter!!! Sort this!")
-				);
-		}
         boost::thread th(
             [&]()
             {
