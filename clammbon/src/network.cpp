@@ -79,6 +79,7 @@ namespace network
         
         client_type::response response = http_client_.post(request);
         std::string response_body = body(response);
+        //std::cout << response_body << std::endl;
         return response_body;
     }
 
