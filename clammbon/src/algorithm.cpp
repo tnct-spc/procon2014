@@ -164,7 +164,6 @@ void algorithm::impl::operator() (boost::coroutines::coroutine<return_type>::pus
     // GO
 #ifndef NDEBUG
     print(matrix);
-    print(answer);
 #endif
     try {
         yield(solve());
@@ -319,7 +318,7 @@ const answer_type algorithm::impl::solve()
     }
 
 #ifndef NDEBUG
-    std::cout << answer.serialize() << std::endl;
+    print(answer);
 #endif
 
     return answer;
