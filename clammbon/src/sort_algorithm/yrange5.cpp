@@ -33,6 +33,44 @@ int yrange5::array_sum(return_type const& array_, int const x, int const y, int 
 	return sum;
 }
 
+/*縦横全パターンやろう*/
+void yrange5::row_column_replacement(answer_type_y& answer)
+{
+	int const sepx = data_.split_num.first;
+	int const sepy = data_.split_num.second;
+
+	struct good_set
+	{
+		uint_fast64_t val;
+		point_type point;
+	};
+	good_set good;
+
+	std::vector<std::vector<point_type>>sort_matrix(answer.points.size() * 2, std::vector<point_type>(answer.points.at(0).size() * 2));
+	for (int i = 0; i < answer.points.size(); ++i)for (int j = 0; j < answer.points.at(0).size(); ++j)
+	{
+		sort_matrix[i][j] = answer.points[i][j];
+		sort_matrix[sepy + i][j] = answer.points[i][j];
+		sort_matrix[i][sepx + j] = answer.points[i][j];
+		sort_matrix[sepy + i][sepx + j] = answer.points[i][j];
+	}
+
+	good = good_set{ range_evaluate_contours(data_, comp_, answer.points, 0, 0), { 0, 0 } };
+	for (int i = 0; i < sepy; ++i)for (int j = 0; j < sepx; ++j)
+	{
+		auto const& temp = range_evaluate_contours(data_, comp_, sort_matrix, j, i);
+		if (good.val > temp)good = { temp, { j, i } };
+	}
+
+	std::vector<std::vector<point_type>>temp_matrix(sepy, std::vector<point_type>(sepx));
+	for (int i = 0; i < sepy; ++i)for (int j = 0; j < sepx; ++j)
+	{
+		temp_matrix[i][j] = sort_matrix[i][j];
+	}
+
+	answer = { std::move(temp_matrix), good.val, cv::Mat() };
+}
+
 //cv::matの塊にする
 cv::Mat yrange5::combine_image(answer_type_y const& answer)
 {

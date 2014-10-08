@@ -21,4 +21,6 @@ uint_fast64_t range_evaluate(question_raw_data const& data_, compared_type const
 int one_side_val(compared_type const& comp_, std::vector<std::vector<point_type> >matrix, point_type point);
 std::vector<point_type> duplicate_delete(compared_type const& comp_, std::vector<std::vector<point_type> >& matrix);
 int try_matrix_copy(std::vector<std::vector<point_type>>& sorted_matrix, std::vector<std::vector<point_type>>const& matrix, point_type point);
+uint_fast64_t range_evaluate_contours(question_raw_data const& data_, compared_type const& comp_, std::vector<std::vector<point_type> > matrix, int x, int y);
+
 #endif

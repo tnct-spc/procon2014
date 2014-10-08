@@ -63,6 +63,40 @@ image_type splitter::join_image(split_image_type const& source) const
     return joined;
 }
 
+cv::Mat splitter::combine_grey(question_raw_data const& raw, std::vector<std::vector<point_type>> const& matrix) const
+{
+	int const one_picx = raw.size.first / raw.split_num.first;
+	int const one_picy = raw.size.second / raw.split_num.second;
+
+	cv::Mat comb_pic(cv::Size(raw.size.first, raw.size.second), CV_8UC3);
+	split_image_type splitted = split_image(raw);
+	std::vector<std::vector<cv::Mat>> splitted_zero;
+
+	splitted_zero.reserve(raw.split_num.second);
+	for (auto& one_vec : splitted)
+	{
+		one_vec.reserve(raw.split_num.first);
+		for (auto& one_point : one_vec)
+		{
+			one_point.push_back(cv::imdecode(one_point, 0));
+		}
+	}
+
+	for (int i = 0; i < matrix.size(); ++i)	for (int j = 0; j < matrix.at(0).size(); ++j)
+	{
+		if (matrix[i][j].y >= raw.split_num.second || matrix[i][j].y < 0 || matrix[i][j].x >= raw.split_num.first || matrix[i][j].x < 0) continue;
+		cv::Rect roi_rect(j*one_picx, i*one_picy, one_picx, one_picy);
+		cv::Mat roi_mat(comb_pic, roi_rect);
+		splitted[matrix[i][j].y][matrix[i][j].x].copyTo(roi_mat);
+	}
+
+	cv::Mat edges;
+	cv::Canny(comb_pic, edges, 10, 400);
+
+	return edges;
+}
+
+
 unfold_image_type splitter::unfold_image(image_type const& fold_image) const
 {
     int const width  = fold_image.cols;

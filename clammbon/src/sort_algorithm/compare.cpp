@@ -414,3 +414,37 @@ int try_matrix_copy(std::vector<std::vector<point_type>>& sorted_matrix, std::ve
 	}
 	return 0;
 }
+
+/*指定された範囲内の場を評価する関数枠検知付き*/
+uint_fast64_t range_evaluate_contours(question_raw_data const& data_, compared_type const& comp_, std::vector<std::vector<point_type> > matrix, int x, int y)
+{
+	uint_fast64_t s = 0;
+	for (int i = 0; i < data_.split_num.second; ++i)for (int j = 0; j < data_.split_num.first; ++j){
+		if (j != data_.split_num.first - 1) s += comp_[matrix[y + i][x + j].y][matrix[y + i][x + j].x][matrix[y + i][x + j + 1].y][matrix[y + i][x + j + 1].x].right;
+		if (i != data_.split_num.second - 1) s += comp_[matrix[y + i][x + j].y][matrix[y + i][x + j].x][matrix[y + i + 1][x + j].y][matrix[y + i + 1][x + j].x].down;
+	}
+
+	//cv::findContours
+	std::vector<std::vector<point_type>> partial_matrix(data_.split_num.second, std::vector<point_type>(data_.split_num.first));
+	for (int i = 0; i < data_.split_num.second; ++i)for (int j = 0; j < data_.split_num.first; ++j)
+	{
+		partial_matrix[i][j] = matrix[y + i][x + j];
+	}
+
+	splitter sp;//どこからか持ってきてたsplitter
+	cv::Mat edges = sp.combine_grey(data_, partial_matrix);
+	cv::vector<cv::vector<cv::Point> > contours;// 輪郭情報
+	cv::findContours(edges, contours, CV_RETR_CCOMP, CV_CHAIN_APPROX_SIMPLE);
+	std::vector<double> arclength_true;
+
+	for (size_t i = 0; i < contours.size(); ++i)
+	{
+		cv::Mat contour = cv::Mat(contours[i]);
+		arclength_true.push_back(cv::arcLength(contour, true));
+	}
+
+	s -= *(std::max_element(arclength_true.begin(), arclength_true.end()));
+	s += contours.size() * matrix.size() * matrix.at(0).size();
+
+	return s;
+}
