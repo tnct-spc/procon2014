@@ -269,7 +269,7 @@ std::vector<answer_type_y> yrange5::operator() (std::vector<std::vector<std::vec
 	}
 
 #ifdef _DEBUG
-	std::cout << "There are " << /*yrange5_ans <<*/ " solutions by yrange5." << std::endl;
+	std::cout << "There are " << yrange5_ans << " solutions by yrange5." << std::endl;
 	for (auto const& one_answer : answer)
 	{
 		for (int i = 0; i < one_answer.points.size(); ++i)
