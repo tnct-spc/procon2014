@@ -1,8 +1,9 @@
-//#define NDEBUG
+﻿//#define NDEBUG
 #include <algorithm>
 #include <cassert>
 #include <iostream>
 #include <iterator>
+#include <unordered_map>
 #include <boost/bind.hpp>
 #include <boost/coroutine/all.hpp>
 #include <boost/coroutine/coroutine.hpp>
@@ -36,13 +37,12 @@ private:
     const answer_type solve();
     void greedy();
     void brute_force();
-    void print() const;
     const point_type current_point(point_type const& point) const;
     bool is_sorted(point_type const& point) const;
     bool is_finished(std::vector<std::vector<point_type>> const& mat) const;
     void move_target(point_type const& target, char const& direction);
     void move_to(point_type const& to);
-    bool must_chagne_select(std::vector<std::vector<point_type>> const& mat, point_type const& select) const;
+    bool must_chagne_select(step_type const& step) const;
 
     template <char T>
     void move_selecting();
@@ -50,7 +50,11 @@ private:
     void move_selecting();
 
     template <char T>
-    void add_step();
+    void add_step(step_type step);
+
+    void print(std::vector<std::vector<point_type>> const& mat) const;
+    void print(answer_type const& answer) const;
+    void print(step_type const& step) const;
 
     std::vector<std::vector<point_type>> matrix;
     std::unordered_set<point_type> sorted_points;
@@ -59,7 +63,7 @@ private:
     point_type selecting_cur;
     std::queue<step_type> open;
     std::unordered_set<step_type> closed;
-    step_type current;
+    std::unordered_map<std::vector<std::vector<point_type>>, step_type> visited;
     int width;
     int height;
     int cost_select;
@@ -159,7 +163,8 @@ void algorithm::impl::operator() (boost::coroutines::coroutine<return_type>::pus
 
     // GO
 #ifndef NDEBUG
-    print();
+    print(matrix);
+    print(answer);
 #endif
     try {
         yield(solve());
@@ -177,7 +182,7 @@ void algorithm::impl::move_selecting<'U'>()
     --selecting_cur.y;
     answer.list.back().actions.push_back('U');
 #ifndef NDEBUG
-    print();
+    print(matrix);
 #endif
 }
 
@@ -189,7 +194,7 @@ void algorithm::impl::move_selecting<'R'>()
     ++selecting_cur.x;
     answer.list.back().actions.push_back('R');
 #ifndef NDEBUG
-    print();
+    print(matrix);
 #endif
 }
 
@@ -201,7 +206,7 @@ void algorithm::impl::move_selecting<'D'>()
     ++selecting_cur.y;
     answer.list.back().actions.push_back('D');
 #ifndef NDEBUG
-    print();
+    print(matrix);
 #endif
 }
 
@@ -213,7 +218,7 @@ void algorithm::impl::move_selecting<'L'>()
     --selecting_cur.x;
     answer.list.back().actions.push_back('L');
 #ifndef NDEBUG
-    print();
+    print(matrix);
 #endif
 }
 
@@ -226,50 +231,50 @@ void algorithm::impl::move_selecting()
 
 // add_step {{{2
 template <>
-void algorithm::impl::add_step<'U'>()
+void algorithm::impl::add_step<'U'>(step_type step)
 {
-    step_type step = current;
     std::swap(step.matrix[step.selecting_cur.y][step.selecting_cur.x], step.matrix[step.selecting_cur.y - 1][step.selecting_cur.x]);
     step.selecting_cur.y -= 1;
     step.answer.list.back().actions.push_back('U');
+    visited[step.matrix] = step;
     if (!closed.count(step)) {
-        open.push(step);
+        open.push(std::move(step));
     }
 }
 
 template <>
-void algorithm::impl::add_step<'R'>()
+void algorithm::impl::add_step<'R'>(step_type step)
 {
-    step_type step = current;
     std::swap(step.matrix[step.selecting_cur.y][step.selecting_cur.x], step.matrix[step.selecting_cur.y][step.selecting_cur.x + 1]);
     step.selecting_cur.x += 1;
     step.answer.list.back().actions.push_back('R');
+    visited[step.matrix] = step;
     if (!closed.count(step)) {
-        open.push(step);
+        open.push(std::move(step));
     }
 }
 
 template <>
-void algorithm::impl::add_step<'D'>()
+void algorithm::impl::add_step<'D'>(step_type step)
 {
-    step_type step = current;
     std::swap(step.matrix[step.selecting_cur.y][step.selecting_cur.x], step.matrix[step.selecting_cur.y + 1][step.selecting_cur.x]);
     step.selecting_cur.y += 1;
     step.answer.list.back().actions.push_back('D');
+    visited[step.matrix] = step;
     if (!closed.count(step)) {
-        open.push(step);
+        open.push(std::move(step));
     }
 }
 
 template <>
-void algorithm::impl::add_step<'L'>()
+void algorithm::impl::add_step<'L'>(step_type step)
 {
-    step_type step = current;
     std::swap(step.matrix[step.selecting_cur.y][step.selecting_cur.x], step.matrix[step.selecting_cur.y][step.selecting_cur.x - 1]);
     step.selecting_cur.x -= 1;
     step.answer.list.back().actions.push_back('L');
+    visited[step.matrix] = step;
     if (!closed.count(step)) {
-        open.push(step);
+        open.push(std::move(step));
     }
 }
 
@@ -312,6 +317,10 @@ const answer_type algorithm::impl::solve()
             ++sorted_col;
         }
     }
+
+#ifndef NDEBUG
+    print(answer);
+#endif
 
     return answer;
 }
@@ -455,75 +464,86 @@ void algorithm::impl::greedy()
 void algorithm::impl::brute_force()
 {
     // Brute-Force Algorithm
+    // 双方向探索
 
-    // 選択画像を変更するかどうか判定
+    step_type first_step = {true, answer, matrix[selecting_cur.y][selecting_cur.x], selecting_cur, matrix};
+    open.push(std::move(first_step));
 
-    // 根ノードをキューに追加
-    open.push(step_type{answer, selecting_cur, matrix});
+    auto goal_matrix = matrix;
+    for (int y = height - BFS_NUM; y < height; ++y) for (int x = width - BFS_NUM; x < width; ++x) {
+        goal_matrix[y][x] = {x, y};
+    }
+
+    for (int y = height - BFS_NUM; y < height; ++y) for (int x = width - BFS_NUM; x < width; ++x) {
+        step_type goal_step = {false, {{{{x, y}, ""}}}, matrix[y][x], {x, y}, goal_matrix};
+        open.push(std::move(goal_step));
+    }
 
     // 解答発見フラグ
     bool finished = false;
 
     while (open.size() > 0) {
-        current = open.front();
+        step_type current = std::move(open.front());
         open.pop();
-        if (is_finished(current.matrix)) {
-            // 終了
-            answer = current.answer;
-            finished = true;
-            break;
+
+        if (visited.count(current.matrix)) {
+            if (visited.at(current.matrix).direction != current.direction) {
+                step_type* backward_p;
+                step_type* forward_p;
+                if (visited.at(current.matrix).direction == false) {
+                    forward_p = &current;
+                    backward_p = &visited.at(current.matrix);
+                } else {
+                    forward_p = &visited.at(current.matrix);
+                    backward_p = &current;
+                }
+                step_type& forward = *forward_p;
+                step_type& backward = *backward_p;
+
+                std::reverse(backward.answer.list.front().actions.begin(), backward.answer.list.front().actions.end());
+                for (char& action : backward.answer.list.front().actions) {
+                    switch (action) {
+                        case 'U':
+                            action = 'D';
+                            break;
+                        case 'R':
+                            action = 'L';
+                            break;
+                        case 'D':
+                            action = 'U';
+                            break;
+                        case 'L':
+                            action = 'R';
+                            break;
+                    }
+                }
+                backward.answer.list.front().position = backward.selecting_cur;
+                forward.answer.list.push_back(std::move(backward.answer.list.front()));
+
+                answer = std::move(forward.answer);
+                finished = true;
+                break;
+            }
+        }
+
+        if (current.selecting_cur.x == width - BFS_NUM) {
+            add_step<'R'>(current);
+        } else if (current.selecting_cur.x == width - 1) {
+            add_step<'L'>(current);
+        } else {
+            add_step<'L'>(current);
+            add_step<'R'>(current);
         }
 
         if (current.selecting_cur.y == height - BFS_NUM) {
-            if (current.selecting_cur.x == width - BFS_NUM) {
-                // 右と下
-                add_step<'R'>();
-                add_step<'D'>();
-            } else if (current.selecting_cur.x == width - 1) {
-                // 左と下
-                add_step<'L'>();
-                add_step<'D'>();
-            } else {
-                // 左右下
-                add_step<'L'>();
-                add_step<'R'>();
-                add_step<'D'>();
-            }
+            add_step<'D'>(current);
         } else if (current.selecting_cur.y == height - 1) {
-            if (current.selecting_cur.x == width - BFS_NUM) {
-                // 右と上
-                add_step<'R'>();
-                add_step<'U'>();
-            } else if (current.selecting_cur.x == width - 1) {
-                // 左と上
-                add_step<'L'>();
-                add_step<'U'>();
-            } else {
-                // 左右上
-                add_step<'L'>();
-                add_step<'R'>();
-                add_step<'U'>();
-            }
+            add_step<'U'>(current);
         } else {
-            if (current.selecting_cur.x == width - BFS_NUM) {
-                // 右上下
-                add_step<'R'>();
-                add_step<'U'>();
-                add_step<'D'>();
-            } else if (current.selecting_cur.x == width - 1) {
-                // 左上下
-                add_step<'L'>();
-                add_step<'U'>();
-                add_step<'D'>();
-            } else {
-                // 四方
-                add_step<'U'>();
-                add_step<'R'>();
-                add_step<'D'>();
-                add_step<'L'>();
-            }
+            add_step<'D'>(current);
+            add_step<'U'>(current);
         }
-        closed.insert(current);
+        closed.insert(std::move(current));
     }
 
     if (!finished) {
@@ -819,43 +839,41 @@ bool algorithm::impl::is_finished(std::vector<std::vector<point_type>> const& ma
 }
 
 // must_chagne_select {{{2
-bool algorithm::impl::must_chagne_select(std::vector<std::vector<point_type>> const& mat, point_type const& select) const
+bool algorithm::impl::must_chagne_select(step_type const& step) const
 {
-    // 偶置換, 奇置換の判定を行い, 奇置換ならば true を返す
+    // 偶置換, 奇置換の判定を行い, 奇置換であれば true を返す
     // http://www.aji.sakura.ne.jp/algorithm/slide_goal.html
 
     int change = 0;
     std::vector<point_type> linear_matrix;
     std::vector<point_type> original_linear_matrix;
 
-    // mat の中身を 1 列にする
-    int x = mat.size() % 2 == 0 ? mat.front().size() : -1;
-    for (int y = 0; y < mat.size(); ++y) {
-        if (x == -1) {
-            for (++x; x < mat[y].size(); ++x) {
-                if (mat[y][x] != select) {
-                    linear_matrix.push_back(mat[y][x]);
-                }
-                if (point_type{x, y} != select) {
-                    original_linear_matrix.push_back(point_type{x, y});
-                }
-            }
-        } else {
-            for (--x; x >= 0; --x) {
-                if (mat[y][x] != select) {
-                    linear_matrix.push_back(mat[y][x]);
-                }
-                if (point_type{x, y} != select) {
-                    original_linear_matrix.push_back(point_type{x, y});
-                }
-            }
-        }
-    }
+    // step.matrix の右下 BFS_NUM x BFS_NUM 部分を 1 列にする
+    std::vector<point_type> row;
+    row = step.matrix[height - BFS_NUM];
+    std::copy(row.end() - 3, row.end(), std::back_inserter(linear_matrix));
+    row = step.matrix[height - BFS_NUM + 1];
+    std::copy(row.end() - 3, row.end(), std::back_inserter(linear_matrix));
+    std::reverse(linear_matrix.end() - 3, linear_matrix.end());
+    row = step.matrix[height - BFS_NUM + 2];
+    std::copy(row.end() - 3, row.end(), std::back_inserter(linear_matrix));
+    linear_matrix.erase(std::remove(linear_matrix.begin(), linear_matrix.end(), step.matrix[step.selecting_cur.y][step.selecting_cur.x]), linear_matrix.end());
 
-    // original_linear_matrix の配置になるように linear_matrix を並び替え
+    for (int x = width - BFS_NUM; x < width; ++x) {
+        original_linear_matrix.push_back(point_type{x, height - BFS_NUM});
+    }
+    for (int x = width - 1; x >= width - BFS_NUM; --x) {
+        original_linear_matrix.push_back(point_type{x, height - BFS_NUM + 1});
+    }
+    for (int x = width - BFS_NUM; x < width; ++x) {
+        original_linear_matrix.push_back(point_type{x, height - BFS_NUM + 2});
+    }
+    original_linear_matrix.erase(std::remove(original_linear_matrix.begin(), original_linear_matrix.end(), step.matrix[step.selecting_cur.y][step.selecting_cur.x]), original_linear_matrix.end());
+
+    // original_linear_matrix の配置になるように linear_matrix を並び替える
     for (int i = 0; i < linear_matrix.size(); ++i) {
         if (linear_matrix[i] != original_linear_matrix[i]) {
-            change += std::distance(original_linear_matrix.begin(), std::find(original_linear_matrix.begin(), original_linear_matrix.end(), linear_matrix[i])) - i;
+            change += std::distance(linear_matrix.begin(), std::find(linear_matrix.begin(), linear_matrix.end(), original_linear_matrix[i])) - i;
             linear_matrix.erase(std::remove(linear_matrix.begin(), linear_matrix.end(), original_linear_matrix[i]), linear_matrix.end());
             linear_matrix.insert(linear_matrix.begin() + i, original_linear_matrix[i]);
         }
@@ -865,19 +883,27 @@ bool algorithm::impl::must_chagne_select(std::vector<std::vector<point_type>> co
 }
 
 // print {{{2
-void algorithm::impl::print() const
+void algorithm::impl::print(std::vector<std::vector<point_type>> const& mat) const
 {
-    // 具合をいい感じに表示
-    std::cout << std::endl;
-    std::cout << "-----------------------------------------------" << std::endl;
-    std::cout << std::endl;
-    for (std::vector<point_type> const& row : matrix) {
-        for (point_type const& tile : row) {
-            std::cout << boost::format("%1$02X ") % tile.num();
+    for (std::vector<point_type> const& row : mat) {
+        for (point_type const& point : row) {
+            std::cout << boost::format("%1$02X ") % point.num();
         }
         std::cout << std::endl;
     }
-    //std::cin.ignore();
+    std::cout << std::endl;
+}
+
+void algorithm::impl::print(answer_type const& answer) const
+{
+    std::cout << answer.serialize() << std::endl;
+    std::cout << std::endl;
+}
+
+void algorithm::impl::print(step_type const& step) const
+{
+    print(step.matrix);
+    print(step.answer);
 }
 
 // vim: set ts=4 sw=4 et fdm=marker:

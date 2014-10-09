@@ -11,7 +11,7 @@ namespace network
     class client
     {
     private:
-        typedef boost::network::http::basic_client<boost::network::http::tags::http_async_8bit_udp_resolve, 1, 0> client_type;
+        typedef boost::network::http::basic_client<boost::network::http::tags::http_async_8bit_tcp_resolve,1 ,1> client_type;
 
         std::string const server_host_;
         std::string const problem_path_;
@@ -34,7 +34,7 @@ namespace network
 
     public:
         client(
-            std::string const& server_host = "127.0.0.1",
+            std::string const& server_host = std::getenv("SERVHOST") ? std::getenv("SERVHOST") : "127.0.0.1",
             std::string const& problem_path = "/problem/",
             std::string const& submit_path = "/SubmitAnswer"
             );

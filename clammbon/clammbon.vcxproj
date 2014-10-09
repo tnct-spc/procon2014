@@ -140,6 +140,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_WINSOCK_DEPRECATED_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <OpenMPSupport>true</OpenMPSupport>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -149,6 +150,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\algorithm.cpp" />
+    <ClCompile Include="src\algorithm_2.cpp" />
     <ClCompile Include="src\gui.cpp" />
     <ClCompile Include="src\network.cpp" />
     <ClCompile Include="src\ppm_reader.cpp" />
@@ -157,10 +159,12 @@
     <ClCompile Include="src\sort_algorithm\genetic.cpp" />
     <ClCompile Include="src\sort_algorithm\Murakami.cpp" />
     <ClCompile Include="src\sort_algorithm\yrange2.cpp" />
+    <ClCompile Include="src\sort_algorithm\yrange5.cpp" />
     <ClCompile Include="src\splitter.cpp" />
     <ClCompile Include="src\test_tool.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\algorithm_2.hpp" />
     <ClInclude Include="include\gui.hpp" />
     <ClInclude Include="include\algorithm.hpp" />
     <ClInclude Include="include\data_type.hpp" />
@@ -172,6 +176,7 @@
     <ClInclude Include="include\sort_algorithm\genetic.hpp" />
     <ClInclude Include="include\sort_algorithm\Murakami.hpp" />
     <ClInclude Include="include\sort_algorithm\yrange2.hpp" />
+    <ClInclude Include="include\sort_algorithm\yrange5.hpp" />
     <ClInclude Include="include\splitter.hpp" />
     <ClInclude Include="include\test_tool.hpp" />
   </ItemGroup>

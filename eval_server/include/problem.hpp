@@ -23,7 +23,7 @@ public:
     void load(std::string const& problemid, std::string const& playerid = "guest");
     inline std::string const get_error()
     {
-        return outerr.str();
+        return std::move(outerr.str());
     }
     inline question_data const& get()
     {

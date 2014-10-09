@@ -11,74 +11,124 @@
 #include <sort_algorithm/adjacent.hpp>
 #include <sort_algorithm/Murakami.hpp>
 #include <./gui.hpp>
+#include <boost/timer.hpp>
+#include <omp.h>
 Murakami::Murakami(question_raw_data const& data, compared_type const& comp)
 	: data_(data), comp_(comp)
 {
 }
 
-std::vector<std::vector<std::vector<point_type>>> Murakami::operator() (){
+std::vector<answer_type_y> Murakami::operator() (){
 	auto const width = data_.split_num.first;
 	auto const height = data_.split_num.second;
 	//sort_compare();//sorted_comparation作成
+	#ifdef _OPENMP
+	//OpenMPを使ったコード
+	std::cout << "use openMP" << std::endl;
+	#else
+	//OpenMPを使わない場合のコード
+	std::cout << "no use openMP" << std::endl;
+	#endif
 	make_sorted_comparation();
-	std::cout << "make_ok" << std::endl;
-	std::vector<std::vector<std::vector<point_type>>> block_list(
-		height * width,
-		std::vector<std::vector<point_type>>(
-		1,
-		std::vector<point_type>(
-		1,
-		{
-		-1, -1
-		}
-		)
-
-		)
-		);
-
+	boost::timer t;
+	std::vector<block_data_> block_list(height * width);
+	unsigned int unique_number_cnt = 0;
 		//ブロックの左上に分割画像を配置するループ
 		for (int i = 0; i < height; i++){
 			for (int j = 0; j < width; j++){
-				block_list[i * width + j][0][0].y = i;
-				block_list[i * width + j][0][0].x = j;
+				//block_list[i * width + j][0][0].y = i;
+				//block_list[i * width + j][0][0].x = j;
+				block_list[i * width + j].block = {{{j,i}}};//std::vector < std::vector<point_type> > {std::vector < point_type > {point_type{ j, i } }};
+				block_list[i * width + j].u_this_number = unique_number_cnt;
+				unique_number_cnt++;
 			}
 		}
-		int a;
-		while (block_list.size() != 1){//メインループ
-			a = block_list.size();
+		//std::cout << "a";
+		//block_combination b;
+		for (int i = 0; i < block_list.size(); i++){//ブロック比較ループ改良
+			block_combination b;
+			for (int j = i; j < block_list.size(); j++){
+				if (i == j) continue;
+				b = eval_block(block_list[i].block, block_list[j].block);
+				block_list[i].score_data_[block_list[j].u_this_number] = std::move(score_data{ b.score, b.shift_x, b.shift_y });
+			}
+		}
+		int a;//デバッグ用の変数
+		try{
+			while (block_list.size() != 1){//メインループ
+				a = block_list.size();
+				block_combination best_block_combination;//一番いいblockの組み合わせいれるところ
+				best_block_combination.score = std::numeric_limits<bigint>::min();
+				block_combination b;
+				for (int i = 0; i < block_list.size(); i++){//ブロック比較ループ改良
+					for (int j = i; j < block_list.size(); j++){
+						if (i == j) continue;
+						std::unordered_map<unsigned int, score_data>::iterator m_it = block_list[i].score_data_.find(block_list[j].u_this_number);
+						if (m_it != block_list[i].score_data_.end()){
+							//TODO ここを参照渡しにする
+							b.block1 = block_list[i].block;
+							b.block2 = block_list[j].block;
+							b.score = block_list[i].score_data_[m_it->first].score;
+							b.shift_x = block_list[i].score_data_[m_it->first].shift_x;
+							b.shift_y = block_list[i].score_data_[m_it->first].shift_y;
 
-			block_combination best_block_combination;//一番いいblockの組み合わせいれるところ
-			best_block_combination.score = std::numeric_limits<int_fast64_t>::min();
-			for (const auto& i : block_list){//ブロック同士を比較するループ
-				for (const auto& j : block_list){
-					if (i == j) continue;
-
-					block_combination b = eval_block(i, j);
-					if (best_block_combination.score < b.score){
-						best_block_combination = b; //TODO 同じ値があったらどうしよ
+						}
+						else{
+							b = eval_block(block_list[i].block, block_list[j].block);
+						}
+						if (best_block_combination.score < b.score)best_block_combination = std::move(b);
 					}
 				}
+
+				if (best_block_combination.score == std::numeric_limits<bigint>::min()){
+					std::cout << "本当に結合するブロックがなかったので解を出さずにMurakamiは終了します" ;
+					throw std::runtime_error("本当に結合するブロックがなかった");
+				}
+				block_type combined_block = std::move(combine_block(best_block_combination));//ブロックを結合する
+				boost::remove_erase_if(block_list, [&best_block_combination](block_data_ it){//block_listから結合する前のブロックを消す
+					return (it.block == best_block_combination.block1 || it.block == best_block_combination.block2);
+				});
+				block_data_ p_b;
+				p_b.block = combined_block;
+				block_list.push_back(p_b);//結合したのを入れる
+				std::cout << "***" << block_list.size() << "***" << std::endl;
+				/*デバッグ表示
+				for (const auto& i : block_list){
+					for (const auto& j : i.block){
+						for (const auto& k : j){
+							//std::cout << k.x << "," << k.y << " ";
+							std::cout << boost::format("(%2d,%2d)") % k.x % k.y;
+						}
+						std::cout << "\n";
+					}
+					std::cout << "\n";
+				}
+				*/
+				/*デバッグ画像表示
+				std::vector<std::vector<std::vector<point_type>>> raw_block_list;
+				for (auto const& block_it : block_list){
+					raw_block_list.push_back(block_it.block);
+				}
+				gui::combine_show_image(data_, comp_, raw_block_list);
+				*/
 			}
-
-			if (best_block_combination.score == std::numeric_limits<int_fast64_t>::min())throw std::runtime_error("ブロック評価構造体が空です");
-			block_type combined_block = combine_block(best_block_combination);//ブロックを結合する
-			boost::remove_erase_if(block_list, [best_block_combination](block_type it){//block_listから結合する前のブロックを消す
-				return (it == best_block_combination.block1 || it == best_block_combination.block2);
-			});
-			block_list.push_back(combined_block);//結合したのを入れる
-			std::cout << block_list.size() << std::endl;
 		}
-
+		catch (...){
+			std::cerr << "Murakamiダメでした";
+			std::cout << t.elapsed() << "s経過した(Murakami内で計測)" << std::endl;
+			std::vector<std::vector<point_type>>exception_array;
+			return std::vector<answer_type_y>{ { std::move(exception_array), 0, cv::Mat() } }; 
+		}
+		std::cout << t.elapsed() << "s経過した(Murakami内で計測)" << std::endl;
+		/*デバッグ表示
 		for (int i = 0; i < height; i++){
 			for (int j = 0; j < width; j++){
-				std::cout << block_list[0][i][j].x << "," << block_list[0][i][j].y << "|";
+				std::cout << block_list[0].block[i][j].x << "," << block_list[0].block[i][j].y << "|";
 			}
 			std::cout << "\n";
 		}
-		//answer_type_y show_image;
-		//show_image.point_type = block_list;
-		//gui::combine_show_image(data_, comp_, show_image);
-		return block_list;
+		*/
+		return std::vector<answer_type_y>{ { block_list.at(0).block, 0, cv::Mat() } };
 
 }
 Murakami::block_combination Murakami::eval_block(const block_type& block1, const block_type& block2){
@@ -90,105 +140,83 @@ Murakami::block_combination Murakami::eval_block(const block_type& block1, const
 	int const b2_width = block2[0].size();
 	int const b2_height = block2.size();
 	
-	auto const block1_exists = [b1_height, b1_width, block1](int y, int x){
-		if (x >= 0 && x < b1_width && y >= 0 && y < b1_height){
-			if (block1[y][x].x != -1 || block1[y][x].y != -1){
-				return true;
-			}
-			else{
-				return false;
-			}
-		}
-		else{
-			return false;
-		}
+	auto const block1_exists = [b1_height, b1_width, &block1](int y, int x){
+		return ((x >= 0 && x < b1_width && y >= 0 && y < b1_height) && (block1[y][x].x != -1 || block1[y][x].y != -1));
 	};
-	auto const block2_exists = [b2_height, b2_width, block2](int y, int x){
-		if (x >= 0 && x < b2_width && y >= 0 && y < b2_height){
-			if (block2[y][x].x != -1 || block2[y][x].y != -1){
-				return true;
-			}
-			else{
-				return false;
-			}
-		}
-		else{
-			return false;
-		}
+	auto const block2_exists = [b2_height, b2_width, &block2](int y, int x){
+		return ((x >= 0 && x < b2_width && y >= 0 && y < b2_height) && (block2[y][x].x != -1 || block2[y][x].y != -1));
+
 	};
-	auto const block_size_check = [b1_width, b1_height, b2_width, b2_height, width, height](int shift_x,int shift_y){
-		point_type lu, rd;
-		lu.x = std::min(0, shift_x);
-		lu.y = std::min(0, shift_y);
-		rd.x = std::max(b1_width, shift_x + b2_width);
-		rd.y = std::max(b1_height, shift_y + b2_height);
-		if ((rd.x - lu.x) <= width || (rd.y - lu.y) <= height){
-			return true;
-		}
-		else{
-			return false;
-		}
+	auto const block_size_check = [b1_width, b1_height, b2_width, b2_height, width, height](int shift_y,int shift_x){
+		return (std::max(b1_width, shift_x + b2_width) - std::min(0, shift_x) <= width && std::max(b1_height, shift_y + b2_height) - std::min(0, shift_y) <= height);
 	};
-	int_fast64_t best_block_c = std::numeric_limits<int_fast64_t>::min();
-	int best_shift_i;
-	int best_shift_j;
-	for (int i = -b2_height; i < b1_height + b2_height + 1; i++){
-		for (int j = -b1_width; j < b1_width + b2_width + 1; j++){
+	bigint best_block_c = std::numeric_limits<bigint>::min();
+
+	int best_shift_i = std::numeric_limits<int>::min();
+	int best_shift_j = std::numeric_limits<int>::min();
+	for (int i = -b2_height -1; i <= b1_height + b2_height + 1; i++){
+		for (int j = -b2_width -1; j <= b1_width + b2_width + 1; j++){
 			bool confliction = false;
-			int_fast64_t block_c = 0;
+			if (!block_size_check(i, j)){
+				continue;
+			}
+			bigint block_c = 0;
 			bool empty_block_c = true;
-			int_fast64_t rank1_num = 0;//キャストが面倒くさいからint_fast64_tで
+			int rank1_num = 0;
 			for (int k = 0; k < b1_height; k++){
 				for (int l = 0; l < b1_width; l++){
-					if (block2_exists(k - i, l - j)){
-						if (block1[k][l].x != -1 && block1[k][l].y != -1 ){
+					if (block2_exists(k - i, l - j) && block1_exists(k, l)){
 							confliction = true;
 							break;
-						}
-					}
-					if (block1_exists(k, l) && !block2_exists(k + i, l + j)){
-						int_fast64_t piece_c = 0;
-						if (block2_exists(k + i - 1, l + j)){//上
-							piece_c += eval_piece(block1[k][l], block2[k + i - 1][l + j], up);
+					}else if (block1_exists(k, l) && !block2_exists(k - i, l - j)){
+						//int_fast64_t piece_c = 0;
+						if (block2_exists(k - i - 1, l - j)){//上
+							block_c += eval_piece(block1[k][l], block2[k - i - 1][l - j], up);
 							empty_block_c = false;
-							if (sorted_comparation[block1[k][l]][up][1] == block2[k + i - 1][l + j]) rank1_num++;
+							if (sorted_comparation[block1[k][l]][up][1] == block2[k - i - 1][l - j]) rank1_num++;
 						}
-						if (block2_exists(k + i, l + j - 1)){//左
-							piece_c += eval_piece(block1[k][l], block2[k + i][l + j - 1], left);
+						if (block2_exists(k - i, l - j - 1)){//左
+							block_c += eval_piece(block1[k][l], block2[k - i][l - j - 1], left);
 							empty_block_c = false;
-							if (sorted_comparation[block1[k][l]][left][1] == block2[k + i][l + j - 1]) rank1_num++;
+							if (sorted_comparation[block1[k][l]][left][1] == block2[k - i][l - j - 1]) rank1_num++;
 						}
-						if (block2_exists(k + i + 1, l + j)){//下
-							piece_c += eval_piece(block1[k][l], block2[k + i + 1][l + j], down);
+						if (block2_exists(k - i + 1, l - j)){//下
+							block_c += eval_piece(block1[k][l], block2[k - i + 1][l - j], down);
 							empty_block_c = false;
-							if (sorted_comparation[block1[k][l]][down][1] == block2[k + i + 1][l + j]) rank1_num++;
+							if (sorted_comparation[block1[k][l]][down][1] == block2[k - i + 1][l - j]) rank1_num++;
 						}
-						if (block2_exists(k + i, l + j + 1)){//右
-							piece_c += eval_piece(block1[k][l], block2[k + i][l + j + 1], right);
+						if (block2_exists(k - i, l - j + 1)){//右
+							block_c += eval_piece(block1[k][l], block2[k - i][l - j + 1], right);
 							empty_block_c = false;
-							if (sorted_comparation[block1[k][l]][right][1] == block2[k + i][l + j + 1]) rank1_num++;
+							if (sorted_comparation[block1[k][l]][right][1] == block2[k - i][l - j + 1]) rank1_num++;
 						}
-						//pow(piece_c, rank1_num);
-						block_c += piece_c;
 					}
 				}
+
 				if (confliction)break;
 			}
-			if (!confliction && empty_block_c == false){
-				//if (best_block_c != 0){};
-				rank1_num++;
+			if (!confliction && !empty_block_c){
+				block_c += 1;
 				block_c *= rank1_num; //0を掛けるのは怖い
-				if (block_c > best_block_c && block_size_check(-i,-j)){
+				//if(block_c < 0)block_c = -pow(block_c, rank1_num);
+				//if (block_c > 0)block_c = pow(block_c, rank1_num);
+				if (block_c >= best_block_c){
+					//block_size_check(i, j)
 					best_block_c = block_c;
-					best_shift_i = -i;
-					best_shift_j = -j;
+					best_shift_i = i;
+					best_shift_j = j;
 				}
 			}
 		}
 	}
+	/*
+	if (best_shift_i == std::numeric_limits<int>::min()){
+		std::cout << "結合すべきブロックがなかった" << std::endl;
+	}
+	*/
 	block_combination return_struct{
-		block1,
-		block2,
+		std::move(block1),
+		std::move(block2),
 		best_shift_j,
 		best_shift_i,
 		best_block_c
@@ -222,11 +250,16 @@ std::int_fast64_t Murakami::eval_piece(const point_type& p1, const point_type& p
 std::int_fast64_t Murakami::eval_comp_(const point_type& p1, const point_type& p2, direction dir){
 	int rank = 0;
 	std::int_fast64_t score = 0;
+	/*この方がかっこいいけどちょっと遅い
+	std::vector<point_type>::iterator it = find(sorted_comparation[p1][dir].begin(), sorted_comparation[p1][dir].end(), p2);
+	rank = it - sorted_comparation[p1][dir].begin();
+	*/
+	
 	for (const auto& it : sorted_comparation[p1][dir]){
 		if (it == p2)break;
 		rank++;
 	}
-
+	
 	if (rank == 0)throw std::runtime_error("断片画像が重複しています");
 	if (rank == 1){
 		switch (dir)
@@ -326,21 +359,7 @@ void Murakami::make_sorted_comparation(){
 
 	}
 
-	sorted_comparation = sorted_point_score_dir_point;
-	/*
-	std::ofstream ofs("solusions.csv", std::ios::out | std::ios::app | std::ios::ate);
-	ofs << "point_type.x,point_type.y,direct,rank,point_type.x,point_type.y" << std::endl;
-	for (int i = 0; i < height; ++i)for (int j = 0; j < width; ++j){
-		point_type now_point{ i, j };
-		for (int k = 0; k < 4; ++k){
-			for (int l = 0; l < width*height ; ++l){
-				ofs << now_point.x << "," << now_point.y << "," << k << "," << l << "," << sorted_comparation[now_point][k][l].x << "," << sorted_comparation[now_point][k][l].y << std::endl;
-			}
-		}
-	}
-	std::cout << "Output solusions done." << std::endl;
-	*/
-	
+	sorted_comparation = std::move(sorted_point_score_dir_point);
 }
 Murakami::block_type Murakami::combine_block(const block_combination& block_comb){
 
@@ -356,53 +375,30 @@ Murakami::block_type Murakami::combine_block(const block_combination& block_comb
 	rd.x = std::max(b1_width, block_comb.shift_x + b2_width);
 	rd.y = std::max(b1_height, block_comb.shift_y + b2_height);
 	block_size_type comb_block_size = rd - lu;
-	auto const block1_exists = [b1_height, b1_width, block_comb](int y, int x){
-		if (x >= 0 && x < b1_width && y >= 0 && y < b1_height){
-			if (block_comb.block1[y][x].x != -1 || block_comb.block1[y][x].y != -1){
-				return true;
-			}
-			else{
-				return false;
-			}
-		}
-		else{
-			return false;
-		}
+	auto const block1_exists = [b1_height, b1_width, &block_comb](int y, int x){
+		return ((x >= 0 && x < b1_width && y >= 0 && y < b1_height) && (block_comb.block1[y][x].x != -1 || block_comb.block1[y][x].y != -1));
 	};
-	auto const block2_exists = [b2_height, b2_width, block_comb](int y, int x){
-		if (x >= 0 && x < b2_width && y >= 0 && y < b2_height){
-			if (block_comb.block2[y][x].x != -1 || block_comb.block2[y][x].y != -1){
-				return true;
-			}
-			else{
-				return false;
-			}
-		}
-		else{
-			return false;
-		}
+	auto const block2_exists = [b2_height, b2_width, &block_comb](int y, int x){
+		return ((x >= 0 && x < b2_width && y >= 0 && y < b2_height) && (block_comb.block2[y][x].x != -1 || block_comb.block2[y][x].y != -1));
+
 	};
 	auto const width = data_.split_num.first;
 	auto const height = data_.split_num.second;
 	int l_x = 0, l_y = 0;
-	if (block_comb.shift_x < 0){
-		l_x = -block_comb.shift_x;
-	}
-	if (block_comb.shift_y < 0){
-		l_y = -block_comb.shift_y;
-	}
-
+	if (block_comb.shift_x < 0)l_x = -block_comb.shift_x;
+	if (block_comb.shift_y < 0)l_y = -block_comb.shift_y;
 	std::vector<std::vector<point_type>> return_combined_block(comb_block_size.y, std::vector<point_type>(comb_block_size.x, { -1, -1 }));
+
 	for (int i = lu.y; i < rd.y; i++){
 		for (int j = lu.x; j < rd.x; j++){
 			if (block1_exists(i,j)){
 				return_combined_block[i + l_y][j + l_x] = block_comb.block1[i][j];
-			}
-			else if (block2_exists(i - block_comb.shift_y, j - block_comb.shift_x)){
+			}else if (block2_exists(i - block_comb.shift_y, j - block_comb.shift_x)){
 				return_combined_block[i + l_y][j + l_x] = block_comb.block2[i - block_comb.shift_y][j - block_comb.shift_x];
 			}
 		}
 	}
+
 	return return_combined_block;
 
 }
