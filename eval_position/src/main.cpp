@@ -9,6 +9,7 @@
 #include <boost/spirit/include/qi.hpp>
 #include "ppm_reader.hpp"
 #include "pixel_sorter.hpp"
+#include "sort_algorithm/yrange2.hpp"
 
 namespace fs = boost::filesystem;
 namespace qi = boost::spirit::qi;
@@ -57,7 +58,7 @@ private:
     fs::ofstream ofs_;
 };
 
-boost::optional<typename pixel_sorter::return_type> read_answer(fs::path const& path, int const width, int const height)
+boost::optional<std::vector<std::vector<point_type>>> read_answer(fs::path const& path, int const width, int const height)
 {
     std::vector<std::vector<point_type>> ret;
     ret.reserve(height);
@@ -110,7 +111,8 @@ namespace clammbon{
 
 int main(int argc, char *argv[])
 {
-    pixel_sorter sorter;
+    ppm_reader reader;
+    pixel_sorter<yrange2> sorter;
     csv_manager csv("report.csv");
 
     if(argc != 2)
@@ -145,9 +147,9 @@ int main(int argc, char *argv[])
         }
 
         // 問題を解く
-        ppm_reader reader(filepath.string());
-        auto const raw_question = reader();
-        auto const proposed_answers = sorter.proposed_answer(raw_question); // TODO: sorterはただ1つの解答を返すべき
+        auto const raw_question = reader.from_file(filepath.string());
+        auto const splitted = splitter().split_image(raw_question);
+        auto const proposed_answers = sorter.proposed_answer(raw_question, splitted); // TODO: sorterはただ1つの解答を返すべき
 
         // 解答ファイルを読み取る
         auto const correct_answer = read_answer(answer_filename, raw_question.split_num.first, raw_question.split_num.second);
@@ -160,7 +162,7 @@ int main(int argc, char *argv[])
         // 正しいものの数を数える
         int correct = 0;
         for(int i=0; i<proposed_answers.size(); ++i)
-            if(proposed_answers[i] == *correct_answer)
+            if(proposed_answers[i].points == *correct_answer)
                 ++correct;
 
         csv.push(filepath.stem().string(), proposed_answers.size(), correct);

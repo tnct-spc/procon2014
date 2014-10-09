@@ -1,31 +1,19 @@
-CXX ?= clang++
-AR := ar
+include ../makefile.in
 
-buildtype := release
 OUTDIR := ../lib
-
 ifeq ($(buildtype),release)
 	TARGET = libclammbon.a
 else ifeq ($(buildtype),debug)
 	TARGET = libclammbond.a
 endif
 
-SRCS := src/splitter.cpp src/ppm_reader.cpp src/pixel_sorter.cpp src/algorithm.cpp
+SRCS := src/splitter.cpp src/ppm_reader.cpp src/algorithm.cpp src/algorithm_2.cpp src/network.cpp src/gui.cpp src/sort_algorithm/adjacent.cpp src/sort_algorithm/compare.cpp src/test_tool.cpp src/sort_algorithm/genetic.cpp src/sort_algorithm/yrange2.cpp src/sort_algorithm/yrange5.cpp src/sort_algorithm/Murakami.cpp
 PROG := $(OUTDIR)/$(TARGET)
 OBJS := $(SRCS:src/%.cpp=obj/$(buildtype)/%.o)
 DEPS := $(SRCS:src/%.cpp=obj/$(buildtype)/%.d)
-LIBS :=
 
-CXXFLAGS += -std=c++11
+CXXFLAGS +=
 CPPFLAGS += -Iinclude
-LDFLAGS  +=
-ifeq ($(buildtype),release)
-	CXXFLAGS += -O3
-else ifeq ($(buildtype),debug)
-	CXXFLAGS += -O0 -g -D_DEBUG
-else
-	$(error buildtype must be release, debug, profile or coverage)
-endif
 
 .PHONY: all clean distclean
 

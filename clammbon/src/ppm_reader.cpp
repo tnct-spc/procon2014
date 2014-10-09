@@ -2,52 +2,63 @@
 #define _SCL_SECURE_NO_WARNINGS
 #include <boost/algorithm/string.hpp>
 
-#include <boost/noncopyable.hpp>
+#include <iterator>
+#include <opencv2/opencv.hpp>
 #include "data_type.hpp"
 #include "ppm_reader.hpp"
 
-ppm_reader::ppm_reader(std::string const& filepath)
-    : filepath_(filepath)
-{
-}
+#ifdef _DEBUG
+#include <iostream>
+#endif
 
+ppm_reader::ppm_reader() = default;
 ppm_reader::~ppm_reader() = default;
 
-question_raw_data ppm_reader::operator() ()
+question_raw_data ppm_reader::from_data(std::string const& data)
 {
-    //if(!boost::filesystem::exists(filepath_))
-    //{
-    //    std::string const message = "Not found: " + filepath_.string() + "\n";
-    //    std::cout << message << std::flush;
-    //    throw std::runtime_error(message);
-    //}
+    question_raw_data out;
 
-    question_raw_data raw_data;
+    read_header(out, data);
+    read_body  (out, data);
 
-    ifs_.open(filepath_, std::ios::binary | std::ios::in);
-    if(!ifs_.is_open())
+    return out;
+}
+
+question_raw_data ppm_reader::from_file(std::string const& path)
+{
+    // pathのオープン
+    std::ifstream ifs(path, std::ios::binary | std::ios::in);
+    if(!ifs.is_open())
     {
-        std::string const message = "Not found: " + filepath_ + "\n";
+        std::string const message = "Not found: " + path + "\n";
+#ifdef _DEBUG
+        std::cout << message << std::flush;
+#endif
         throw std::runtime_error(message);
     }
 
-    read_header(raw_data);
-    read_body(raw_data);
-    ifs_.close();
+    // イテレータで全てをvectorに
+    std::string data(
+        (std::istreambuf_iterator<char>(ifs)),
+        (std::istreambuf_iterator<char>())
+        );
 
-    return raw_data;
+    // 委託
+    return from_data(data);
 }
 
-void ppm_reader::read_header(question_raw_data& output)
+void ppm_reader::read_header(question_raw_data& out, std::string const& src)
 {
     int state = 0; // state == line_num
     std::string line;
+
     std::vector<std::string> spilited;
     spilited.reserve(3);
 
+    std::istringstream iss(src);
     while(state <= 5)
     {
-        std::getline(ifs_, line);
+        std::getline(iss, line);
 
         // header line
         switch(state)
@@ -60,30 +71,30 @@ void ppm_reader::read_header(question_raw_data& output)
         case 1:
             // 分割数
             boost::algorithm::split(spilited, line, boost::is_any_of(" "));
-            output.split_num = std::pair<int,int>(std::stoi(spilited[1]), std::stoi(spilited[2]));
+            out.split_num = std::pair<int,int>(std::stoi(spilited[1]), std::stoi(spilited[2]));
             break;
 
         case 2:
             // 選択可能回数
             boost::algorithm::split(spilited, line, boost::is_any_of(" "));
-            output.selectable_num = std::stoi(spilited[1]);
+            out.selectable_num = std::stoi(spilited[1]);
             break;
 
         case 3:
             // コスト交換レート
             boost::algorithm::split(spilited, line, boost::is_any_of(" "));
-            output.cost = std::pair<int,int>(std::stoi(spilited[1]), std::stoi(spilited[2]));
+            out.cost = std::pair<int,int>(std::stoi(spilited[1]), std::stoi(spilited[2]));
             break;
 
         case 4:
             // ピクセル数
             boost::algorithm::split(spilited, line, boost::is_any_of(" "));
-            output.size = std::pair<int,int>(std::stoi(spilited[0]), std::stoi(spilited[1]));
+            out.size = std::pair<int,int>(std::stoi(spilited[0]), std::stoi(spilited[1]));
             break;
 
         case 5:
             // 最大輝度
-            output.max_brightness = std::stoi(line);
+            out.max_brightness = std::stoi(line);
             break;
 
         default:
@@ -96,22 +107,11 @@ void ppm_reader::read_header(question_raw_data& output)
     return;
 }
 
-void ppm_reader::read_body(question_raw_data& output)
+void ppm_reader::read_body(question_raw_data& out, std::string const& src)
 {
-    std::vector<uint8_t> data(output.size.first * 3);
-
-    for(int i=0; i<output.size.second; ++i)
-    {
-        ifs_.read(reinterpret_cast<char*>(data.data()), output.size.first * 3);
-
-        std::vector<pixel_type> pixel_line;
-        pixel_line.reserve(output.size.first);
-
-        for(int j=0; j<output.size.first; ++j)
-            pixel_line.push_back(pixel_type{data[j*3+0], data[j*3+1], data[j*3+2]});
-
-        output.pixels.push_back(std::move(pixel_line));
-    }
-
+    // std::string -> std::vector -> cv::Mat
+    std::vector<unsigned char> data(src.cbegin(), src.cend());
+    out.pixels = cv::imdecode(cv::Mat(data), 1);
     return;
 }
+

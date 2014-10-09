@@ -1,27 +1,17 @@
-CXX ?= clang++
+include ../makefile.in
 
-buildtype := release
 OUTDIR := ../bin/$(buildtype)
-
 TARGET = procon
+
 SRCS := src/main.cpp
 PROG := $(OUTDIR)/$(TARGET)
 OBJS := $(SRCS:src/%.cpp=obj/$(buildtype)/%.o)
 DEPS := $(SRCS:src/%.cpp=obj/$(buildtype)/%.d)
-LIBS :=
 
-CXXFLAGS += -std=c++11
-CPPFLAGS += -I../clammbon/include
-LDFLAGS  += -L../lib
-ifeq ($(buildtype),release)
-	CXXFLAGS += -O3
-	LIBS += -lclammbon
-else ifeq ($(buildtype),debug)
-	CXXFLAGS += -O0 -g -D_DEBUG
-	LIBS += -lclammbond
-else
-	$(error buildtype must be release, debug, profile or coverage)
-endif
+CXXFLAGS +=
+CPPFLAGS += -Iinclude
+LDFLAGS  +=
+LIBS     += -lboost_system -lboost_thread -lboost_coroutine -lboost_timer -lpthread -lcppnetlib-server-parsers -lcppnetlib-client-connections -lcppnetlib-uri -lcrypto -lssl
 
 .PHONY: all clean distclean
 
@@ -34,7 +24,7 @@ clammbon :
 
 $(PROG) : $(OBJS) clammbon
 	@if [ ! -e `dirname $@` ]; then mkdir -p `dirname $@`; fi
-	$(CXX) $(LDFLAGS) -o $@ $(OBJS) $(LIBS)
+	$(CXX) -o $@ $(OBJS) $(LIBS) $(LDFLAGS)
 
 obj/$(buildtype)/%.o : src/%.cpp
 	@if [ ! -e `dirname $@` ]; then mkdir -p `dirname $@`; fi
