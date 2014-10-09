@@ -65,7 +65,7 @@ void ppm_reader::read_header(question_raw_data& out, std::string const& src)
         {
         case 0:
             // PPM type
-            if(line != "P6") throw std::runtime_error("Not support type: PPM is not P6.");
+            if(line != "P6") throw std::runtime_error("PPM type not supported: " + line);
             break;
 
         case 1:

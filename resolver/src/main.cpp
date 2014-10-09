@@ -88,6 +88,9 @@ public:
 		if (!data_.block.empty())windows.push_back(
 			gui::make_mansort_window(split_image_, data_.block, "Murakami")
             );
+		if(data_.block.empty())windows.push_back(
+			gui::make_mansort_window(split_image_, "You are the sorter!")
+	    );
         boost::thread th(
             [&]()
             {
@@ -195,7 +198,7 @@ question_data convert_block(question_data const& data)
 
 int main()
 {
-    auto const ploblemid = 1;
+    auto const ploblemid = 0;
     auto const token     = "3935105806";
 
     analyzer         analyze(ploblemid, token);
