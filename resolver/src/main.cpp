@@ -70,7 +70,6 @@ public:
         raw_data_ = get_raw_question();
         data_     = get_skelton_question(raw_data_);
         
-std::cout << "Start";
         // 2次元画像に分割
         split_image_ = splitter().split_image(raw_data_);
         // 原画像推測部
@@ -205,7 +204,7 @@ int main()
 
     boost::thread thread(boost::bind(&analyzer::operator(), &analyze, std::ref(manager)));
 
-    while(true)
+    while(thread.joinable())
     {
         if(!manager.empty())
         {
