@@ -49,7 +49,10 @@ namespace impl
         void release_box(int const button, point_type const& event_box);
 		void devmatrix(int event_key);
 
-        bool border_check(int const x, int const y);          // TrueならWindow内
+        // TrueならWindow内
+        bool border_check(point_type const& point);
+        bool border_check(int const x, int const y);
+
         point_type window_to_point(int const x, int const y); // Window上の座標から，point_typeを算出
         int handle(int event) override;
         void show() override;
@@ -316,19 +319,20 @@ namespace impl
                 point_type const dest_begin = select_begin_ + direction;
                 point_type const dest_end   = select_end_   + direction;
                 
-                if(!border_check(dest_begin.x, dest_begin.y) || !border_check(dest_end.x, dest_end.y))
+                if(!border_check(dest_begin) || !border_check(dest_end))
                 {
                     // 移動が範囲外になる
                     return;
                 }
 
                 // swap順序を決める
+                point_type const select_size = select_end_ - select_begin_;
                 auto const xrange = (direction.x > 0)
-                    ? boost::irange<int>(direction.x, -1, -1)
-                    : boost::irange<int>(0, std::abs(direction.x) + 1, 1);
+                    ? boost::irange<int>(select_size.x, -1, -1)
+                    : boost::irange<int>(0, select_size.x + 1, 1);
                 auto const yrange = (direction.y > 0)
-                    ? boost::irange<int>(direction.y, -1, -1)
-                    : boost::irange<int>(0, std::abs(direction.y) + 1, 1);
+                    ? boost::irange<int>(select_size.y, -1, -1)
+                    : boost::irange<int>(0, select_size.y + 1, 1);
 
                 // swap及び，選択範囲の更新
                 range_swap(select_begin_, dest_begin, xrange, yrange);
@@ -361,6 +365,14 @@ namespace impl
                 select_end_   = new_end;
             }
         }
+    }
+    
+    bool MoveWindow::border_check(point_type const& point)
+    {
+        int const x_width = positions_.at(0).size();
+        int const y_width = positions_      .size();
+
+        return (point.x >= 0 && point.x < x_width && point.y >= 0 && point.y < y_width);
     }
 
     bool MoveWindow::border_check(int const x, int const y)
