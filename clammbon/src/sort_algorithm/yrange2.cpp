@@ -237,7 +237,6 @@ std::vector<answer_type_y> yrange2::operator() ()
 			}
 		}
 	}
-	//#########################################################yrange2.5#########################################################//
 
 	//現段階で重複しているものは1つに絞る
 	// unique()を使う準備としてソートが必要
@@ -270,7 +269,7 @@ std::vector<answer_type_y> yrange2::operator() ()
 	}
 
 #ifdef _DEBUG
-    std::cout << "There are " << yrange2_ans << " solutions" << std::endl;
+    std::cout << "There are " << yrange2_ans << " solutions by yrange2." << std::endl;
 	for (auto const& one_answer : answer)
 	{
 		for (int i = 0; i < one_answer.points.size(); ++i)
