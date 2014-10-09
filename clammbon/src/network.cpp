@@ -107,7 +107,7 @@ namespace network
     {
         std::unordered_map<std::string, std::string> content_list;
         content_list["playerid"] = player_id;
-        content_list["problemid"] = std::to_string(problem_id);
+        content_list["problemid"] = (boost::format("%02d") % problem_id).str();
         content_list["answer"] = answer;
 
         auto const url  = (boost::format("http://%s%s") % server_host_ % submit_path_).str();

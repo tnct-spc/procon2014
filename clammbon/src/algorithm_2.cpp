@@ -293,7 +293,6 @@ auto algorithm_2::get() -> boost::optional<answer_type>
 	answer_type answerlist;
 	point_type position;
 	std::ostringstream stream;
-	answerlist.list.resize(1024);//š™
 	int pos = 0;
 	for (int count=0; pos < get_history.size();count++){
 		position.y = get_history[pos];
@@ -321,7 +320,7 @@ auto algorithm_2::get() -> boost::optional<answer_type>
 			}
 			pos++;
 		}
-		answerlist.list[count] = { position, stream.str() };
+		answerlist.list.push_back({ position, stream.str() });
 		stream.str("");
 	}
 	return answerlist;
