@@ -166,11 +166,7 @@ void algorithm::impl::operator() (boost::coroutines::coroutine<return_type>::pus
 #ifndef NDEBUG
     print(matrix);
 #endif
-    try {
-        yield(solve());
-    } catch (std::runtime_error const& e) {
-        std::cerr << "Couldn't solve the problem." << std::endl;
-    }
+    yield(solve());
 }
 
 // move_selecting {{{2
@@ -320,6 +316,9 @@ const answer_type algorithm::impl::solve()
     for (;;) {
         // 残りが BFS_NUM x BFS_NUM の場合は Brute-Force
         if (height - sorted_row <= BFS_NUM && width - sorted_col <= BFS_NUM) {
+#ifndef NDEBUG
+            std::cout << "start brute_force solving" << std::endl;
+#endif
             brute_force();
             break;
         }
@@ -467,10 +466,16 @@ void algorithm::impl::greedy()
             }
             move_selecting<'D', 'R'>();
         } else if (selecting_cur.x > 1 && selecting_cur.y > 1) {
+            std::cout << "selecting_cur : " << selecting_cur << ", target : " << target << std::endl;
             if (target.x == width - 2 && matrix[selecting_cur.y - 1][selecting_cur.x - 1] == target.right()) {
+                std::cout << "SPECIAL CASE 1" << std::endl;
                 move_selecting<'L', 'U', 'R', 'D', 'L', 'D', 'R', 'U', 'U', 'L', 'D', 'R', 'D'>();
             } else if (target.y == height - 2 && matrix[selecting_cur.y - 1][selecting_cur.x - 1] == target.down()) {
+                std::cout << "SPECIAL CASE 2" << std::endl;
                 move_selecting<'U', 'L', 'D', 'R', 'U', 'R', 'D', 'L', 'L', 'U', 'R', 'D', 'R'>();
+            } else if (selecting_cur.x == width - 2 && target.x == width - 2 && matrix[selecting_cur.y + 1][selecting_cur.x] == target.right()) {
+                std::cout << "SPECIAL CASE 3" << std::endl;
+                move_selecting<'R', 'D', 'D', 'L', 'U', 'R', 'U', 'L', 'D', 'D', 'D', 'R', 'U', 'L', 'U', 'R'>();
             }
         }
 
@@ -558,6 +563,9 @@ void algorithm::impl::brute_force()
 // move_target {{{2
 void algorithm::impl::move_target(point_type const& target, char const& direction)
 {
+#ifndef NDEBUG
+    std::cout << "move_target " << target << " " << direction << std::endl;
+#endif
     // selecting の操作によって原座標が target である断片画像を指定の方向へ移動させる.
 
     // target の現在の座標
