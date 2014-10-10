@@ -4,6 +4,8 @@
 #include <vector>
 #include <iomanip>
 #include "data_type.hpp"
+#include <boost/container/set.hpp>
+#include <set>
 
 //収納配列
 class heap
@@ -34,6 +36,22 @@ private:
 	std::vector<int> LIST;
 	std::vector<bool> LIST_OC;
 	std::vector<int> oya;
+
+	class NODE{
+	public:
+		//コンストラクタ
+		NODE(std::vector<int> iti, int n) :hairetu(iti), pos(n){}
+
+		//変数
+		std::vector<int> hairetu;
+		int pos;
+
+		friend inline bool operator< (NODE const& lhs, NODE const& rhs)
+		{
+			return (lhs.hairetu == rhs.hairetu) ? lhs.hairetu < rhs.hairetu : lhs.hairetu < rhs.hairetu;
+		}
+	};
+	std::set<heap::NODE> NODE_;
 };
 
 
@@ -55,8 +73,8 @@ private:
 	//std::vector<std::vector<uint8_t>> goal_distance;
 
 	const int goal = 10;
-	const int sentaku = 11;
-	const int coukan = 11;
+	const int sentaku = 15;
+	const int coukan = 10;
 	//1,1,1		ノーマル
 	//10,5,3	選択が短いのを作れた
 	//10 8 4

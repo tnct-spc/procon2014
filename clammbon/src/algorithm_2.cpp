@@ -59,48 +59,43 @@ void heap::pop(int *in_cost, std::vector<int> &in_table, std::vector<int> &in_hi
 		std::cout << ">< heap.cpp vector pass1,000,000" << std::endl;
 #endif
 	}
-	if (size % 1000 == 0)std::cout << "1000" << std::endl;//☆デバッグ
+	//if (size % 1000 == 0)std::cout << "1000" << std::endl;//☆デバッグ
 	//重複確認2
 	bool ok = true;
-	int itticount;
+	int sizepos;
 	//★ここがめっちゃ重いので変える
-	for (int i = 0; i < size; i++){
-		itticount = 0;
-		for (j = 0; j < yx; j++){
-			if (in_table[j] == table[i][j])itticount++;//ヤバイ
-		}
-		if (itticount == yx){ //テーブルが一致した
-			ok = false;
-			if (*in_cost < cost[i]){
-				//このノードがiのテーブルよりコストが低い
-				//★ラベルつけてあとで消したほうがいいかも？
-				if (LIST_OC[i] == true){
-					//このノードと同じテーブルがOpenリストに含まれている
-					//◆書き換え
-					cost[i] = *in_cost;
-					oya[i] = *in_oya;
-					//★historyは後で廃止する予定取り敢えずこれで。
-					history_limit[i] = *in_history_limit;
-					history[i].resize(history_limit[i]);
-					for (int m = 0; m < history_limit[i]; m++){
-						history[i][m] = in_history[m];
-					}
-				}
-				else{
-					//このノードと同じテーブルがCloseリストに含まれている
-					//◆書き換え
-					LIST_OC[i] = true;
-					cost[i] = *in_cost;
-					oya[i] = *in_oya;
-					//★historyは後で廃止する予定取り敢えずこれで。
-					history_limit[i] = *in_history_limit;
-					history[i].resize(history_limit[i]);
-					for (int m = 0; m < history_limit[i]; m++){
-						history[i][m] = in_history[m];
-					}
+	auto match_pos = NODE_.find(NODE{in_table,0});//TEの第二引数は関係ない
+	if (match_pos != NODE_.end()){ //テーブルが一致した
+		sizepos = match_pos->pos;
+		ok = false;
+		if (*in_cost < cost[sizepos]){
+			//このノードがiのテーブルよりコストが低い
+			//★ラベルつけてあとで消したほうがいいかも？
+			if (LIST_OC[sizepos] == true){
+				//このノードと同じテーブルがOpenリストに含まれている
+				//◆書き換え
+				cost[sizepos] = *in_cost;
+				oya[sizepos] = *in_oya;
+				//★historyは後で廃止する予定取り敢えずこれで。
+				history_limit[sizepos] = *in_history_limit;
+				history[sizepos].resize(history_limit[sizepos]);
+				for (int m = 0; m < history_limit[sizepos]; m++){
+					history[sizepos][m] = in_history[m];
 				}
 			}
-			break;
+			else{
+				//このノードと同じテーブルがCloseリストに含まれている
+				//◆書き換え
+				LIST_OC[sizepos] = true;
+				cost[sizepos] = *in_cost;
+				oya[sizepos] = *in_oya;
+				//★historyは後で廃止する予定取り敢えずこれで。
+				history_limit[sizepos] = *in_history_limit;
+				history[sizepos].resize(history_limit[sizepos]);
+				for (int m = 0; m < history_limit[sizepos]; m++){
+					history[sizepos][m] = in_history[m];
+				}
+			}
 		}
 	}
 	if (ok == true){
@@ -120,6 +115,9 @@ void heap::pop(int *in_cost, std::vector<int> &in_table, std::vector<int> &in_hi
 		for (i = 0; i < yx; i++){
 			table[size][i] = in_table[i];
 		}
+
+		//NODEに挿入
+		NODE_.insert(NODE(table[size], size));
 
 		//OPEN_LIST挿入
 		LIST_OC[size] = true;
