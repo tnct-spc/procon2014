@@ -102,12 +102,15 @@ public:
 		boost::thread y5_th(
 			[&]()
 		{
-			auto yrange5_resolve = yrange5(raw_data_, image_comp)(yrange2_.sorted_matrix())[0].points;
+			auto yrange5_resolve = yrange5(raw_data_, image_comp)(yrange2_.sorted_matrix());
 			if (!yrange5_resolve.empty())
 			{
-				windows.push_back(
-					gui::make_mansort_window(split_image_, yrange5_resolve, "yrange5")
-					);
+				for (auto const& one_y5 : yrange5_resolve)
+				{
+					windows.push_back(
+						gui::make_mansort_window(split_image_, one_y5.points, "yrange5")
+						);
+				}
 			}
 		});
 
@@ -120,14 +123,14 @@ public:
                 {
                      for(auto it = windows.begin(); it != windows.end();)
                     {
-                        auto res = gui::get_result(*it);
-                        if(res)
-                        {
-                            data_.block = res.get();
-                            manager.add(convert_block(data_)); // 解答
+                         auto res = gui::get_result(*it);
+						 if (res)
+						 {
+							 data_.block = res.get();
+							 manager.add(convert_block(data_)); // 解答
 
-                            it = windows.erase(it);
-                        }
+							 it = windows.erase(it);
+						 }
                         else ++it;
                     }
                 }
