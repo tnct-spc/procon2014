@@ -79,8 +79,8 @@ public:
         Murakami murakami_(raw_data_, image_comp);
 		
 		std::vector<std::vector<point_type>> yrange2_resolve;
-		if (yrange2_().size() != 0) yrange2_resolve = yrange2_()[0].points;
-        auto mirakami_resolve = murakami_()[0].points;
+		if (!yrange2_().empty())yrange2_resolve = yrange2_()[0].points;
+        auto murakami_resolve = murakami_()[0].points;
 
         data_.block = yrange2_resolve;
         if(!data_.block.empty())manager.add(convert_block(data_)); // 解答
@@ -90,30 +90,27 @@ public:
 		if (!yrange2_resolve.empty())windows.push_back(
             gui::make_mansort_window(split_image_, yrange2_resolve, "yrange2")
             );
-		if (!mirakami_resolve.empty())windows.push_back(
-            gui::make_mansort_window(split_image_, mirakami_resolve, "Murakami")
+		if (!murakami_resolve.empty())windows.push_back(
+            gui::make_mansort_window(split_image_, murakami_resolve, "Murakami")
             );
-		if (yrange2_resolve.empty() && mirakami_resolve.empty()){//どっちもダメだった時
+		if (yrange2_resolve.empty() && murakami_resolve.empty()){//どっちもダメだった時
 			windows.push_back(
 				gui::make_mansort_window(split_image_, "Yor are the sorter!!! Sort this!")
 				);
 		}
 
-        boost::thread y5_th(
-            [&]()
-            {
-				std::vector<std::vector<point_type>> yrange5_resolve;
-				if (yrange5(raw_data_, image_comp)(yrange2_.sorted_matrix()).size() != 0)
-				{
-					yrange5_resolve = yrange5(raw_data_, image_comp)(yrange2_.sorted_matrix())[0].points;
-				}
-                if (!yrange5_resolve.empty())
-                {
-                    windows.push_back(
-                        gui::make_mansort_window(split_image_, yrange5_resolve, "yrange5")
-                    );
-                }
-            });
+		boost::thread y5_th(
+			[&]()
+		{
+			auto yrange5_resolve = yrange5(raw_data_, image_comp)(yrange2_.sorted_matrix())[0].points;
+			if (!yrange5_resolve.empty())
+			{
+				windows.push_back(
+					gui::make_mansort_window(split_image_, yrange5_resolve, "yrange5")
+					);
+			}
+		});
+
 
         boost::thread th(
             [&]()
