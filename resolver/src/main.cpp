@@ -121,16 +121,11 @@ public:
                 // futureリストでvalidを巡回し，閉じられたWindowから解とする
                 while(!windows.empty())
                 {
-                    for(auto it = windows.begin(); it != windows.end();)
+                     for(auto it = windows.begin(); it != windows.end();)
                     {
                         auto res = gui::get_result(*it);
                         if(res)
                         {
-							if (res.get().size() == 0)
-							{
-								//TODO:man sorterの答え受け取るのはこのタイミングが良いのではないだろうか．
-								continue;
-							}
                             data_.block = res.get();
                             manager.add(convert_block(data_)); // 解答
 
