@@ -33,7 +33,6 @@ private:
 	std::vector<int>history_limit;
 	std::vector< std::vector<int> > table;
 
-	std::vector<int> LIST;
 	std::vector<bool> LIST_OC;
 	std::vector<int> oya;
 
@@ -73,7 +72,7 @@ private:
 	//std::vector<std::vector<uint8_t>> goal_distance;
 
 	const int goal = 10;
-	const int sentaku = 15;
+	const int sentaku = 10;
 	const int coukan = 10;
 	//1,1,1		ƒm[ƒ}ƒ‹
 	//10,5,3	‘I‘ğ‚ª’Z‚¢‚Ì‚ğì‚ê‚½

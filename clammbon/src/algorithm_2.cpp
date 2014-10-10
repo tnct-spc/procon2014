@@ -35,7 +35,6 @@ void heap::setup(const int *in_y, const int *in_x){
 	heaptable.resize(1000000);
 
 	oya.resize(1000000);
-	LIST.resize(1000000);
 	LIST_OC.resize(1000000);
 }
 void heap::pop(int *in_cost, std::vector<int> &in_table, std::vector<int> &in_history, int *in_history_limit, int *in_oya){
@@ -52,8 +51,7 @@ void heap::pop(int *in_cost, std::vector<int> &in_table, std::vector<int> &in_hi
 		table.resize(1000000 * sizemaxcount, std::vector<int>(y*x));
 		heaptable.resize(1000000 * sizemaxcount);
 
-		oya.resize(1000000);
-		LIST.resize(1000000 * sizemaxcount);
+		oya.resize(1000000 * sizemaxcount);
 		LIST_OC.resize(1000000 * sizemaxcount);
 #ifdef debug
 		std::cout << ">< heap.cpp vector pass1,000,000" << std::endl;
@@ -121,7 +119,6 @@ void heap::pop(int *in_cost, std::vector<int> &in_table, std::vector<int> &in_hi
 
 		//OPEN_LISTë}ì¸
 		LIST_OC[size] = true;
-		LIST[size] = size;
 
 		//ÉqÅ[ÉvîzóÒë}ì¸
 		while (1){
