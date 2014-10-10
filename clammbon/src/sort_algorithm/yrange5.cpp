@@ -99,6 +99,7 @@ yrange5::yrange5(question_raw_data const& data, compared_type const& comp)
 
 std::vector<answer_type_y> yrange5::operator() (std::vector<std::vector<std::vector<point_type>>> const& mother_matrix)
 {
+	
 	auto const width = data_.split_num.first;
 	auto const height = data_.split_num.second;
 	constexpr int paramerter = 50;
@@ -109,12 +110,13 @@ std::vector<answer_type_y> yrange5::operator() (std::vector<std::vector<std::vec
 	};
 
 	std::vector<kind_rgb>kind_rgb_vector(width*height);
-	std::vector<answer_type_y> to_iddfs;//kid_rgbで選考したもの入れとく
+	std::vector<answer_type_y> to_y5;
+	to_y5.reserve(width*height * 4);
 	std::vector<answer_type_y> answer;
 	answer.reserve(height*width * 2);
 	splitter sp;
 
-#pragma omp parallel for
+//#pragma omp parallel for
 	for (int c = 0; c < mother_matrix.size(); ++c)
 	{
 		//kind_rgb選考
@@ -124,37 +126,31 @@ std::vector<answer_type_y> yrange5::operator() (std::vector<std::vector<std::vec
 			kind_rgb_vector[j * height + i].kind = get_kind_num(data_, mother_matrix.at(c), j, i);
 			kind_rgb_vector[j * height + i].score = (width*height - kind_rgb_vector[j * height + i].kind + 1) * range_evaluate(data_, comp_, mother_matrix.at(c), j, i);
 		}
-	}
 
-	std::sort(kind_rgb_vector.begin(), kind_rgb_vector.end());
+		std::sort(kind_rgb_vector.begin(), kind_rgb_vector.end());
 
-	for (int k = 0; k < kind_rgb_vector.size() / paramerter; k++)
-	{
-		std::vector<std::vector <point_type>> ans_temp2;
-		for (int i = 0; i < height; ++i)
-		{
-			std::vector<point_type>ans_temp1;
-			for (int j = 0; j < width; ++j)
+		for (int k = 0; k < kind_rgb_vector.size() / paramerter; k++){
+			std::vector<std::vector <point_type>> ans_temp(height, std::vector<point_type>(width));
+			for (int i = 0; i < height; ++i) for (int j = 0; j < width; ++j)
 			{
-				ans_temp1.push_back(mother_matrix.at(k)[kind_rgb_vector[k].y + i][kind_rgb_vector[k].x + j]);
+				ans_temp[i][j] = mother_matrix.at(c)[kind_rgb_vector[k].y + i][kind_rgb_vector[k].x + j];
 			}
-			ans_temp2.push_back(ans_temp1);
+			to_y5.push_back(answer_type_y{ std::move(ans_temp), 0, cv::Mat() });
 		}
-		to_iddfs.push_back(answer_type_y{ ans_temp2, 0, cv::Mat() });
 	}
-
+	
 	//yrange5メインループ
-#pragma omp parallel for
-	for (int c = 0; c < to_iddfs.size(); ++c)
+//#pragma omp parallel for
+	for (int c = 0; c < to_y5.size(); ++c)
 	{
 		//重複して入っているもののうち，悪い方を{width,height}に置き換え,今使われていないものを返す
-		std::vector<point_type> usable = std::move(duplicate_delete(comp_, to_iddfs.at(c).points));
+		std::vector<point_type> usable = std::move(duplicate_delete(comp_, to_y5.at(c).points));
 		//It's show time!
 		for (int i = 0; i < height; ++i)for (int j = 0; j < width; ++j)
 		{
 			std::vector<std::vector<point_type>> sorted_matrix(height, std::vector<point_type>(width, point_type{ width, height }));
 			//全部並べ切れたら
-			if (!try_matrix_copy(sorted_matrix, to_iddfs.at(c).points, point_type{ j, i }))
+			if (!try_matrix_copy(sorted_matrix, to_y5.at(c).points, point_type{ j, i }))
 			{
 				//抜けてるところを並べていく
 				point_type const invalid_val = { width, height };
@@ -239,7 +235,7 @@ std::vector<answer_type_y> yrange5::operator() (std::vector<std::vector<std::vec
 				//gui::combine_show_image(data_, comp_, sorted_matrix);
 				if (array_sum(sorted_matrix, 0, 0, height, width) == ((width*height - 1)*(width*height) / 2) && get_kind_num(data_, sorted_matrix, 0, 0) == width*height)
 				{
-					answer.push_back(answer_type_y{ sorted_matrix, 0, cv::Mat() });
+					answer.push_back(answer_type_y{ sorted_matrix, form_evaluate(data_,comp_,sorted_matrix), cv::Mat() });
 				}
 			}
 		}
@@ -251,12 +247,12 @@ std::vector<answer_type_y> yrange5::operator() (std::vector<std::vector<std::vec
 	// unique()をしただけでは後ろにゴミが残るので、eraseで削除する
 	answer.erase(std::unique(answer.begin(), answer.end()), answer.end());
 
-#pragma omp parallel for
-	for (int c = 0; c < answer.size(); ++c)
-	{
-		row_column_replacement(answer.at(c));
-	}
-	
+////#pragma omp parallel for
+//	for (int c = 0; c < answer.size(); ++c)
+//	{
+//		row_column_replacement(answer.at(c));
+//	}
+//	
 	//無駄に多く返してもしょうがないので枝抜き
 	size_t yrange5_ans = answer.size();
 	std::sort(answer.begin(), answer.end(), [](answer_type_y a, answer_type_y b){return a.score < b.score; });
