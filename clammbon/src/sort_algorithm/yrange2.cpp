@@ -7,6 +7,7 @@
 #include <algorithm>
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
+#include <omp.h>
 #include <data_type.hpp>
 #include <sort_algorithm/compare.hpp>
 #include <sort_algorithm/adjacent.hpp>
@@ -220,10 +221,7 @@ std::vector<answer_type_y> yrange2::operator() ()
 			else
 				break;
 		}
-	}
 
-	for (int c = 0; c < height*width; ++c)
-	{
 		for (int y = 0; y < height; ++y) for (int x = 0; x < width; ++x)
 		{
 			if (array_sum(sorted_matrix.at(c), x, y, height, width) == ((width*height - 1)*(width*height) / 2) && get_kind_num(data_, sorted_matrix.at(c), x, y) == width*height)
@@ -233,7 +231,9 @@ std::vector<answer_type_y> yrange2::operator() ()
 				{
 					one_answer[i][j] = sorted_matrix.at(c)[y + i][x + j];
 				}
+				omp_set_lock(&ol);
 				answer.push_back(answer_type_y{ one_answer, 0, cv::Mat() });
+				omp_unset_lock(&ol);
 			}
 		}
 	}
@@ -261,14 +261,14 @@ std::vector<answer_type_y> yrange2::operator() ()
 	std::sort(answer.begin(), answer.end(), [](answer_type_y a, answer_type_y b){return a.score < b.score; });
 	if (answer.size() >= yrange2_show_ans) answer.resize(yrange2_show_ans);
 
-	//一枚のcv::Matにする
-#pragma omp parallel for
-	for (int c = 0; c < answer.size(); ++c)
-	{
-		answer.at(c).mat_image = std::move(combine_image(answer.at(c)));
-	}
-
 #ifdef _DEBUG
+//	//一枚のcv::Matにする
+//#pragma omp parallel for
+//	for (int c = 0; c < answer.size(); ++c)
+//	{
+//		answer.at(c).mat_image = std::move(combine_image(answer.at(c)));
+//	}
+
     std::cout << "There are " << yrange2_ans << " solutions by yrange2." << std::endl;
 	for (auto const& one_answer : answer)
 	{
@@ -283,7 +283,7 @@ std::vector<answer_type_y> yrange2::operator() ()
 		}
 		std::cout << "score = " << one_answer.score << std::endl;
 	}
-	gui::show_image(data_, comp_, answer);
+	//gui::show_image(data_, comp_, answer);
 #endif
 	return answer;
 }
