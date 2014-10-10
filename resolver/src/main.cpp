@@ -77,7 +77,9 @@ public:
         // 原画像推測部
         yrange2 yrange2_(raw_data_, image_comp);
         Murakami murakami_(raw_data_, image_comp);
-        auto yrange2_resolve = yrange2_()[0].points;
+		
+		std::vector<std::vector<point_type>> yrange2_resolve;
+		if (yrange2_().size() != 0) yrange2_resolve = yrange2_()[0].points;
         auto mirakami_resolve = murakami_()[0].points;
 
         data_.block = yrange2_resolve;
@@ -100,7 +102,11 @@ public:
         boost::thread y5_th(
             [&]()
             {
-                auto yrange5_resolve = yrange5(raw_data_, image_comp)(yrange2_.sorted_matrix())[0].points;
+				std::vector<std::vector<point_type>> yrange5_resolve;
+				if (yrange5(raw_data_, image_comp)(yrange2_.sorted_matrix()).size() != 0)
+				{
+					yrange5_resolve = yrange5(raw_data_, image_comp)(yrange2_.sorted_matrix())[0].points;
+				}
                 if (!yrange5_resolve.empty())
                 {
                     windows.push_back(
