@@ -1,20 +1,20 @@
 ////////////////////////////////////////////
-//Happy Algorithm (最優先探索アルゴリズム)//
+/////A* Algorithm (最優先探索アルゴリズム)///////
 ////////////////////////////////////////////
+#define nosaiki//★
+#define debug//☆
 
-#define debug
-//#define test1
-//#define test2
-//#define debugdebug1
-
-//インクルードファイル
 #ifdef debug
-#include <iostream>
 #include <boost/timer/timer.hpp>
 #endif
+
 #include "algorithm_2.hpp"
 
-/*■■配列■■*/
+//★双方向探索したい
+//#define OPEN = 0
+//#define CLOSE = 1
+//#define FORE = 0
+//#define BACK = 1
 
 //コンストラクタ
 heap::heap(){
@@ -33,10 +33,14 @@ void heap::setup(const int *in_y, const int *in_x){
 	history_limit.resize(1000000);
 	table.resize(1000000, std::vector<int>(yx));
 	heaptable.resize(1000000);
-}
-void heap::pop(int *in_cost, std::vector<int> &in_table, std::vector<int> &in_history, int *in_history_limit){
 
-	int i;
+	oya.resize(1000000);
+	LIST.resize(1000000);
+	LIST_OC.resize(1000000);
+}
+void heap::pop(int *in_cost, std::vector<int> &in_table, std::vector<int> &in_history, int *in_history_limit, int *in_oya){
+
+	int i, j, k, count;
 	int me;
 	int top = pos;
 
@@ -47,55 +51,114 @@ void heap::pop(int *in_cost, std::vector<int> &in_table, std::vector<int> &in_hi
 		history_limit.resize(1000000 * sizemaxcount);
 		table.resize(1000000 * sizemaxcount, std::vector<int>(y*x));
 		heaptable.resize(1000000 * sizemaxcount);
+
+		oya.resize(1000000);
+		LIST.resize(1000000 * sizemaxcount);
+		LIST_OC.resize(1000000 * sizemaxcount);
 #ifdef debug
 		std::cout << ">< heap.cpp vector pass1,000,000" << std::endl;
 #endif
 	}
-
-	//コスト挿入
-	cost[size] = *in_cost;
-
-	//履歴挿入
-	history[size].resize(*in_history_limit);
-	for (i = 0; i < *in_history_limit; i++){
-		history[size][i] = (in_history[i]);
-	}
-	history_limit[size] = *in_history_limit;
-
-	//テーブル挿入
-	for (i = 0; i < yx; i++){
-		table[size][i] = in_table[i];
-	}
-
-	//ヒープ配列挿入
-	while (1){
-		me = top;
-		top = (top - 1) / 2;
-		if (me == top){
+	if (size % 1000 == 0)std::cout << "1000" << std::endl;//☆デバッグ
+	//重複確認2
+	bool ok = true;
+	int itticount;
+	//★ここがめっちゃ重いので変える
+	for (int i = 0; i < size; i++){
+		itticount = 0;
+		for (j = 0; j < yx; j++){
+			if (in_table[j] == table[i][j])itticount++;//ヤバイ
+		}
+		if (itticount == yx){ //テーブルが一致した
+			ok = false;
+			if (*in_cost < cost[i]){
+				//このノードがiのテーブルよりコストが低い
+				//★ラベルつけてあとで消したほうがいいかも？
+				if (LIST_OC[i] == true){
+					//このノードと同じテーブルがOpenリストに含まれている
+					//◆書き換え
+					cost[i] = *in_cost;
+					oya[i] = *in_oya;
+					//★historyは後で廃止する予定取り敢えずこれで。
+					history_limit[i] = *in_history_limit;
+					history[i].resize(history_limit[i]);
+					for (int m = 0; m < history_limit[i]; m++){
+						history[i][m] = in_history[m];
+					}
+				}
+				else{
+					//このノードと同じテーブルがCloseリストに含まれている
+					//◆書き換え
+					LIST_OC[i] = true;
+					cost[i] = *in_cost;
+					oya[i] = *in_oya;
+					//★historyは後で廃止する予定取り敢えずこれで。
+					history_limit[i] = *in_history_limit;
+					history[i].resize(history_limit[i]);
+					for (int m = 0; m < history_limit[i]; m++){
+						history[i][m] = in_history[m];
+					}
+				}
+			}
 			break;
 		}
-		else if (cost[heaptable[top]] > *in_cost){
-			heaptable[me] = heaptable[top];
-		}
-		else{
-			break;
-		}
 	}
-	heaptable[me] = size;
+	if (ok == true){
+		//親挿入
+		oya[size] = *in_oya;
+		//コスト挿入
+		cost[size] = *in_cost;
 
-	pos++;
-	size++;
+		//履歴挿入
+		history[size].resize(*in_history_limit);
+		for (i = 0; i < *in_history_limit; i++){
+			history[size][i] = in_history[i];
+		}
+		history_limit[size] = *in_history_limit;
 
+		//テーブル挿入
+		for (i = 0; i < yx; i++){
+			table[size][i] = in_table[i];
+		}
+
+		//OPEN_LIST挿入
+		LIST_OC[size] = true;
+		LIST[size] = size;
+
+		//ヒープ配列挿入
+		while (1){
+			me = top;
+			top = (top - 1) / 2;
+			if (me == top){
+				break;
+			}
+			else if (cost[heaptable[top]] > *in_cost){
+				heaptable[me] = heaptable[top];
+			}
+			else{
+				break;
+			}
+		}
+		heaptable[me] = size;
+
+		pos++;
+		size++;
+	}
 }
 
-void heap::push(int *out_cost, std::vector<int> &out_table, std::vector<int> &out_history, int *out_history_limit){
+void heap::push(int *out_cost, std::vector<int> &out_table, std::vector<int> &out_history, int *out_history_limit, int *out_oya){
 	const int out = heaptable[0];
 	int i = 0;
 	int me = 0;
 	int bottom = 0;
 
 	pos--;
-	size--;
+
+	//OPENからCLOSE_LISTに移動
+	LIST_OC[out] = false;
+
+	//親挿入
+	*out_oya = out;
 
 	//コスト挿入
 	*out_cost = cost[out];
@@ -153,11 +216,38 @@ void heap::push(int *out_cost, std::vector<int> &out_table, std::vector<int> &ou
 
 	heaptable[me] = heaptable[pos];
 	heaptable.erase(heaptable.end() - 1);
-
-	size++;
 }
 
-/*■■アルゴリズム■■*/
+void heap::pushanswer(int oyanum){
+	//★historyを消す場合ここから答えを作ることにはぴなる
+	//★answer_typeにして返す
+	do{
+		for (int i = 0; i < y; i++){
+			for (int j = 0; j < x; j++){
+				std::cout << table[oyanum][i*x + j] << ",";
+			}
+			std::cout << std::endl;
+		}
+		for (int i = 0; i < history_limit[oyanum]; i++){
+			std::cout << history[oyanum][i] << ",";
+		}
+		std::cout << std::endl;
+		std::cout << "oyanamu=" << oyanum << std::endl;
+		oyanum = oya[oyanum];
+	} while (oya[oyanum] != -1);
+	for (int i = 0; i < y; i++){
+		for (int j = 0; j < x; j++){
+			std::cout << table[oyanum][i*x + j] << ",";
+		}
+		std::cout << std::endl;
+	}
+	for (int i = 0; i < y; i++){
+		for (int j = 0; j < x; j++){
+			std::cout << table[0][i*x + j] << ",";
+		}
+		std::cout << std::endl;
+	}
+}
 
 //コンストラクタ
 algorithm_2::algorithm_2()
@@ -176,50 +266,54 @@ void algorithm_2::reset(question_data const& data)
 	data_ = data.clone();
 
 	// 幅と高さ
-	y_size = data_->size.second;
-	x_size = data_->size.first;
-	size = y_size*x_size;
+	size_y = data_->size.second;
+	size_x = data_->size.first;
+	size = size_y * size_x;
 
 	// コストとレート
-	selectcost = data_->cost_select;
-	changecost = data_->cost_change;
-
+	cost_s = data_->cost_select;
+	cost_c = data_->cost_change;
 
 	// テーブル
 	//tableによそから貰ってきたマトリクスを整理して挿入
 	table.resize(size);
-	sub_table.resize(size);
-	for (int y = 0; y_size > y; y++){
-		for (int x = 0; x_size > x; x++){
-			table[y * x_size + x] = data_->block[y][x].y * x_size + data_->block[y][x].x;
+	for (int y = 0; size_y > y; y++){
+		for (int x = 0; size_x > x; x++){
+			table[y * size_x + x] = data_->block[y][x].y * size_x + data_->block[y][x].x;
 		}
 	}
+	//初期化
+	harray.setup(&size_y, &size_x);
+	/*
+	//★双方向探索用
+	//OPEN_LISTにスタートノードを追加
+	//ゴールまでの距離
+	int startcost = 0;
+	std::vector<int> history(0);
+	for (int i = 0; i < size; i++){
+	startcost += abs(table[i] / size_x - i / size_x) + abs(table[i] % size_x - i % size_x);
+	}
+	//追加
+	harray.pop(&startcost, table, history, 0);
+	*/
 
-	//配列のリサイズ☆おおよそ
+	//配列のリサイズ★おおよそ
 	history.resize(10000);
-	sub_history.resize(10000);
 	keiro.resize(10000);
+	sub_history.resize(10000);
 	root1.resize(1024);
 	root2.resize(1024);
-	//heapの初期化
-	harray.setup(&y_size, &x_size);
 }
-
-
-
-
 
 auto algorithm_2::get() -> boost::optional<return_type>
 {
-	std::vector<int> get_history(0);
-	int get_cost = 0;
-
+	int i, count;
 #ifdef debug
 	std::cout << "algorythm_2 start" << std::endl;
-	std::cout << "y_size=" << y_size << ",x_size=" << x_size << std::endl;
-	for (int y = 0; y_size > y; y++){
-		for (int x = 0; x_size > x; x++){
-			std::cout << std::setw(3) << table[y * x_size + x] << ",";
+	std::cout << "size_y=" << size_y << ",size_x=" << size_x << std::endl;
+	for (int y = 0; size_y > y; y++){
+		for (int x = 0; size_x > x; x++){
+			std::cout << std::setw(3) << table[y * size_x + x] << ",";
 		}
 		std::cout << std::endl;
 	}
@@ -228,156 +322,71 @@ auto algorithm_2::get() -> boost::optional<return_type>
 	boost::timer::cpu_timer timer; // 時間計測を開始
 #endif
 
-	puzzle(get_history, get_cost);	//実行
-
-#ifdef debug
-	std::string result = timer.format();
-	std::cout << "\n処理時間:" << result << std::endl;
-	std::cout << "end" << std::endl;
-	for (unsigned int i = 0; i < get_history.size(); i++){
-		switch (get_history[i]){
-		case 16:
-		case 20:
-			std::cout << ",U";
-			break;
-		case 17:
-		case 21:
-			std::cout << ",R";
-			break;
-		case 18:
-		case 22:
-			std::cout << ",D";
-			break;
-		case 19:
-		case 23:
-			std::cout << ",L";
-			break;
-		default:
-			std::cout << "," << get_history[i];
-			break;
-		}
-	}
-	std::cout << std::endl;
-	int debug_S = 0, debug_C = 0;
-	for (unsigned int i = 0; i < get_history.size(); i++){
-		if (get_history[i] < 16){
-			debug_S += 1;
-		}
-		else{
-			debug_C += 1;
-		}
-	}
-	debug_S /= 2;
-	std::cout << "selectcost=" << selectcost << ",changecost=" << changecost << std::endl;
-	std::cout << "cost=" << debug_S * selectcost + debug_C * changecost << " S: " << debug_S << " C: " << debug_C << std::endl;
-#endif
-	//解をanswer_typeにして返す
-	answer_type answerlist;
-	point_type position;
-	std::ostringstream stream;
-	answerlist.list.resize(1024);//★適当
-	int pos = 0;
-	for (int count = 0; pos < get_history.size(); count++){
-		position.y = get_history[pos];
-		pos++;
-		position.x = get_history[pos];
-		pos++;
-		while (pos < get_history.size() && 16 <= get_history[pos]){
-			switch (get_history[pos]){
-			case 16:
-			case 20:
-				stream << "U";
-				break;
-			case 17:
-			case 21:
-				stream << "R";
-				break;
-			case 18:
-			case 22:
-				stream << "D";
-				break;
-			case 19:
-			case 23:
-				stream << "L";
-				break;
-			}
-			pos++;
-		}
-		answerlist.list[count] = { position, stream.str() };
-		stream.str("");
-	}
-	return answerlist;
-}
-
-
-
-
-
-
-//探索
-void algorithm_2::puzzle(std::vector<int> &out_history, int &out_cost){
-	int count, i;
-
 	while (1){
-		algorithm_2::prescanning(); //探索
-#ifdef test1
-		//☆試験的な実験☆
-		//同じテーブルが連続で来たら飛ばす
-		while (1){
-			harray.push(&cost, table, history, &history_limit);
-			int buff = 0;
-			for (i = 0; i < size; i++){
-				if (sub_table[i] == table[i])buff++;
-			}
-			for (i = 0; i < size; i++){
-				sub_table[i] = table[i];
-			}
-			if (buff != size){
-				//前回と違うテーブル
-				break;
-			}
-		}
-		//☆ここまで☆
-#else
+		//探索
+		algorithm_2::prescanning();
 		//取得
-		harray.push(&cost, table, history, &history_limit);
-#endif
+		harray.push(&cost, table, history, &history_limit, &oya);
 		//完成判定
 		count = 0;
 		for (i = 0; i<size; i++){
 			if (table[i] == i) count++;
 		}
 		if (count == size){
-			//完成
-			out_cost = cost;
-			out_history.resize(history_limit);
-			for (i = 0; i < history_limit; i++){
-				out_history[i] = history[i];
-			}
-			return;
-		}
-#ifdef debugdebug1
-		//debug
-		for (int i = 0; i < y_size; i++){
-			for (int j = 0; j < x_size; j++){
-				std::cout << table[i * x_size + j] << ",";
+#ifdef debug
+			//完成☆後で消したりなんたり
+			std::string result = timer.format();
+			std::cout << "\n処理時間:" << result << std::endl;
+			for (unsigned int i = 0; i < history_limit; i++){
+				switch (history[i]){
+				case 16:
+				case 20:
+					std::cout << ",U";
+					break;
+				case 17:
+				case 21:
+					std::cout << ",R";
+					break;
+				case 18:
+				case 22:
+					std::cout << ",D";
+					break;
+				case 19:
+				case 23:
+					std::cout << ",L";
+					break;
+				default:
+					std::cout << "," << history[i];
+					break;
+				}
 			}
 			std::cout << std::endl;
-		}
-		for (int i = 0; i < history_limit; i++){
-			std::cout << history[i] << ",";
-		}
-		std::cout << std::endl;
-		int debugdebug1;
-		std::cin >> debugdebug1;
+			int debug_S = 0, debug_C = 0;
+			for (unsigned int i = 0; i < history_limit; i++){
+				if (history[i] < 16){
+					debug_S += 1;
+				}
+				else{
+					debug_C += 1;
+				}
+			}
+			debug_S /= 2;
+			std::cout << "選択コスト=" << cost_s << ",交換コスト=" << cost_c << std::endl;
+			std::cout << "cost=" << debug_S * cost_s + debug_C * cost_c << " S: " << debug_S << " C: " << debug_C << std::endl;
 #endif
+			harray.pushanswer(oya);
+#ifdef debug
+			int d;
+			std::cin >> d;
+#endif
+		}
 	}
 }
 
 //走査準備(全てのマスを一つづつscaningで調べる)
 void algorithm_2::prescanning(){
-	for (int y = 0; y < y_size; y++){
-		for (int x = 0; x < x_size; x++){
+	for (int y = 0; y < size_y; y++){
+		for (int x = 0; x < size_x; x++){
 			keiro[0] = y;
 			keiro[1] = x;
 			keiro_count = 2;
@@ -418,19 +427,20 @@ void algorithm_2::scanning(int y, int x, int y_before, int x_before, int URDL){
 		std::cout << ">< search.cpp keiro vector pass10,000" << std::endl;
 #endif
 	}
-#ifdef nosaiki //これで再帰無しの探索が出来る
+#ifdef nosaiki //★これで再帰無しの探索が出来る
 	if ((y == y_before && x == x_before)){
 #endif
 		//進む(上右下左の順)
+		//★@@@重要：：自由に動けるようにする？（そしたらshortingは消す？）
 		//上
 		if (y > 0 && URDL != 2){
-			if (table[y * x_size + x] / x_size < y){
+			if (table[y * size_x + x] / size_x < y){
 				feel = true;
 			}
 			else{
 				feel = false;
 			}
-			if (table[(y - 1) * x_size + x] / x_size > y - 1)
+			if (table[(y - 1) * size_x + x] / size_x > y - 1)
 			{
 				feeled = true;
 			}
@@ -446,21 +456,21 @@ void algorithm_2::scanning(int y, int x, int y_before, int x_before, int URDL){
 				}
 				keiro_count += 1;
 				//交換
-				buff = table[y * x_size + x];
-				table[y * x_size + x] = table[(y - 1) * x_size + x];
-				table[(y - 1) * x_size + x] = buff;
+				buff = table[y * size_x + x];
+				table[y * size_x + x] = table[(y - 1) * size_x + x];
+				table[(y - 1) * size_x + x] = buff;
 				scanning(y - 1, x, y, x, 0);
 			}
 		}
 		//右
-		if (x < x_size - 1 && URDL != 3){
-			if (table[y * x_size + x] % x_size > x){
+		if (x < size_x - 1 && URDL != 3){
+			if (table[y * size_x + x] % size_x > x){
 				feel = true;
 			}
 			else{
 				feel = false;
 			}
-			if (table[y * x_size + (x + 1)] % x_size < x + 1)
+			if (table[y * size_x + (x + 1)] % size_x < x + 1)
 			{
 				feeled = true;
 			}
@@ -476,21 +486,21 @@ void algorithm_2::scanning(int y, int x, int y_before, int x_before, int URDL){
 				}
 				keiro_count += 1;
 				//交換
-				buff = table[y * x_size + x];
-				table[y * x_size + x] = table[y * x_size + (x + 1)];
-				table[y * x_size + (x + 1)] = buff;
+				buff = table[y * size_x + x];
+				table[y * size_x + x] = table[y * size_x + (x + 1)];
+				table[y * size_x + (x + 1)] = buff;
 				scanning(y, x + 1, y, x, 1);
 			}
 		}
 		//下
-		if (y < y_size - 1 && URDL != 0){
-			if (table[y * x_size + x] / x_size > y){
+		if (y < size_y - 1 && URDL != 0){
+			if (table[y * size_x + x] / size_x > y){
 				feel = true;
 			}
 			else{
 				feel = false;
 			}
-			if (table[(y + 1) * x_size + x] / x_size < y + 1)
+			if (table[(y + 1) * size_x + x] / size_x < y + 1)
 			{
 				feeled = true;
 			}
@@ -506,21 +516,21 @@ void algorithm_2::scanning(int y, int x, int y_before, int x_before, int URDL){
 				}
 				keiro_count += 1;
 				//交換
-				buff = table[y * x_size + x];
-				table[y * x_size + x] = table[(y + 1) * x_size + x];
-				table[(y + 1) * x_size + x] = buff;
+				buff = table[y * size_x + x];
+				table[y * size_x + x] = table[(y + 1) * size_x + x];
+				table[(y + 1) * size_x + x] = buff;
 				scanning(y + 1, x, y, x, 2);
 			}
 		}
 		//左
 		if (x > 0 && URDL != 1){
-			if (table[y * x_size + x] % x_size < x){
+			if (table[y * size_x + x] % size_x < x){
 				feel = true;
 			}
 			else{
 				feel = false;
 			}
-			if (table[y * x_size + (x - 1)] % x_size > x - 1)
+			if (table[y * size_x + (x - 1)] % size_x > x - 1)
 			{
 				feeled = true;
 			}
@@ -536,9 +546,9 @@ void algorithm_2::scanning(int y, int x, int y_before, int x_before, int URDL){
 				}
 				keiro_count += 1;
 				//交換
-				buff = table[y * x_size + x];
-				table[y * x_size + x] = table[y * x_size + (x - 1)];
-				table[y * x_size + (x - 1)] = buff;
+				buff = table[y * size_x + x];
+				table[y * size_x + x] = table[y * size_x + (x - 1)];
+				table[y * size_x + (x - 1)] = buff;
 				scanning(y, x - 1, y, x, 3);
 			}
 		}
@@ -574,7 +584,7 @@ void algorithm_2::scanning(int y, int x, int y_before, int x_before, int URDL){
 		C = 0;
 		//ゴールまでの距離
 		for (i = 0; i < size; i++){
-			G += abs(table[i] / x_size - i / x_size) + abs(table[i] % x_size - i % x_size);
+			G += abs(table[i] / size_x - i / size_x) + abs(table[i] % size_x - i % size_x);
 		}
 		//交換コストと選択コストも入れる
 		for (i = 0; i < sub_history_limit; i++){
@@ -591,20 +601,21 @@ void algorithm_2::scanning(int y, int x, int y_before, int x_before, int URDL){
 		cost = G + S + C;
 
 #ifdef test2
+		//★@@@重要：：ここやらなきゃ
 		//★最大選択回数より大きいならやめる
 		if (S / 15 < 3){
 			harray.pop(&cost, table, subhistory, &subhistory_limit);
 		}
 #else
-		//取得
-		harray.pop(&cost, table, sub_history, &sub_history_limit);
+		//登録
+		harray.pop(&cost, table, sub_history, &sub_history_limit, &oya);
 #endif
 		history_limit -= keiro_count;
 	}
 	//全部見終わったらtableを元通りにして返す
-	buff = table[y * x_size + x];
-	table[y * x_size + x] = table[y_before * x_size + x_before];
-	table[y_before * x_size + x_before] = buff;
+	buff = table[y * size_x + x];
+	table[y * size_x + x] = table[y_before * size_x + x_before];
+	table[y_before * size_x + x_before] = buff;
 
 	//うち経路消すん
 	keiro[keiro_count] = 0;

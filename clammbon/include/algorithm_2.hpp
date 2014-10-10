@@ -14,11 +14,12 @@ public:
 
 	//‰Šú‰»
 	void setup(const int* y, const int* x);
-	//©æo
-	void pop(int *in_cost, std::vector<int> &in_table, std::vector<int> &in_history, int *in_history_limit);
 	//¨‘}“ü
-	void push(int *in_cost, std::vector<int> &in_table, std::vector<int> &in_history, int *in_history_limit);
-
+	void pop(int *in_cost, std::vector<int> &in_table, std::vector<int> &in_history, int *in_history_limit, int *in_oya);
+	//©æo
+	void push(int *out_cost, std::vector<int> &out_table, std::vector<int> &out_history, int *out_history_limit, int *out_oya);
+	//e‚ÌƒAƒ“ƒT[‚ğ“f‚­
+	void pushanswer(int oyanum);
 private:
 	int yx, y, x;
 	int pos = 0;
@@ -29,68 +30,67 @@ private:
 	std::vector< std::vector<int> > history;
 	std::vector<int>history_limit;
 	std::vector< std::vector<int> > table;
+
+	std::vector<int> LIST;
+	std::vector<bool> LIST_OC;
+	std::vector<int> oya;
 };
 
 
-
-//ƒAƒ‹ƒSƒŠƒYƒ€
-class algorithm_2
-{
+class algorithm_2{
 public:
 	typedef answer_type return_type;
+	boost::optional<question_data> data_;
 
 	algorithm_2();
 	~algorithm_2();
-
 	//‰Šú‰»
 	void reset(question_data const& data);
-
 	//Às
-	auto get() -> boost::optional<return_type>;
-
+	auto get()->boost::optional<return_type>;
 private:
+
 	heap harray;
-	boost::optional<question_data> data_;
+	//std::vector<std::vector<uint8_t>> start_distance;
+	//std::vector<std::vector<uint8_t>> goal_distance;
+
 	const int goal = 10;
-	const int sentaku = 10;
-	const int coukan = 10;
+	const int sentaku = 11;
+	const int coukan = 11;
 	//1,1,1		ƒm[ƒ}ƒ‹
 	//10,5,3	‘I‘ğ‚ª’Z‚¢‚Ì‚ğì‚ê‚½
 	//10 8 4
 	//10 14 6
+
+	int size_y, size_x, size;
+	int cost_s, cost_c;
+	std::vector<int> table;
 	int cost;
-	int size;
-	int y_size;
-	int x_size;
-	int selectcost;
-	int changecost;
+	int keiro_count = 0;
+	std::vector<int> history;
+	std::vector<int> keiro;
+	int history_limit = 0;
 	int sizemaxhistory = 1;
 	int sizemaxkeiro = 1;
-	int history_limit = 0;
-	int sub_history_limit = 0;
-	int keiro_count = 0;
 	int G, S, C;
-	std::vector<int> table;
-	std::vector<int> sub_table;
-	std::vector<int> history;
-	std::vector<int> sub_history;
-	std::vector<int> keiro;
+	int sub_history_limit = 0;//use shorting
+	std::vector<int> sub_history;//use shorting
 	std::vector<int> root1;//use shorting
 	std::vector<int> root2;//use shorting
-	int sizemaxroot1 = 1;
-	int sizemaxroot2 = 1;
+	int sizemaxroot1 = 1;//use shorting
+	int sizemaxroot2 = 1;//use shorting
 
-	//ƒAƒ‹ƒSƒŠƒYƒ€‚ÌÀs
-	void puzzle(std::vector<int> &out_history, int &out_cost);
+
 	//‡”Ô‚É’Tõ‚ğŠJn‚·‚é
 	void prescanning();
 	//’Tõ
 	void scanning(int i, int j, int i_pre, int j_pre, int URDL);
-
 	//Œo˜H‚ğ’Z‚­‚·‚é
 	void shorting();
 	//Œo˜H”½“]
 	void reverse(int* x);
+	//e
+	int oya = -1;
 };
 
 #endif
