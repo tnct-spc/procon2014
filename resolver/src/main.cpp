@@ -2,7 +2,7 @@
 #define _SCL_SECURE_NO_WARNINGS
 
 // Macro: Program Settings
-#define ENABLE_NETWORK_IO 1
+#define ENABLE_NETWORK_IO 0
 
 #include <iostream>
 #include <deque>
@@ -85,9 +85,11 @@ public:
 		if (!data_.block.empty())windows.push_back(
 			gui::make_mansort_window(split_image_, data_.block, "Murakami")
             );
+		/*
 		if (!data_.block.empty())windows.push_back(
 			gui::make_mansort_window(split_image_, data_.block, "Murakami")
             );
+		*/
 		if(data_.block.empty())windows.push_back(
 			gui::make_mansort_window(split_image_, "You are the sorter!")
 	    );
@@ -177,7 +179,7 @@ private:
     split_image_type  split_image_;
 
     mutable network::client client_;
-    pixel_sorter<yrange2> sorter_;
+    pixel_sorter<Murakami> sorter_;
 };
 
 question_data convert_block(question_data const& data)
@@ -202,7 +204,7 @@ int main()
     auto const token     = "3935105806";
 
     analyzer         analyze(ploblemid, token);
-    algorithm_2      algo;
+    algorithm      algo;
     position_manager manager;
 
     boost::thread thread(boost::bind(&analyzer::operator(), &analyze, std::ref(manager)));

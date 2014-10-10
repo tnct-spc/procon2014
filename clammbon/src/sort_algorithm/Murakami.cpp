@@ -92,7 +92,7 @@ std::vector<answer_type_y> Murakami::operator() (){
 				p_b.block = combined_block;
 				block_list.push_back(p_b);//結合したのを入れる
 				std::cout << "***" << block_list.size() << "***" << std::endl;
-				/*デバッグ表示
+				
 				for (const auto& i : block_list){
 					for (const auto& j : i.block){
 						for (const auto& k : j){
@@ -103,7 +103,7 @@ std::vector<answer_type_y> Murakami::operator() (){
 					}
 					std::cout << "\n";
 				}
-				*/
+				
 				/*デバッグ画像表示
 				std::vector<std::vector<std::vector<point_type>>> raw_block_list;
 				for (auto const& block_it : block_list){
@@ -196,7 +196,7 @@ Murakami::block_combination Murakami::eval_block(const block_type& block1, const
 				if (confliction)break;
 			}
 			if (!confliction && !empty_block_c){
-				block_c += 1;
+				++rank1_num;
 				block_c *= rank1_num; //0を掛けるのは怖い
 				//if(block_c < 0)block_c = -pow(block_c, rank1_num);
 				//if (block_c > 0)block_c = pow(block_c, rank1_num);
@@ -402,3 +402,17 @@ Murakami::block_type Murakami::combine_block(const block_combination& block_comb
 	return return_combined_block;
 
 }
+/*
+Murakami::block_type Murakami::force_combine_block(std::vector<Murakami::block_type>& block_list){
+	auto max_block_it = std::_Max_element(block_list.begin(), block_list.end(), [](const block_type& a, const block_type& b){
+		return(a.size() + a[0].size() > b.size() + b[0].size());
+	});
+	auto const pick_up_without_it[&block_list]
+	for (auto i : (*max_block_it)){
+		for (auto j : i){
+			if (!(j.x == -1) || !(j.y == -1))continue;
+			pick_up_without_it(max_block_it);
+		}
+	}
+}
+*/

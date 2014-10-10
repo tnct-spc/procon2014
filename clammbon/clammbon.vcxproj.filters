@@ -104,11 +104,11 @@
     <ClInclude Include="include\sort_algorithm\yrange5.hpp">
       <Filter>ヘッダー ファイル\sort_algorithm</Filter>
     </ClInclude>
-    <ClInclude Include="include\sort_algorithm\Murakami.hpp">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="include\algorithm_2.hpp">
       <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="include\sort_algorithm\Murakami.hpp">
+      <Filter>ヘッダー ファイル\sort_algorithm</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
