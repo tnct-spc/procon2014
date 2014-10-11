@@ -91,16 +91,22 @@ public:
 		}
 
         // 画面表示をいくつか(yrange/Murakmi/yrange5/algo2 etc.)
-        std::vector<boost::shared_ptr<gui::impl::MoveWindow>> windows;
+        gui::manager gui_thread(
+            [this, &manager](std::vector<std::vector<point_type>> const& data)
+            {
+                auto clone = data_.clone();
+                clone.block = data;
+                manager.add(convert_block(clone));
+            });
 		
 		//yrange2
 		if (!yrange2_resolve.empty())
 		{
 			for (int y2 = yrange2_resolve.size() - 1; y2 > 0; --y2)
 			{
-				windows.push_back(
-					gui::make_mansort_window(split_image_, yrange2_resolve.at(y2).points, "yrange2")
-					);
+                gui_thread.push_back(
+                    boost::bind(gui::make_mansort_window, split_image_, yrange2_resolve.at(y2).points, "yrange2")
+                    );
 			}
 		}
 
@@ -110,49 +116,28 @@ public:
 		{
 			for (int y5 = yrange5_resolve.size() - 1; y5 > 0; --y5)
 			{
-				windows.push_back(
-					gui::make_mansort_window(split_image_, yrange5_resolve.at(y5).points, "yrange5")
-					);
+                gui_thread.push_back(
+                    boost::bind(gui::make_mansort_window, split_image_, yrange5_resolve.at(y5).points, "yrange5")
+                    );
 			}
 		}
 
 		//murakami
-		if (!murakami_resolve.empty())windows.push_back(
-            gui::make_mansort_window(split_image_, murakami_resolve, "Murakami")
-            );
+		if (!murakami_resolve.empty())
+        {
+            gui_thread.push_back(
+                boost::bind(gui::make_mansort_window, split_image_, murakami_resolve, "Murakami")
+                );
+        }
 
 		//どっちもダメだった時
 		if (yrange2_resolve.empty() && yrange5_resolve.empty()/*&& murakami_resolve.empty()*/){
-			windows.push_back(
-				gui::make_mansort_window(split_image_, "Yor are the sorter!!! Sort this!")
-				);
+            gui_thread.push_back(
+                boost::bind(gui::make_mansort_window, split_image_, "Yor are the sorter!!! Sort this!")
+                );
 		}
 
-        boost::thread th(
-            [&]()
-            {
-                // futureリストでvalidを巡回し，閉じられたWindowから解とする
-                while(!windows.empty())
-                {
-                     for(auto it = windows.begin(); it != windows.end();)
-                    {
-                         auto res = gui::get_result(*it);
-						 if (res)
-						 {
-							 data_.block = res.get();
-							 manager.add(convert_block(data_)); // 解答
-
-							 it = windows.erase(it);
-						 }
-                        else ++it;
-                    }
-                }
-            });
-
-        gui::wait_all_window();
-
-        th.join();
-        
+        gui_thread.wait_all_window();        
     }
 
     std::string submit(answer_type const& ans) const

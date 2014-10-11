@@ -16,9 +16,53 @@
 
 namespace gui
 {
-    int wait_all_window()
+    manager::manager(std::function<void(std::vector<std::vector<point_type>> const&)> const& callback)
     {
-        return Fl::run();
+        th_ = std::make_unique<boost::thread>(
+            [this, callback]()
+            {
+                // GUI Thread
+                while(true)
+                {
+                    if(!queue_.empty())
+                    {
+                        std::lock_guard<std::mutex> lock(mutex_);
+                        for(auto const& f : queue_) windows_.push_back(f());
+                        queue_.clear();
+                    }
+
+                    for(auto it = windows_.begin(); it != windows_.end();)
+                    {
+                        auto res = gui::get_result(*it);
+					    if (res)
+					    {
+                            callback(res.get()); // 解答
+						    it = windows_.erase(it);
+					    }
+                        else ++it;
+                    }
+
+                    Fl::wait(0);
+                }
+            });
+    }
+
+    manager::~manager()
+    {
+        th_->detach();
+        th_.reset();
+    }
+
+    void manager::wait_all_window()
+    {
+        while(!windows_.empty());
+        return;
+    }
+
+    void manager::push_back(std::function<window_ptr()> const& func)
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        queue_.push_back(func);
     }
 
     boost::shared_ptr<impl::MoveWindow> make_mansort_window(
