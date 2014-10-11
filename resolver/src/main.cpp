@@ -96,10 +96,10 @@ public:
 		//yrange2
 		if (!yrange2_resolve.empty())
 		{
-			for (auto const& one_y2 : yrange2_resolve)
+			for (int y2 = yrange2_resolve.size() - 1; y2 > 0; --y2)
 			{
 				windows.push_back(
-					gui::make_mansort_window(split_image_, one_y2.points, "yrange2")
+					gui::make_mansort_window(split_image_, yrange2_resolve.at(y2).points, "yrange2")
 					);
 			}
 		}
@@ -108,10 +108,10 @@ public:
 		auto yrange5_resolve = yrange5(raw_data_, image_comp)(yrange2_.sorted_matrix());
 		if (!yrange5_resolve.empty())
 		{
-			for (auto const& one_y5 : yrange5_resolve)
+			for (int y5 = yrange5_resolve.size() - 1; y5 > 0; --y5)
 			{
 				windows.push_back(
-					gui::make_mansort_window(split_image_, one_y5.points, "yrange5")
+					gui::make_mansort_window(split_image_, yrange5_resolve.at(y5).points, "yrange5")
 					);
 			}
 		}
