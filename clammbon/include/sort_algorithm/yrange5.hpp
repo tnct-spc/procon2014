@@ -12,10 +12,11 @@ private:
     
 	//kind_rgb用構造体
 	struct kind_rgb{
-		int x, y, kind; 
+		point_type point;
+		int kind; 
 		uint_fast64_t score;
 		bool operator<(const kind_rgb& right) const {
-			return score == right.score ? x < right.x : score < right.score;
+			return score == right.score ? point.x < right.point.x : score < right.score;
 		}
 	};
 	omp_lock_t ol;
@@ -27,9 +28,6 @@ private:
     // 2値座標系式から1値座標系式に変えながら和
     // 指定した範囲の配列の和を返す
     int array_sum(return_type const& array_, int const x, int const y, int const height, int const width) const;
-
-	//縦横同時
-	void yrange5::row_column_replacement(answer_type_y& answer);
 
 	//cv::Matの塊にする
 	cv::Mat combine_image(answer_type_y const & matrix);

@@ -34,46 +34,6 @@ int yrange5::array_sum(return_type const& array_, int const x, int const y, int 
 	return sum;
 }
 
-/*縦横全パターンやろう*/
-void yrange5::row_column_replacement(answer_type_y& answer)
-{
-	int const sepx = data_.split_num.first;
-	int const sepy = data_.split_num.second;
-
-	struct good_set
-	{
-		uint_fast64_t val;
-		point_type point;
-	};
-	good_set good;
-
-	std::vector<std::vector<point_type>>sort_matrix(answer.points.size() * 2, std::vector<point_type>(answer.points.at(0).size() * 2));
-#pragma omp parallel for
-	for (int i = 0; i < answer.points.size(); ++i)for (int j = 0; j < answer.points.at(0).size(); ++j)
-	{
-		sort_matrix[i][j] = answer.points[i][j];
-		sort_matrix[sepy + i][j] = answer.points[i][j];
-		sort_matrix[i][sepx + j] = answer.points[i][j];
-		sort_matrix[sepy + i][sepx + j] = answer.points[i][j];
-	}
-
-	good = good_set{ range_evaluate_contours(data_, comp_, answer.points, 0, 0), { 0, 0 } };
-	for (int i = 0; i < sepy; ++i)for (int j = 0; j < sepx; ++j)
-	{
-		auto const& temp = range_evaluate_contours(data_, comp_, sort_matrix, j, i);
-		if (good.val > temp)good = { temp, { j, i } };
-	}
-
-	std::vector<std::vector<point_type>>temp_matrix(sepy, std::vector<point_type>(sepx));
-#pragma omp parallel for
-	for (int i = 0; i < sepy; ++i)for (int j = 0; j < sepx; ++j)
-	{
-		temp_matrix[i][j] = sort_matrix[i][j];
-	}
-
-	answer = { std::move(temp_matrix), good.val, cv::Mat() };
-}
-
 //cv::matの塊にする
 cv::Mat yrange5::combine_image(answer_type_y const& answer)
 {
@@ -111,7 +71,6 @@ std::vector<answer_type_y> yrange5::operator() (std::vector<std::vector<std::vec
 		return 0 <= p.x && p.x < width && 0 <= p.y && p.y < height;
 	};
 
-	std::vector<kind_rgb>kind_rgb_vector(width*height);
 	std::vector<answer_type_y> to_y5;
 	to_y5.reserve(width*height * 4);
 	std::vector<answer_type_y> answer;
@@ -123,27 +82,31 @@ std::vector<answer_type_y> yrange5::operator() (std::vector<std::vector<std::vec
 #pragma omp parallel for
 	for (int c = 0; c < mother_matrix.size(); ++c)
 	{
+		std::vector<kind_rgb>kind_rgb_vector;
+		kind_rgb_vector.reserve(width*height);
 		//kind_rgb選考
-		for (int i = 0; i < height; i++)	for (int j = 0; j < width; j++){
-			kind_rgb_vector[j * height + i].x = j;
-			kind_rgb_vector[j * height + i].y = i;
-			kind_rgb_vector[j * height + i].kind = get_kind_num(data_, mother_matrix.at(c), j, i);
-			kind_rgb_vector[j * height + i].score = (width*height - kind_rgb_vector[j * height + i].kind + 1) * range_evaluate(data_, comp_, mother_matrix.at(c), j, i);
+		for (int i = 0; i < height; i++) for (int j = 0; j < width; j++){
+			int const & kind             = get_kind_num(data_, mother_matrix.at(c), j, i);
+			uint_fast64_t const& score   = (width*height - kind + 1) * (range_evaluate(data_, comp_, mother_matrix.at(c), j, i));
+			kind_rgb_vector.push_back(kind_rgb{ { j, i }, kind, score });
 		}
 
 		std::sort(kind_rgb_vector.begin(), kind_rgb_vector.end());
-
-		for (int k = 0; k < kind_rgb_vector.size() / paramerter; k++){
+		kind_rgb_vector.resize(2);
+		for (auto const& one_kind_rgb_vector:kind_rgb_vector)
+		{
 			std::vector<std::vector <point_type>> ans_temp(height, std::vector<point_type>(width));
 			for (int i = 0; i < height; ++i) for (int j = 0; j < width; ++j)
 			{
-				ans_temp[i][j] = mother_matrix.at(c)[kind_rgb_vector[k].y + i][kind_rgb_vector[k].x + j];
+				ans_temp[i][j] = mother_matrix.at(c)[one_kind_rgb_vector.point.y + i][one_kind_rgb_vector.point.x + j];
 			}
 			omp_set_lock(&ol);
 			to_y5.push_back(answer_type_y{ std::move(ans_temp), 0, cv::Mat() });
 			omp_unset_lock(&ol);
 		}
 	}
+	std::sort(to_y5.begin(), to_y5.end(), [](answer_type_y a, answer_type_y b){return a.score < b.score; });
+	to_y5.resize(yrange5_show_ans * 2);
 	
 	//yrange5メインループ
 #pragma omp parallel for
@@ -259,12 +222,6 @@ std::vector<answer_type_y> yrange5::operator() (std::vector<std::vector<std::vec
 	std::sort(answer.begin(), answer.end(), [](answer_type_y a, answer_type_y b){return a.score < b.score; });
 	if (answer.size() >= yrange5_show_ans) answer.resize(yrange5_show_ans);
 
-//#pragma omp parallel for
-//	for (int c = 0; c < answer.size(); ++c)
-//	{
-//		row_column_replacement(answer.at(c));
-//	}
-	
 	//スコアの良いものが最上位レイヤーに来るように
 	std::sort(answer.begin(), answer.end(), [](answer_type_y a, answer_type_y b){return a.score > b.score; });
 
