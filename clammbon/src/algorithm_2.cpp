@@ -39,7 +39,7 @@ void heap::setup(const int *in_y, const int *in_x){
 }
 void heap::pop(int *in_cost, std::vector<int> &in_table, std::vector<int> &in_history, int *in_history_limit, int *in_oya){
 
-	int i, j, k, count;
+	int i;
 	int me;
 	int top = pos;
 
@@ -332,7 +332,7 @@ auto algorithm_2::get() -> boost::optional<return_type>
 			//Š®¬™Œã‚ÅÁ‚µ‚½‚è‚È‚ñ‚½‚è
 			std::string result = timer.format();
 			std::cout << "\nˆ—ŠÔ:" << result << std::endl;
-			for (unsigned int i = 0; i < history_limit; i++){
+			for (int i = 0; i < history_limit; i++){
 				switch (history[i]){
 				case 16:
 				case 20:
@@ -357,7 +357,7 @@ auto algorithm_2::get() -> boost::optional<return_type>
 			}
 			std::cout << std::endl;
 			int debug_S = 0, debug_C = 0;
-			for (unsigned int i = 0; i < history_limit; i++){
+			for (int i = 0; i < history_limit; i++){
 				if (history[i] < 16){
 					debug_S += 1;
 				}
