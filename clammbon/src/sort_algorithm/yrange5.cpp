@@ -7,6 +7,7 @@
 #include <algorithm>
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
+#include <omp.h>
 #include <data_type.hpp>
 #include <sort_algorithm/compare.hpp>
 #include <sort_algorithm/adjacent.hpp>
@@ -31,46 +32,6 @@ int yrange5::array_sum(return_type const& array_, int const x, int const y, int 
 		}
 	}
 	return sum;
-}
-
-/*縦横全パターンやろう*/
-void yrange5::row_column_replacement(answer_type_y& answer)
-{
-	int const sepx = data_.split_num.first;
-	int const sepy = data_.split_num.second;
-
-	struct good_set
-	{
-		uint_fast64_t val;
-		point_type point;
-	};
-	good_set good;
-
-	std::vector<std::vector<point_type>>sort_matrix(answer.points.size() * 2, std::vector<point_type>(answer.points.at(0).size() * 2));
-#pragma omp parallel for
-	for (int i = 0; i < answer.points.size(); ++i)for (int j = 0; j < answer.points.at(0).size(); ++j)
-	{
-		sort_matrix[i][j] = answer.points[i][j];
-		sort_matrix[sepy + i][j] = answer.points[i][j];
-		sort_matrix[i][sepx + j] = answer.points[i][j];
-		sort_matrix[sepy + i][sepx + j] = answer.points[i][j];
-	}
-
-	good = good_set{ range_evaluate_contours(data_, comp_, answer.points, 0, 0), { 0, 0 } };
-	for (int i = 0; i < sepy; ++i)for (int j = 0; j < sepx; ++j)
-	{
-		auto const& temp = range_evaluate_contours(data_, comp_, sort_matrix, j, i);
-		if (good.val > temp)good = { temp, { j, i } };
-	}
-
-	std::vector<std::vector<point_type>>temp_matrix(sepy, std::vector<point_type>(sepx));
-#pragma omp parallel for
-	for (int i = 0; i < sepy; ++i)for (int j = 0; j < sepx; ++j)
-	{
-		temp_matrix[i][j] = sort_matrix[i][j];
-	}
-
-	answer = { std::move(temp_matrix), good.val, cv::Mat() };
 }
 
 //cv::matの塊にする
@@ -99,62 +60,66 @@ yrange5::yrange5(question_raw_data const& data, compared_type const& comp)
 
 std::vector<answer_type_y> yrange5::operator() (std::vector<std::vector<std::vector<point_type>>> const& mother_matrix)
 {
+	
 	auto const width = data_.split_num.first;
 	auto const height = data_.split_num.second;
 	constexpr int paramerter = 50;
+	constexpr int yrange5_show_ans = 8;
 
 	auto const exists = [height, width](point_type const& p)
 	{
 		return 0 <= p.x && p.x < width && 0 <= p.y && p.y < height;
 	};
 
-	std::vector<kind_rgb>kind_rgb_vector(width*height);
-	std::vector<answer_type_y> to_iddfs;//kid_rgbで選考したもの入れとく
+	std::vector<answer_type_y> to_y5;
+	to_y5.reserve(width*height * 4);
 	std::vector<answer_type_y> answer;
 	answer.reserve(height*width * 2);
 	splitter sp;
 
+	omp_init_lock(&ol);
+
 #pragma omp parallel for
 	for (int c = 0; c < mother_matrix.size(); ++c)
 	{
+		std::vector<kind_rgb>kind_rgb_vector;
+		kind_rgb_vector.reserve(width*height);
 		//kind_rgb選考
-		for (int i = 0; i < height; i++)	for (int j = 0; j < width; j++){
-			kind_rgb_vector[j * height + i].x = j;
-			kind_rgb_vector[j * height + i].y = i;
-			kind_rgb_vector[j * height + i].kind = get_kind_num(data_, mother_matrix.at(c), j, i);
-			kind_rgb_vector[j * height + i].score = (width*height - kind_rgb_vector[j * height + i].kind + 1) * range_evaluate(data_, comp_, mother_matrix.at(c), j, i);
+		for (int i = 0; i < height; i++) for (int j = 0; j < width; j++){
+			int const & kind             = get_kind_num(data_, mother_matrix.at(c), j, i);
+			uint_fast64_t const& score   = (width*height - kind + 1) * (range_evaluate(data_, comp_, mother_matrix.at(c), j, i));
+			kind_rgb_vector.push_back(kind_rgb{ { j, i }, kind, score });
 		}
-	}
 
-	std::sort(kind_rgb_vector.begin(), kind_rgb_vector.end());
-
-	for (int k = 0; k < kind_rgb_vector.size() / paramerter; k++)
-	{
-		std::vector<std::vector <point_type>> ans_temp2;
-		for (int i = 0; i < height; ++i)
+		std::sort(kind_rgb_vector.begin(), kind_rgb_vector.end());
+		kind_rgb_vector.resize(2);
+		for (auto const& one_kind_rgb_vector:kind_rgb_vector)
 		{
-			std::vector<point_type>ans_temp1;
-			for (int j = 0; j < width; ++j)
+			std::vector<std::vector <point_type>> ans_temp(height, std::vector<point_type>(width));
+			for (int i = 0; i < height; ++i) for (int j = 0; j < width; ++j)
 			{
-				ans_temp1.push_back(mother_matrix.at(k)[kind_rgb_vector[k].y + i][kind_rgb_vector[k].x + j]);
+				ans_temp[i][j] = mother_matrix.at(c)[one_kind_rgb_vector.point.y + i][one_kind_rgb_vector.point.x + j];
 			}
-			ans_temp2.push_back(ans_temp1);
+			omp_set_lock(&ol);
+			to_y5.push_back(answer_type_y{ std::move(ans_temp), 0, cv::Mat() });
+			omp_unset_lock(&ol);
 		}
-		to_iddfs.push_back(answer_type_y{ ans_temp2, 0, cv::Mat() });
 	}
-
+	std::sort(to_y5.begin(), to_y5.end(), [](answer_type_y a, answer_type_y b){return a.score < b.score; });
+	to_y5.resize(yrange5_show_ans * 2);
+	
 	//yrange5メインループ
 #pragma omp parallel for
-	for (int c = 0; c < to_iddfs.size(); ++c)
+	for (int c = 0; c < to_y5.size(); ++c)
 	{
 		//重複して入っているもののうち，悪い方を{width,height}に置き換え,今使われていないものを返す
-		std::vector<point_type> usable = std::move(duplicate_delete(comp_, to_iddfs.at(c).points));
+		std::vector<point_type> usable = std::move(duplicate_delete(comp_, to_y5.at(c).points));
 		//It's show time!
 		for (int i = 0; i < height; ++i)for (int j = 0; j < width; ++j)
 		{
 			std::vector<std::vector<point_type>> sorted_matrix(height, std::vector<point_type>(width, point_type{ width, height }));
 			//全部並べ切れたら
-			if (!try_matrix_copy(sorted_matrix, to_iddfs.at(c).points, point_type{ j, i }))
+			if (!try_matrix_copy(sorted_matrix, to_y5.at(c).points, point_type{ j, i }))
 			{
 				//抜けてるところを並べていく
 				point_type const invalid_val = { width, height };
@@ -236,10 +201,11 @@ std::vector<answer_type_y> yrange5::operator() (std::vector<std::vector<std::vec
 					if (target == invalid_val && (exists(center) && exists(lower) && exists(left)))
 						target = dl_choose(comp_, left, center, lower, usable);
 				}
-				//gui::combine_show_image(data_, comp_, sorted_matrix);
 				if (array_sum(sorted_matrix, 0, 0, height, width) == ((width*height - 1)*(width*height) / 2) && get_kind_num(data_, sorted_matrix, 0, 0) == width*height)
 				{
-					answer.push_back(answer_type_y{ sorted_matrix, 0, cv::Mat() });
+					omp_set_lock(&ol);
+					answer.push_back(answer_type_y{ sorted_matrix, form_evaluate(data_,comp_,sorted_matrix), cv::Mat() });
+					omp_unset_lock(&ol);
 				}
 			}
 		}
@@ -251,24 +217,19 @@ std::vector<answer_type_y> yrange5::operator() (std::vector<std::vector<std::vec
 	// unique()をしただけでは後ろにゴミが残るので、eraseで削除する
 	answer.erase(std::unique(answer.begin(), answer.end()), answer.end());
 
-#pragma omp parallel for
-	for (int c = 0; c < answer.size(); ++c)
-	{
-		row_column_replacement(answer.at(c));
-	}
-	
 	//無駄に多く返してもしょうがないので枝抜き
 	size_t yrange5_ans = answer.size();
 	std::sort(answer.begin(), answer.end(), [](answer_type_y a, answer_type_y b){return a.score < b.score; });
-	if (answer.size() >= 8) answer.resize(8);
-
-	//一枚のcv::Matにする
-	for (auto& one_answer : answer)
-	{
-		one_answer.mat_image = std::move(combine_image(one_answer));
-	}
+	if (answer.size() >= yrange5_show_ans) answer.resize(yrange5_show_ans);
 
 #ifdef _DEBUG
+//	//一枚のcv::Matにする
+//#pragma omp parallel for
+//	for (int c = 0; c < answer.size();++c)
+//	{
+//		answer.at(c).mat_image = std::move(combine_image(answer.at(c)));
+//	}
+
 	std::cout << "There are " << yrange5_ans << " solutions by yrange5." << std::endl;
 	for (auto const& one_answer : answer)
 	{
@@ -283,7 +244,7 @@ std::vector<answer_type_y> yrange5::operator() (std::vector<std::vector<std::vec
 		}
 		std::cout << "score = " << one_answer.score << std::endl;
 	}
-	gui::show_image(data_, comp_, answer);
+	//gui::show_image(data_, comp_, answer);
 #endif
 	return answer;
 }

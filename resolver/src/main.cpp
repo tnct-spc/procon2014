@@ -72,43 +72,78 @@ public:
         
         // 2次元画像に分割
         split_image_ = splitter().split_image(raw_data_);
+        auto image_comp = sorter_.image_comp(raw_data_, split_image_);
+
         // 原画像推測部
-        // TODO: yrangeなどの実行
-        auto sorter_resolve = sorter_(raw_data_, split_image_);
-	data_.block = std::move(sorter_resolve);
-        //data_.block = sorter_resolve;
-        if(!data_.block.empty())manager.add(convert_block(data_)); // 解答
-        // TODO: yrange5の実行(並列化)
-        
+        yrange2 yrange2_(raw_data_, image_comp);
+        Murakami murakami_(raw_data_, image_comp);
+		
+		//std::vector<point_type> yrange2_resolve;
+		//if (!yrange2_().empty())yrange2_resolve = yrange2_()[0].points;
+		auto yrange2_resolve = yrange2_();
+        auto murakami_resolve = murakami_()[0].points;
+
+		for (auto const& one_y2 : yrange2_resolve)
+		{
+			data_.block = one_y2.points;
+			if (!data_.block.empty())manager.add(convert_block(data_)); // 解答
+			break;
+		}
+
         // 画面表示をいくつか(yrange/Murakmi/yrange5/algo2 etc.)
         std::vector<boost::shared_ptr<gui::impl::MoveWindow>> windows;
-		if (!data_.block.empty())windows.push_back(
-			gui::make_mansort_window(split_image_, data_.block, "Murakami")
+		
+		//yrange2
+		if (!yrange2_resolve.empty())
+		{
+			for (int y2 = yrange2_resolve.size() - 1; y2 > 0; --y2)
+			{
+				windows.push_back(
+					gui::make_mansort_window(split_image_, yrange2_resolve.at(y2).points, "yrange2")
+					);
+			}
+		}
+
+		//yrange5
+		auto yrange5_resolve = yrange5(raw_data_, image_comp)(yrange2_.sorted_matrix());
+		if (!yrange5_resolve.empty())
+		{
+			for (int y5 = yrange5_resolve.size() - 1; y5 > 0; --y5)
+			{
+				windows.push_back(
+					gui::make_mansort_window(split_image_, yrange5_resolve.at(y5).points, "yrange5")
+					);
+			}
+		}
+
+		//murakami
+		if (!murakami_resolve.empty())windows.push_back(
+            gui::make_mansort_window(split_image_, murakami_resolve, "Murakami")
             );
-		/*
-		if (!data_.block.empty())windows.push_back(
-			gui::make_mansort_window(split_image_, data_.block, "Murakami")
-            );
-		*/
-		if(data_.block.empty())windows.push_back(
-			gui::make_mansort_window(split_image_, "You are the sorter!")
-	    );
+
+		//どっちもダメだった時
+		if (yrange2_resolve.empty() && yrange5_resolve.empty()/*&& murakami_resolve.empty()*/){
+			windows.push_back(
+				gui::make_mansort_window(split_image_, "Yor are the sorter!!! Sort this!")
+				);
+		}
+
         boost::thread th(
             [&]()
             {
                 // futureリストでvalidを巡回し，閉じられたWindowから解とする
                 while(!windows.empty())
                 {
-                    for(auto it = windows.begin(); it != windows.end();)
+                     for(auto it = windows.begin(); it != windows.end();)
                     {
-                        auto res = gui::get_result(*it);
-                        if(res)
-                        {
-                            data_.block = res.get();
-                            manager.add(convert_block(data_)); // 解答
+                         auto res = gui::get_result(*it);
+						 if (res)
+						 {
+							 data_.block = res.get();
+							 manager.add(convert_block(data_)); // 解答
 
-                            it = windows.erase(it);
-                        }
+							 it = windows.erase(it);
+						 }
                         else ++it;
                     }
                 }
@@ -138,7 +173,7 @@ private:
         std::string const path("prob01.ppm");
         return ppm_reader().from_file(path);
 #endif
-     }
+    }
 
     question_data get_skelton_question(question_raw_data const& raw) const
     {
@@ -165,7 +200,7 @@ private:
             {
                 auto const& target = data.block[i][j];
                 res.block[target.y][target.x] = point_type{j, i};
-            }
+		}
         }
 
         return res;
@@ -179,7 +214,7 @@ private:
     split_image_type  split_image_;
 
     mutable network::client client_;
-    pixel_sorter<Murakami> sorter_;
+    pixel_sorter<yrange5> sorter_;
 };
 
 question_data convert_block(question_data const& data)
@@ -200,23 +235,23 @@ question_data convert_block(question_data const& data)
 
 int main()
 {
-    auto const ploblemid = 0;
+    auto const ploblemid = 1;
     auto const token     = "3935105806";
 
     analyzer         analyze(ploblemid, token);
-    algorithm      algo;
+    algorithm_2      algo;
     position_manager manager;
 
     boost::thread thread(boost::bind(&analyzer::operator(), &analyze, std::ref(manager)));
 
-    while(thread.joinable())
+    while(true)
     {
         if(!manager.empty())
         {
             // 手順探索部
             auto question = manager.get();
             algo.reset(question);
-            auto const answer = algo.get();
+    auto const answer = algo.get();
 
             if(answer) // 解が見つかった
             {
