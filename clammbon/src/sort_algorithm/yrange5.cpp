@@ -259,13 +259,14 @@ std::vector<answer_type_y> yrange5::operator() (std::vector<std::vector<std::vec
 	std::sort(answer.begin(), answer.end(), [](answer_type_y a, answer_type_y b){return a.score < b.score; });
 	if (answer.size() >= yrange5_show_ans) answer.resize(yrange5_show_ans);
 
-#pragma omp parallel for
-	for (int c = 0; c < answer.size(); ++c)
-	{
-		row_column_replacement(answer.at(c));
-	}
+//#pragma omp parallel for
+//	for (int c = 0; c < answer.size(); ++c)
+//	{
+//		row_column_replacement(answer.at(c));
+//	}
 	
-	std::sort(answer.begin(), answer.end(), [](answer_type_y a, answer_type_y b){return a.score < b.score; });
+	//スコアの良いものが最上位レイヤーに来るように
+	std::sort(answer.begin(), answer.end(), [](answer_type_y a, answer_type_y b){return a.score > b.score; });
 
 #ifdef _DEBUG
 //	//一枚のcv::Matにする

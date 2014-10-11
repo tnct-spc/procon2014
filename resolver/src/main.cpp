@@ -78,42 +78,55 @@ public:
         yrange2 yrange2_(raw_data_, image_comp);
         Murakami murakami_(raw_data_, image_comp);
 		
-		std::vector<std::vector<point_type>> yrange2_resolve;
-		if (!yrange2_().empty())yrange2_resolve = yrange2_()[0].points;
+		//std::vector<point_type> yrange2_resolve;
+		//if (!yrange2_().empty())yrange2_resolve = yrange2_()[0].points;
+		auto yrange2_resolve = yrange2_();
         auto murakami_resolve = murakami_()[0].points;
 
-        data_.block = yrange2_resolve;
-        if(!data_.block.empty())manager.add(convert_block(data_)); // 解答
-                
+		for (auto const& one_y2 : yrange2_resolve)
+		{
+			data_.block = one_y2.points;
+			if (!data_.block.empty())manager.add(convert_block(data_)); // 解答
+			break;
+		}
+
         // 画面表示をいくつか(yrange/Murakmi/yrange5/algo2 etc.)
         std::vector<boost::shared_ptr<gui::impl::MoveWindow>> windows;
-		if (!yrange2_resolve.empty())windows.push_back(
-            gui::make_mansort_window(split_image_, yrange2_resolve, "yrange2")
-            );
+		
+		//yrange2
+		if (!yrange2_resolve.empty())
+		{
+			for (auto const& one_y2 : yrange2_resolve)
+			{
+				windows.push_back(
+					gui::make_mansort_window(split_image_, one_y2.points, "yrange2")
+					);
+			}
+		}
+
+		//yrange5
+		auto yrange5_resolve = yrange5(raw_data_, image_comp)(yrange2_.sorted_matrix());
+		if (!yrange5_resolve.empty())
+		{
+			for (auto const& one_y5 : yrange5_resolve)
+			{
+				windows.push_back(
+					gui::make_mansort_window(split_image_, one_y5.points, "yrange5")
+					);
+			}
+		}
+
+		//murakami
 		if (!murakami_resolve.empty())windows.push_back(
             gui::make_mansort_window(split_image_, murakami_resolve, "Murakami")
             );
-		if (yrange2_resolve.empty() && murakami_resolve.empty()){//どっちもダメだった時
+
+		//どっちもダメだった時
+		if (yrange2_resolve.empty() && yrange5_resolve.empty()/*&& murakami_resolve.empty()*/){
 			windows.push_back(
 				gui::make_mansort_window(split_image_, "Yor are the sorter!!! Sort this!")
 				);
 		}
-
-		boost::thread y5_th(
-			[&]()
-		{
-			auto yrange5_resolve = yrange5(raw_data_, image_comp)(yrange2_.sorted_matrix());
-			if (!yrange5_resolve.empty())
-			{
-				for (auto const& one_y5 : yrange5_resolve)
-				{
-					windows.push_back(
-						gui::make_mansort_window(split_image_, one_y5.points, "yrange5")
-						);
-				}
-			}
-		});
-
 
         boost::thread th(
             [&]()
@@ -138,7 +151,6 @@ public:
 
         gui::wait_all_window();
 
-        y5_th.join();
         th.join();
         
     }

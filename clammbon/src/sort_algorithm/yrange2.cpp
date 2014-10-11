@@ -261,14 +261,14 @@ std::vector<answer_type_y> yrange2::operator() ()
 	std::sort(answer.begin(), answer.end(), [](answer_type_y a, answer_type_y b){return a.score < b.score; });
 	if (answer.size() >= yrange2_show_ans) answer.resize(yrange2_show_ans);
 
-	//一枚のcv::Matにする
-#pragma omp parallel for
-	for (int c = 0; c < answer.size(); ++c)
-	{
-		answer.at(c).mat_image = std::move(combine_image(answer.at(c)));
-	}
-
 #ifdef _DEBUG
+//	//一枚のcv::Matにする
+//#pragma omp parallel for
+//	for (int c = 0; c < answer.size(); ++c)
+//	{
+//		answer.at(c).mat_image = std::move(combine_image(answer.at(c)));
+//	}
+
     std::cout << "There are " << yrange2_ans << " solutions by yrange2." << std::endl;
 	for (auto const& one_answer : answer)
 	{
@@ -283,7 +283,7 @@ std::vector<answer_type_y> yrange2::operator() ()
 		}
 		std::cout << "score = " << one_answer.score << std::endl;
 	}
-	gui::show_image(data_, comp_, answer);
+//	gui::show_image(data_, comp_, answer);
 #endif
 	return answer;
 }
