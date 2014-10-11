@@ -227,7 +227,7 @@ int main()
 
     boost::thread thread(boost::bind(&analyzer::operator(), &analyze, std::ref(manager)));
 
-    while(true)
+    while(thread.joinable())
     {
         if(!manager.empty())
         {
