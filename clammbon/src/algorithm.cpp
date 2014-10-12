@@ -1,4 +1,4 @@
-﻿#define NDEBUG
+﻿//#define NDEBUG
 #include <algorithm>
 #include <cassert>
 #include <iostream>
@@ -481,6 +481,12 @@ void algorithm::impl::greedy()
             } else if (target.y == height - 2 && selecting_cur.y == height - 2 && matrix[selecting_cur.y][selecting_cur.x + 1] == target.down()) {
                 std::cout << "SPECIAL CASE 4" << std::endl;
                 move_selecting<'D', 'R', 'U', 'R', 'D', 'L', 'L', 'U', 'R', 'D', 'R', 'U', 'L', 'L', 'D', 'R'>();
+            } else if (target.x == width - 2 && selecting_cur.x == width - 3 && matrix[selecting_cur.y - 1][selecting_cur.x + 1] == target.right()) {
+                std::cout << "SPECIAL CASE 5" << std::endl;
+                move_selecting<'R', 'U', 'R', 'D', 'L', 'D', 'R', 'U', 'U', 'L', 'D', 'R', 'D'>();
+            } else if (target.y == height - 2 && selecting_cur.y == height - 3 && matrix[selecting_cur.y + 1][selecting_cur.x - 1] == target.down()) {
+                std::cout << "SPECIAL CASE 6" << std::endl;
+                move_selecting<'D', 'L', 'D', 'R', 'U', 'R', 'D', 'L', 'L', 'U', 'R', 'D', 'R'>();
             }
         }
 

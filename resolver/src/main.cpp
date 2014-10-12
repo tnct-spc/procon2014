@@ -239,7 +239,7 @@ int main()
     auto const token     = "3935105806";
 
     analyzer         analyze(ploblemid, token);
-    algorithm_2      algo;
+    algorithm        algo;
     position_manager manager;
 
     boost::thread thread(boost::bind(&analyzer::operator(), &analyze, std::ref(manager)));
