@@ -21,6 +21,32 @@ public:
     pixel_sorter<Algorithm>(){}
     virtual ~pixel_sorter<Algorithm>() = default;
 
+    return_type operator() (question_raw_data const& raw, split_image_type const& splited_image) const
+    {
+	    auto const& proposed = proposed_answer(raw, splited_image);
+
+	    // TODO: ここで返却されたデータのうち，適しているものを選択してreturn
+
+	    if (proposed.size() == 0) return std::vector < std::vector<point_type> > {};
+	    else return proposed.at(0).points;
+    }
+
+    std::vector<answer_type_y> proposed_answer(question_raw_data const& raw, split_image_type const& splited_image) const
+    {
+	    //
+	    // Sub Algorithm
+	    // 正しい位置に並べた時に左上から，1~nまでの番号をふり，それが今どこにあるのかという情報をreturn
+	    //
+
+	    //split_image_type const& splited_image = split_.split_image(raw);
+	    compared_type const& comp = this->image_comp(raw,splited_image);
+
+	    Algorithm algo(raw, comp);
+	    auto const& proposed = algo();
+
+	    return proposed;
+    }
+
 private:
 
     //2つのピクセル間の距離を2乗した値を返却．result = r^2 + g^2 + b^2
