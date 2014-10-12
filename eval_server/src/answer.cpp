@@ -22,11 +22,9 @@ void Answer::convert(std::string const& s)
 
         int nx; // 交換回数
         ss >> nx;
-        std::string move;
+        std::string move("");
         ss >> move;
-        for(int j = 0; j < nx; j++) {
-            a.actions.push_back(move[j]);
-        }
+        a.actions = std::move(move);
 
         al.list.push_back(a);
     }
