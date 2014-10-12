@@ -217,20 +217,26 @@ private:
     pixel_sorter<yrange5> sorter_;
 };
 
-question_data convert_block(question_data const& data)
+void submit_func(question_data question, analyzer const& analyze)
 {
-    auto res = data.clone();
+    algorithm_2 algo;
+    algo.reset(question);
 
-    for(int i = 0; i < data.size.second; ++i)
+    auto const answer = algo.get();
+    if(answer) // 解が見つかった
     {
-        for(int j = 0; j < data.size.first; ++j)
-        {
-            auto const& target = data.block[i][j];
-            res.block[target.y][target.x] = point_type{j, i};
-        }
+#if ENABLE_NETWORK_IO
+        // TODO: 前より良くなったら提出など(普通にいらないかも．提出前に目grepしてるわけだし)
+        auto result = analyze.submit(answer.get());
+        std::cout << "Submit Result: " << result << std::endl;
+#else
+        test_tool::emulator emu(question);
+        auto result = emu.start(answer.get());
+        std::cout << "Wrong: " << result.wrong << std::endl;
+        std::cout << "Cost : " << result.cost  << std::endl;
+        std::cout << "---" << std::endl;
+#endif
     }
-
-    return res;
 }
 
 int main()
@@ -239,38 +245,26 @@ int main()
     auto const token     = "3935105806";
 
     analyzer         analyze(ploblemid, token);
-    algorithm_2      algo;
     position_manager manager;
 
     boost::thread thread(boost::bind(&analyzer::operator(), &analyze, std::ref(manager)));
+    boost::thread_group submit_threads;
 
     while(true)
     {
         if(!manager.empty())
         {
-            // 手順探索部
             auto question = manager.get();
-            algo.reset(question);
-    auto const answer = algo.get();
 
-            if(answer) // 解が見つかった
-            {
-#if ENABLE_NETWORK_IO
-                // TODO: 前より良くなったら提出など(普通にいらないかも．提出前に目grepしてるわけだし)
-                auto result = analyze.submit(answer.get());
-                std::cout << "Submit Result: " << result << std::endl;
-#else
-                test_tool::emulator emu(question);
-                auto result = emu.start(answer.get());
-                std::cout << "Wrong: " << result.wrong << std::endl;
-                std::cout << "Cost : " << result.cost  << std::endl;
-                std::cout << "---" << std::endl;
-#endif
-            }
+            // 手順探索部
+            submit_threads.create_thread(
+                boost::bind(submit_func, question, boost::ref(analyze))
+                );
         }
     }
 
     thread.join();
+    submit_threads.join_all();
     
     return 0;
 }
