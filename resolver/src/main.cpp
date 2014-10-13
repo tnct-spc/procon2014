@@ -218,6 +218,7 @@ void submit_func(question_data question, analyzer const& analyze)
 	int wrong_number = std::stoi(result.substr(result.find(" ")));
 	if(wrong_number == 0)
 	{
+        algo2.reset(question);
 		auto const answer = algo2.get();
 		if (answer)
 		{
