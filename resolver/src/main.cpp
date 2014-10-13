@@ -77,82 +77,65 @@ public:
         // 原画像推測部
         yrange2 yrange2_(raw_data_, image_comp);
         Murakami murakami_(raw_data_, image_comp);
-		
-		//std::vector<point_type> yrange2_resolve;
-		//if (!yrange2_().empty())yrange2_resolve = yrange2_()[0].points;
-		auto yrange2_resolve = yrange2_();
-        auto murakami_resolve = murakami_()[0].points;
 
-		for (auto const& one_y2 : yrange2_resolve)
-		{
-			data_.block = one_y2.points;
-			if (!data_.block.empty())manager.add(convert_block(data_)); // 解答
-			break;
-		}
+        // GUI Threadの起動
+        gui::manager gui_thread(
+            [this, &manager](std::vector<std::vector<point_type>> const& data)
+            {
+                // 回答としてマーク -> 回答ジョブに追加
+                auto clone = data_.clone();
+                clone.block = data;
+                manager.add(convert_block(clone));
+            });
 
-        // 画面表示をいくつか(yrange/Murakmi/yrange5/algo2 etc.)
-        std::vector<boost::shared_ptr<gui::impl::MoveWindow>> windows;
-		
-		//yrange2
-		if (!yrange2_resolve.empty())
-		{
-			for (int y2 = yrange2_resolve.size() - 1; y2 > 0; --y2)
-			{
-				windows.push_back(
-					gui::make_mansort_window(split_image_, yrange2_resolve.at(y2).points, "yrange2")
-					);
-			}
-		}
-
-		//yrange5
-		auto yrange5_resolve = yrange5(raw_data_, image_comp)(yrange2_.sorted_matrix());
-		if (!yrange5_resolve.empty())
-		{
-			for (int y5 = yrange5_resolve.size() - 1; y5 > 0; --y5)
-			{
-				windows.push_back(
-					gui::make_mansort_window(split_image_, yrange5_resolve.at(y5).points, "yrange5")
-					);
-			}
-		}
-
-		//murakami
-		if (!murakami_resolve.empty())windows.push_back(
-            gui::make_mansort_window(split_image_, murakami_resolve, "Murakami")
-            );
-
-		//どっちもダメだった時
-		if (yrange2_resolve.empty() && yrange5_resolve.empty()/*&& murakami_resolve.empty()*/){
-			windows.push_back(
-				gui::make_mansort_window(split_image_, "Yor are the sorter!!! Sort this!")
-				);
-		}
-
-        boost::thread th(
+        // YRange2 -> YRange5 Thread
+        boost::thread y_thread(
             [&]()
             {
-                // futureリストでvalidを巡回し，閉じられたWindowから解とする
-                while(!windows.empty())
-                {
-                     for(auto it = windows.begin(); it != windows.end();)
-                    {
-                         auto res = gui::get_result(*it);
-						 if (res)
-						 {
-							 data_.block = res.get();
-							 manager.add(convert_block(data_)); // 解答
-
-							 it = windows.erase(it);
-						 }
-                        else ++it;
-                    }
+                // YRange2
+                auto yrange2_resolve = yrange2_();
+                if (!yrange2_resolve.empty())
+		        {
+			        for (int y2 = yrange2_resolve.size() - 1; y2 > 0; --y2)
+			        {
+                        gui_thread.push_back(
+                            boost::bind(gui::make_mansort_window, split_image_, yrange2_resolve.at(y2).points, "yrange2")
+                            );
+			        }
+		        }
+                
+                // YRange5
+                auto yrange5_resolve = yrange5(raw_data_, image_comp)(yrange2_.sorted_matrix());
+                if (!yrange5_resolve.empty())
+		        {
+			        for (int y5 = yrange5_resolve.size() - 1; y5 > 0; --y5)
+			        {
+                        gui_thread.push_back(
+                            boost::bind(gui::make_mansort_window, split_image_, yrange5_resolve.at(y5).points, "yrange5")
+                            );
+			        }
                 }
             });
 
-        gui::wait_all_window();
+        // Murakami Thread
+        boost::thread m_thread(
+            [&]()
+            {
+                // Murakami
+                auto murakami_resolve = murakami_()[0].points;
+                gui_thread.push_back(
+                    boost::bind(gui::make_mansort_window, split_image_, murakami_resolve, "Murakami")
+                );
+            });
 
-        th.join();
-        
+        gui_thread.push_back(
+            boost::bind(gui::make_mansort_window, split_image_, "Yor are the sorter!!! Sort this!")
+            );
+
+        // 各Threadの待機
+        y_thread.join();
+        m_thread.join();
+        gui_thread.wait_all_window();   
     }
 
     std::string submit(answer_type const& ans) const
@@ -244,7 +227,7 @@ int main()
 
     boost::thread thread(boost::bind(&analyzer::operator(), &analyze, std::ref(manager)));
 
-    while(true)
+    while(thread.joinable())
     {
         if(!manager.empty())
         {
