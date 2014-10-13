@@ -202,7 +202,8 @@ private:
 
 void submit_func(question_data question, analyzer const& analyze)
 {
-    algorithm_2 algo;
+    algorithm algo;
+    algorithm_2 algo2;
     algo.reset(question);
 
     auto const answer = algo.get();
@@ -212,6 +213,19 @@ void submit_func(question_data question, analyzer const& analyze)
         // TODO: 前より良くなったら提出など(普通にいらないかも．提出前に目grepしてるわけだし)
         auto result = analyze.submit(answer.get());
         std::cout << "Submit Result: " << result << std::endl;
+
+	// FIXME: 汚いしセグフォする
+	int wrong_number = std::stoi(result.substr(result.find(" ")));
+	if(wrong_number == 0)
+	{
+		auto const answer = algo2.get();
+		if (answer)
+		{
+			auto result = analyze.submit(answer.get());
+			std::cout << "Submit Result: " << result << std::endl;
+			std::cout << "勝った！" << std::endl;
+		}
+	}
 #else
         test_tool::emulator emu(question);
         auto result = emu.start(answer.get());
