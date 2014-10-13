@@ -40,6 +40,7 @@ namespace gui
         );
     
     boost::optional<std::vector<std::vector<point_type>>> get_result(boost::shared_ptr<impl::MoveWindow>& ptr);
+    bool is_hide_window(boost::shared_ptr<impl::MoveWindow>& ptr);
 
 	void combine_show_image(question_raw_data const& data_, compared_type const& comp_, std::vector<answer_type_y> const& answer);
 	void combine_show_image(question_raw_data const& data_, compared_type const& comp_, std::vector<std::vector<point_type>>const& matrix);

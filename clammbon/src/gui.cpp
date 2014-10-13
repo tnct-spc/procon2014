@@ -34,12 +34,10 @@ namespace gui
                     for(auto it = windows_.begin(); it != windows_.end();)
                     {
                         auto res = gui::get_result(*it);
-					    if (res)
-					    {
-                            callback(res.get()); // 解答
-						    it = windows_.erase(it);
-					    }
-                        else ++it;
+                        if (res) callback(res.get()); // 解答
+
+                        if(gui::is_hide_window(*it)) it = windows_.erase(it);
+                        else                         ++it;
                     }
 
                     Fl::wait(0);
@@ -100,11 +98,16 @@ namespace gui
 
         return make_mansort_window(splitted, position, window_name);
     }
-
+    
     boost::optional<std::vector<std::vector<point_type>>> get_result(boost::shared_ptr<impl::MoveWindow>& ptr)
     {
-        if(ptr->visible()) return boost::none;
-        else               return ptr->result();
+        if(ptr->wait_submit()) return ptr->result();
+        else                   return boost::none;
+    }
+
+    bool is_hide_window(boost::shared_ptr<impl::MoveWindow>& ptr)
+    {
+        return !ptr->visible();
     }
 
 	void combine_show_image(question_raw_data const& data_, compared_type const& comp_, std::vector<answer_type_y> const& answer)
