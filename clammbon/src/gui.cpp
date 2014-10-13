@@ -49,7 +49,7 @@ namespace gui
 
     manager::~manager()
     {
-        th_->detach();
+        th_->join();
         th_.reset();
     }
 
