@@ -94,10 +94,12 @@ public:
             {
                 // YRange2
                 auto yrange2_resolve = yrange2_();
+				std::cout << "yrange2_resolve size = " << yrange2_resolve.size() << std::endl;
                 if (!yrange2_resolve.empty())
 		        {
-			        for (int y2 = yrange2_resolve.size() - 1; y2 > 0; --y2)
+			        for (int y2 = yrange2_resolve.size() - 1; y2 >= 0; --y2)
 			        {
+						std::cout << "y2 loop" << std::endl;
                         gui_thread.push_back(
                             boost::bind(gui::make_mansort_window, split_image_, yrange2_resolve.at(y2).points, "yrange2")
                             );
@@ -108,7 +110,7 @@ public:
                 auto yrange5_resolve = yrange5(raw_data_, image_comp)(yrange2_.sorted_matrix());
                 if (!yrange5_resolve.empty())
 		        {
-			        for (int y5 = yrange5_resolve.size() - 1; y5 > 0; --y5)
+			        for (int y5 = yrange5_resolve.size() - 1; y5 >= 0; --y5)
 			        {
                         gui_thread.push_back(
                             boost::bind(gui::make_mansort_window, split_image_, yrange5_resolve.at(y5).points, "yrange5")

@@ -137,6 +137,7 @@ std::vector<answer_type_y> yrange2::operator() ()
 	answer.reserve(width*height * 2);
 	splitter sp;
 
+	omp_init_lock(&ol);
 
 	//すべてのピースから並べ始めるためのループ
 #pragma omp parallel for
