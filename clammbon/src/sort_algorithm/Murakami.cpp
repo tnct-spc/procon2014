@@ -407,6 +407,7 @@ Murakami::block_type Murakami::force_combine_block(std::vector<Murakami::block_t
 	auto max_block_it = std::_Max_element(block_list.begin(), block_list.end(), [](const block_type& a, const block_type& b){
 		return(a.size() + a[0].size() > b.size() + b[0].size());
 	});
+	auto pick_up_without_it[&block_list](const block_type )
 	auto const pick_up_without_it[&block_list]
 	for (auto i : (*max_block_it)){
 		for (auto j : i){
