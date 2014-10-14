@@ -63,9 +63,10 @@ public:
     explicit analyzer(
         std::string const& server_addr,
         int const problem_id, std::string const& player_id,
-        bool const is_yrange, bool const is_murakami)
+        bool const is_yrange, bool const is_murakami, bool const is_blur
+        )
         : client_(server_addr), problem_id_(problem_id), player_id_(player_id),
-          is_yrange_(is_yrange), is_murakami_(is_murakami)
+          is_yrange_(is_yrange), is_murakami_(is_murakami), is_blur_(is_blur)
     {
     }
     virtual ~analyzer() = default;
@@ -78,7 +79,9 @@ public:
 
         // 2次元画像に分割
         split_image_ = splitter().split_image(raw_data_);
-        auto image_comp = sorter_.image_comp(raw_data_, split_image_);
+        auto image_comp = 
+            (!is_blur_) ? sorter_.image_comp(raw_data_, split_image_)  // 通常
+                        : sorter_.image_comp(raw_data_, split_image_); // TODO: ぼかし
 
         // 原画像推測部
         yrange2 yrange2_(raw_data_, image_comp);
@@ -215,6 +218,7 @@ private:
     std::string const player_id_;
     bool const is_yrange_;
     bool const is_murakami_;
+    bool const is_blur_;
 
     question_raw_data raw_data_;
     question_data         data_;
@@ -268,6 +272,7 @@ int main(int const argc, char const* argv[])
     auto const  token = "3935105806";
     bool        is_yrange;
     bool        is_murakami;
+    bool        is_blur;
 
     try
     {
@@ -277,6 +282,7 @@ int main(int const argc, char const* argv[])
             ("help,h"    , "produce help message")
             ("yrange,y"  , "process yrange2/5")
             ("muramami,m", "process murakami")
+            ("blur,b"    , "gaussian blur to image")
             ("server,s"  , po::value<std::string>(&server_addr), "(require)set server ip address")
             ("problem,p" , po::value<int>(&problemid)          , "(require)set problem_id");
 
@@ -292,6 +298,7 @@ int main(int const argc, char const* argv[])
 
         is_yrange   = argmap.count("yrange");
         is_murakami = argmap.count("murakami");
+        is_blur     = argmap.count("blur");
     }
     catch(boost::program_options::error_with_option_name const& e)
     {
@@ -299,7 +306,7 @@ int main(int const argc, char const* argv[])
         std::quick_exit(-1);
     }
 
-    analyzer         analyze(server_addr, problemid, token, is_yrange, is_murakami);
+    analyzer         analyze(server_addr, problemid, token, is_yrange, is_murakami, is_blur);
     position_manager manager;
 
     boost::thread thread(boost::bind(&analyzer::operator(), &analyze, std::ref(manager)));
