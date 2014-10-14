@@ -13,7 +13,7 @@ public:
     split_image_type split_image(question_raw_data const& raw) const;
 
 	//ぼかした分割画像
-	split_image_type splitter::split_image_gaussianblur(question_raw_data const& raw) const;
+	split_image_type split_image_gaussianblur(split_image_type split_pixels) const;
 
 	//cv::arcLength用グレースケールで読み込んでエッジ検出してmatにかためて返す関数
 	cv::Mat combine_grey(question_raw_data const& raw, std::vector<std::vector<point_type>> const& matrix)const;

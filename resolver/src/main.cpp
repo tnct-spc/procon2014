@@ -74,6 +74,12 @@ public:
         split_image_ = splitter().split_image(raw_data_);
         auto image_comp = sorter_.image_comp(raw_data_, split_image_);
 
+		// 2次元画像に分割
+		//ぼかし使うならこっち
+		//split_image_ = splitter().split_image(raw_data_);
+		//split_image_gaussianblur = splitter().split_image_gaussianblur(split_image_);
+		//auto image_comp = sorter_.image_comp(raw_data_, split_image_gaussianblur);
+
         // 原画像推測部
         yrange2 yrange2_(raw_data_, image_comp);
         Murakami murakami_(raw_data_, image_comp);
@@ -195,6 +201,7 @@ private:
     question_raw_data raw_data_;
     question_data         data_;
     split_image_type  split_image_;
+	split_image_type  split_image_gaussianblur;
 
     mutable network::client client_;
     pixel_sorter<yrange5> sorter_;
