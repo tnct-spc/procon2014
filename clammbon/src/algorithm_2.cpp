@@ -242,7 +242,7 @@ void algorithm_2::reset(question_data const& data)
 	sub_history.resize(10000);
 	root1.resize(1024);
 	root2.resize(1024);
-#ifdef debug
+#ifdef debug_incost
 	std::cout << "\ngoal=";
 	std::cin >> goal;
 	std::cout << "sentaku=";
