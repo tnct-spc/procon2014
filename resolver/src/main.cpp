@@ -123,7 +123,7 @@ public:
             {
                 // Murakami
                 auto murakami_resolve = murakami_()[0].points;
-                gui_thread.push_back(
+                if(!murakami_resolve.empty())gui_thread.push_back(
                     boost::bind(gui::make_mansort_window, split_image_, murakami_resolve, "Murakami")
                 );
             });
