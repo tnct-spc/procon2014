@@ -37,6 +37,24 @@ split_image_type splitter::split_image(question_raw_data const& raw) const
     return split_pixels;
 }
 
+split_image_type splitter::split_image_gaussianblur(question_raw_data const& raw) const
+{
+	split_image_type const& split_pixels = split_image(raw);
+	split_image_type gaussianblur_image;
+	gaussianblur_image.resize(raw.split_num.second);
+
+	for (int i = 0; i < raw.split_num.second; ++i)
+	{
+		gaussianblur_image.at(i).resize(raw.split_num.first);
+		for (int j = 0; j < raw.split_num.first; ++j)
+		{
+			cv::GaussianBlur(split_pixels[i][j], gaussianblur_image[i][j], cv::Size(11, 11), 10, 10);
+		}
+	}
+
+	return gaussianblur_image;
+}
+
 image_type splitter::join_image(split_image_type const& source) const
 {
     int const part_width   = source[0][0].cols;
