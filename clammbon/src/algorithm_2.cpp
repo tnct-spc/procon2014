@@ -242,14 +242,14 @@ void algorithm_2::reset(question_data const& data)
 	sub_history.resize(10000);
 	root1.resize(1024);
 	root2.resize(1024);
-
+#ifdef debug
 	std::cout << "\ngoal=";
 	std::cin >> goal;
 	std::cout << "sentaku=";
 	std::cin >> sentaku;
 	std::cout << "coukan=";
 	std::cin >> coukan;
-
+#endif
 }
 
 auto algorithm_2::get() -> boost::optional<return_type>
@@ -283,7 +283,8 @@ auto algorithm_2::get() -> boost::optional<return_type>
 #ifdef debug
 			//完成☆後で消したりなんたり
 			std::string result = timer.format();
-			std::cout << "\n処理時間:" << result << std::endl;
+			std::cout << "end" << std::endl;
+			std::cout << "処理時間:" << result << std::endl;
 			for (int i = 0; i < history_limit; i++){
 				switch (history[i]){
 				case 16:
@@ -320,9 +321,43 @@ auto algorithm_2::get() -> boost::optional<return_type>
 			debug_S /= 2;
 			std::cout << "選択コスト=" << cost_s << ",交換コスト=" << cost_c << std::endl;
 			std::cout << "cost=" << debug_S * cost_s + debug_C * cost_c << " S: " << debug_S << " C: " << debug_C << std::endl;
-			harray.end();
-			return 0;
 #endif
+			harray.end();
+			//解をanswer_typeにして返す
+			answer_type answerlist;
+			point_type position;
+			std::ostringstream stream;
+			int pos = 0;
+			for (int count = 0; pos < history_limit; count++){
+				position.y = history[pos];
+				pos++;
+				position.x = history[pos];
+				pos++;
+				while (pos < history.size() && 16 <= history[pos]){
+					switch (history[pos]){
+					case 16:
+					case 20:
+						stream << "U";
+						break;
+					case 17:
+					case 21:
+						stream << "R";
+						break;
+					case 18:
+					case 22:
+						stream << "D";
+						break;
+					case 19:
+					case 23:
+						stream << "L";
+						break;
+					}
+					pos++;
+				}
+				answerlist.list.push_back({ position, stream.str() });
+				stream.str("");
+			}
+			return answerlist;
 		}
 	}
 }

@@ -4,7 +4,6 @@
 #include <vector>
 #include <iomanip>
 #include "data_type.hpp"
-#include <boost/container/set.hpp>
 #include <set>
 
 //û”[”z—ñ
@@ -20,7 +19,7 @@ public:
 	void pop(int *in_cost, std::vector<int> &in_table, std::vector<int> &in_history, int *in_history_limit);
 	//©æo
 	void push(int *out_cost, std::vector<int> &out_table, std::vector<int> &out_history, int *out_history_limit);
-
+	//vector‚Ì‰ğ•ú
 	void end();
 private:
 	int yx, y, x;
@@ -66,8 +65,6 @@ public:
 private:
 
 	heap harray;
-	//std::vector<std::vector<uint8_t>> start_distance;
-	//std::vector<std::vector<uint8_t>> goal_distance;
 
 	int goal = 7;
 	int sentaku = 10;
