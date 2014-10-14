@@ -44,7 +44,7 @@ private:
 	int cost_change;
 	int *table;
 	int *sub_table;
-	int goal = 1;
+	int goal = 10;
 	int sentaku = 1;
 	int coukan = 1;
 	int size_million_history = 1;
