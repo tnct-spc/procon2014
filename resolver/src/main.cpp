@@ -73,15 +73,16 @@ public:
 
     void operator() (position_manager& manager)
     {
+        splitter sp;
+
         // 問題文の入手
         raw_data_ = get_raw_question();
         data_     = get_skelton_question(raw_data_);
 
         // 2次元画像に分割
-        split_image_ = splitter().split_image(raw_data_);
-        auto image_comp = 
-            (!is_blur_) ? sorter_.image_comp(raw_data_, split_image_)  // 通常
-                        : sorter_.image_comp(raw_data_, split_image_); // TODO: ぼかし
+        split_image_ = sp.split_image(raw_data_);
+//        if(is_blur_) split_image_ = sp.split_image_gaussianblur(split_image_);
+        auto const image_comp = sorter_.image_comp(raw_data_, split_image_);
 
         // 原画像推測部
         yrange2 yrange2_(raw_data_, image_comp);
