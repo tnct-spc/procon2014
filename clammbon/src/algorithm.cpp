@@ -44,6 +44,7 @@ private:
     void move_to(point_type const& to);
     bool must_chagne_select(step_type const& step) const;
     void add_step(step_type& step);
+    point_type get_point_by_point(point_type const& point) const;
 
     template <char T>
     void move_selecting();
@@ -467,24 +468,25 @@ void algorithm::impl::greedy()
             // ターゲットの真の原座標が下端の場合
             move_to(waypoint.left().up());
             move_selecting<'D', 'R'>();
-        } else {
-            std::cout << "selecting_cur : " << selecting_cur << ", target : " << target << std::endl;
-            if (target.x == width - 2 && selecting_cur.x > 0 && selecting_cur.y > 0 && matrix[selecting_cur.y - 1][selecting_cur.x - 1] == target.right()) {
+        } else if (target.x == width - 2) {
+            if (selecting_cur.x == width - 1 && get_point_by_point(waypoint.left()) == target.right()) {
                 std::cout << "SPECIAL CASE 1" << std::endl;
                 move_selecting<'L', 'U', 'R', 'D', 'L', 'D', 'R', 'U', 'U', 'L', 'D', 'R', 'D'>();
-            } else if (target.y == height - 2 && selecting_cur.x > 0 && selecting_cur.y > 0 && matrix[selecting_cur.y - 1][selecting_cur.x - 1] == target.down()) {
+            } else if (selecting_cur.x == width - 2 && get_point_by_point(waypoint.left().down()) == target.right()) {
                 std::cout << "SPECIAL CASE 2" << std::endl;
-                move_selecting<'U', 'L', 'D', 'R', 'U', 'R', 'D', 'L', 'L', 'U', 'R', 'D', 'R'>();
-            } else if (target.x == width - 2 && selecting_cur.x == width - 2 && matrix[selecting_cur.y + 1][selecting_cur.x] == target.right()) {
-                std::cout << "SPECIAL CASE 3" << std::endl;
                 move_selecting<'R', 'D', 'L', 'D', 'R', 'U', 'U', 'L', 'D', 'R', 'D', 'L', 'U', 'U', 'R', 'D'>();
-            } else if (target.y == height - 2 && selecting_cur.y == height - 2 && matrix[selecting_cur.y][selecting_cur.x + 1] == target.down()) {
-                std::cout << "SPECIAL CASE 4" << std::endl;
-                move_selecting<'D', 'R', 'U', 'R', 'D', 'L', 'L', 'U', 'R', 'D', 'R', 'U', 'L', 'L', 'D', 'R'>();
-            } else if (target.x == width - 2 && selecting_cur.x == width - 3 && matrix[selecting_cur.y - 1][selecting_cur.x + 1] == target.right()) {
-                std::cout << "SPECIAL CASE 5" << std::endl;
+            } else if (selecting_cur.x == width - 3 && get_point_by_point(waypoint.left()) == target.right()) {
+                std::cout << "SPECIAL CASE 3" << std::endl;
                 move_selecting<'R', 'U', 'R', 'D', 'L', 'D', 'R', 'U', 'U', 'L', 'D', 'R', 'D'>();
-            } else if (target.y == height - 2 && selecting_cur.y == height - 3 && matrix[selecting_cur.y + 1][selecting_cur.x - 1] == target.down()) {
+            }
+        } else if (target.y == height - 2) {
+            if (selecting_cur.y == height - 1 && get_point_by_point(waypoint.up()) == target.down()) {
+                std::cout << "SPECIAL CASE 4" << std::endl;
+                move_selecting<'U', 'L', 'D', 'R', 'U', 'R', 'D', 'L', 'L', 'U', 'R', 'D', 'R'>();
+            } else if (selecting_cur.y == height - 2 && get_point_by_point(waypoint.up().right()) == target.down()) {
+                std::cout << "SPECIAL CASE 5" << std::endl;
+                move_selecting<'D', 'R', 'U', 'R', 'D', 'L', 'L', 'U', 'R', 'D', 'R', 'U', 'L', 'L', 'D', 'R'>();
+            } else if (selecting_cur.y == height - 3 && get_point_by_point(waypoint.up()) == target.down()) {
                 std::cout << "SPECIAL CASE 6" << std::endl;
                 move_selecting<'D', 'L', 'D', 'R', 'U', 'R', 'D', 'L', 'L', 'U', 'R', 'D', 'R'>();
             }
@@ -858,6 +860,11 @@ bool algorithm::impl::is_finished(std::vector<std::vector<point_type>> const& ma
         }
     }
     return true;
+}
+
+point_type algorithm::impl::get_point_by_point(point_type const& point) const
+{
+    return matrix[point.y][point.x];
 }
 
 // must_chagne_select {{{2
