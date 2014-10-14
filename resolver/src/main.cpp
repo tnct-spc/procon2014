@@ -90,13 +90,19 @@ public:
 
         // YRange2 -> YRange5 Thread
         boost::thread y_thread(
-            [&]()
+            [&, this]()
             {
                 // YRange2
                 auto yrange2_resolve = yrange2_();
                 if (!yrange2_resolve.empty())
 		        {
-			        for (int y2 = yrange2_resolve.size() - 1; y2 > 0; --y2)
+                    // Shoot
+                    auto clone = data_.clone();
+                    clone.block = yrange2_resolve[0].points;
+                    manager.add(convert_block(clone));
+
+                    // GUI
+			        for (int y2 = yrange2_resolve.size() - 1; y2 >= 0; --y2)
 			        {
                         gui_thread.push_back(
                             boost::bind(gui::make_mansort_window, split_image_, yrange2_resolve.at(y2).points, "yrange2")
@@ -108,7 +114,8 @@ public:
                 auto yrange5_resolve = yrange5(raw_data_, image_comp)(yrange2_.sorted_matrix());
                 if (!yrange5_resolve.empty())
 		        {
-			        for (int y5 = yrange5_resolve.size() - 1; y5 > 0; --y5)
+                    // GUI
+			        for (int y5 = yrange5_resolve.size() - 1; y5 >= 0; --y5)
 			        {
                         gui_thread.push_back(
                             boost::bind(gui::make_mansort_window, split_image_, yrange5_resolve.at(y5).points, "yrange5")
@@ -202,7 +209,8 @@ private:
 
 void submit_func(question_data question, analyzer const& analyze)
 {
-    algorithm_2 algo;
+    algorithm algo;
+    algorithm_2 algo2;
     algo.reset(question);
 
     auto const answer = algo.get();
@@ -212,6 +220,20 @@ void submit_func(question_data question, analyzer const& analyze)
         // TODO: 前より良くなったら提出など(普通にいらないかも．提出前に目grepしてるわけだし)
         auto result = analyze.submit(answer.get());
         std::cout << "Submit Result: " << result << std::endl;
+
+	// FIXME: 汚いしセグフォする
+	int wrong_number = std::stoi(result.substr(result.find(" ")));
+	if(wrong_number == 0)
+	{
+        algo2.reset(question);
+		auto const answer = algo2.get();
+		if (answer)
+		{
+			auto result = analyze.submit(answer.get());
+			std::cout << "Submit Result: " << result << std::endl;
+			std::cout << "勝った！" << std::endl;
+		}
+	}
 #else
         test_tool::emulator emu(question);
         auto result = emu.start(answer.get());
