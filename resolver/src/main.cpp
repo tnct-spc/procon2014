@@ -90,12 +90,18 @@ public:
 
         // YRange2 -> YRange5 Thread
         boost::thread y_thread(
-            [&]()
+            [&, this]()
             {
                 // YRange2
                 auto yrange2_resolve = yrange2_();
                 if (!yrange2_resolve.empty())
 		        {
+                    // Shoot
+                    auto clone = data_.clone();
+                    clone.block = yrange2_resolve[0].points;
+                    manager.add(convert_block(clone));
+
+                    // GUI
 			        for (int y2 = yrange2_resolve.size() - 1; y2 >= 0; --y2)
 			        {
                         gui_thread.push_back(
@@ -108,6 +114,7 @@ public:
                 auto yrange5_resolve = yrange5(raw_data_, image_comp)(yrange2_.sorted_matrix());
                 if (!yrange5_resolve.empty())
 		        {
+                    // GUI
 			        for (int y5 = yrange5_resolve.size() - 1; y5 >= 0; --y5)
 			        {
                         gui_thread.push_back(
@@ -123,7 +130,7 @@ public:
             {
                 // Murakami
                 auto murakami_resolve = murakami_()[0].points;
-               if(!murakami_resolve.empty())gui_thread.push_back(
+                if(!murakami_resolve.empty())gui_thread.push_back(
                     boost::bind(gui::make_mansort_window, split_image_, murakami_resolve, "Murakami")
                 );
             });
