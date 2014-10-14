@@ -17,11 +17,11 @@ public:
 	//‰Šú‰»
 	void setup(const int* y, const int* x);
 	//¨‘}“ü
-	void pop(int *in_cost, std::vector<int> &in_table, std::vector<int> &in_history, int *in_history_limit, int *in_oya);
+	void pop(int *in_cost, std::vector<int> &in_table, std::vector<int> &in_history, int *in_history_limit);
 	//©æo
-	void push(int *out_cost, std::vector<int> &out_table, std::vector<int> &out_history, int *out_history_limit, int *out_oya);
-	//e‚ÌƒAƒ“ƒT[‚ğ“f‚­
-	void pushanswer(int oyanum);
+	void push(int *out_cost, std::vector<int> &out_table, std::vector<int> &out_history, int *out_history_limit);
+
+	void end();
 private:
 	int yx, y, x;
 	int pos = 0;
@@ -32,9 +32,7 @@ private:
 	std::vector< std::vector<int> > history;
 	std::vector<int>history_limit;
 	std::vector< std::vector<int> > table;
-
 	std::vector<bool> LIST_OC;
-	std::vector<int> oya;
 
 	class NODE{
 	public:
@@ -71,9 +69,9 @@ private:
 	//std::vector<std::vector<uint8_t>> start_distance;
 	//std::vector<std::vector<uint8_t>> goal_distance;
 
-	const int goal = 10;
-	const int sentaku = 10;
-	const int coukan = 10;
+	int goal = 7;
+	int sentaku = 10;
+	int coukan = 10;
 	//1,1,1		ƒm[ƒ}ƒ‹
 	//10,5,3	‘I‘ğ‚ª’Z‚¢‚Ì‚ğì‚ê‚½
 	//10 8 4
@@ -106,8 +104,6 @@ private:
 	void shorting();
 	//Œo˜H”½“]
 	void reverse(int* x);
-	//e
-	int oya = -1;
 };
 
 #endif
