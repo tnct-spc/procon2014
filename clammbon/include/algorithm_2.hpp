@@ -66,7 +66,7 @@ private:
 
 	heap harray;
 
-	int goal = 7;
+	int goal = 10;
 	int sentaku = 10;
 	int coukan = 10;
 	//1,1,1		ƒm[ƒ}ƒ‹

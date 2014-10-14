@@ -55,7 +55,7 @@ void heap::pop(int *in_cost, std::vector<int> &in_table, std::vector<int> &in_hi
 		ok = false;
 		if (*in_cost < cost[sizepos]){
 			//このノードがiのテーブルよりコストが低い
-			//★ラベルつけてあとで消したほうがいいかも？
+			//ラベルつけてあとで消したほうがいいかも？←その必要はなさそう
 			if (LIST_OC[sizepos] == true){
 				//このノードと同じテーブルがOpenリストに含まれている
 				//◆書き換え
@@ -549,8 +549,8 @@ void algorithm_2::scanning(int y, int x, int y_before, int x_before, int URDL){
 		cost = G + S + C;
 
 #ifdef test2
-		//★@@@重要：：ここやらなきゃ
-		//★最大選択回数より大きいならやめる
+		//@@@重要：：ここやらなきゃ←やらなくてもいいかも
+		//最大選択回数より大きいならやめる
 		if (S / 15 < 3){
 			harray.pop(&cost, table, subhistory, &subhistory_limit);
 		}
