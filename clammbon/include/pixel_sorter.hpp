@@ -18,33 +18,33 @@ public:
     typedef std::vector<std::vector<direction_type<point_type>>> adjacent_type;
     typedef std::vector<std::vector<point_type>> return_type;
 
-    pixel_sorter<Algorithm>() : split_(){}
+    pixel_sorter<Algorithm>(){}
     virtual ~pixel_sorter<Algorithm>() = default;
 
     return_type operator() (question_raw_data const& raw, split_image_type const& splited_image) const
     {
-        auto const& proposed = proposed_answer(raw, splited_image);
+	    auto const& proposed = proposed_answer(raw, splited_image);
 
-        // TODO: ここで返却されたデータのうち，適しているものを選択してreturn
+	    // TODO: ここで返却されたデータのうち，適しているものを選択してreturn
 
-		if (proposed.size() == 0) return std::vector < std::vector<point_type> > {};
-		else return proposed.at(0).points;
+	    if (proposed.size() == 0) return std::vector < std::vector<point_type> > {};
+	    else return proposed.at(0).points;
     }
 
     std::vector<answer_type_y> proposed_answer(question_raw_data const& raw, split_image_type const& splited_image) const
     {
-        //
-        // Sub Algorithm
-        // 正しい位置に並べた時に左上から，1~nまでの番号をふり，それが今どこにあるのかという情報をreturn
-        //
+	    //
+	    // Sub Algorithm
+	    // 正しい位置に並べた時に左上から，1~nまでの番号をふり，それが今どこにあるのかという情報をreturn
+	    //
 
-		//split_image_type const& splited_image = split_.split_image(raw);
-        compared_type const& comp = this->image_comp(raw,splited_image);
+	    //split_image_type const& splited_image = split_.split_image(raw);
+	    compared_type const& comp = this->image_comp(raw,splited_image);
 
-        Algorithm algo(raw, comp);
-        auto const& proposed = algo();
+	    Algorithm algo(raw, comp);
+	    auto const& proposed = algo();
 
-        return proposed;
+	    return proposed;
     }
 
 private:
@@ -96,6 +96,7 @@ private:
         return pixel_line_comparison(lhs.row(rhs.rows - 1), rhs.row(0));
     }
 
+public:
     compared_type image_comp(question_raw_data const& data_,split_image_type const& image) const
     {
         //返却用変数
@@ -143,8 +144,6 @@ private:
 
 		return comp;
     }
-
-    splitter const split_;
 };
 
 #endif

@@ -174,14 +174,15 @@ void heap::push(int *out_cost, int *out_table, std::vector<int> &out_history, in
 
 //コンストラクタ
 algorithm_2::algorithm_2()
+    : table(nullptr), sub_table(nullptr)
 {
 }
 
 //デストラクタ
 algorithm_2::~algorithm_2()
 {
-	delete[] table;
-	delete[] sub_table;
+    if(table)     delete[] table;
+    if(sub_table) delete[] sub_table;
 }
 
 //初期化
@@ -293,7 +294,6 @@ auto algorithm_2::get() -> boost::optional<answer_type>
 	answer_type answerlist;
 	point_type position;
 	std::ostringstream stream;
-	answerlist.list.resize(1024);//★☆
 	int pos = 0;
 	for (int count=0; pos < get_history.size();count++){
 		position.y = get_history[pos];
@@ -321,7 +321,7 @@ auto algorithm_2::get() -> boost::optional<answer_type>
 			}
 			pos++;
 		}
-		answerlist.list[count] = { position, stream.str() };
+		answerlist.list.push_back({ position, stream.str() });
 		stream.str("");
 	}
 	return answerlist;

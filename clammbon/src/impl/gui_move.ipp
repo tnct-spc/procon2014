@@ -49,10 +49,15 @@ namespace impl
         void release_box(int const button, point_type const& event_box);
 		void devmatrix(int event_key);
 
-        bool border_check(int const x, int const y);          // TrueならWindow内
+        // TrueならWindow内
+        bool border_check(point_type const& point);
+        bool border_check(int const x, int const y);
+
         point_type window_to_point(int const x, int const y); // Window上の座標から，point_typeを算出
         int handle(int event) override;
         void show() override;
+        void hide() override;
+        bool wait_submit();
 
     private:
         splitter const sp_;
@@ -73,6 +78,7 @@ namespace impl
         std::vector<std::vector<Fl_RGB_Image*>> rgbs_;
         std::vector<std::vector<std::unique_ptr<MoveBox>>> boxes_;
 
+        bool wait_submit_;
         std::vector<std::vector<point_type>> positions_;
         boost::shared_ptr<MoveWindow>        this_shared_;
     };
@@ -90,7 +96,7 @@ namespace impl
 
     MoveWindow::MoveWindow(split_image_type const& images, position_type const& positions, std::string const& window_name)
         : Fl_Window(/*temporary size*/10, 10), window_name_(window_name), positions_(positions), sp_(), latest_button_(0), this_shared_(nullptr),
-          select_begin_({-1,-1}), select_end_({-1,-1}),
+          select_begin_({-1,-1}), select_end_({-1,-1}), wait_submit_(false),
           image_width_ (images[0][0].cols),
           image_height_(images[0][0].rows),
           split_x_     (images[0]      .size()),
@@ -316,19 +322,20 @@ namespace impl
                 point_type const dest_begin = select_begin_ + direction;
                 point_type const dest_end   = select_end_   + direction;
                 
-                if(!border_check(dest_begin.x, dest_begin.y) || !border_check(dest_end.x, dest_end.y))
+                if(!border_check(dest_begin) || !border_check(dest_end))
                 {
                     // 移動が範囲外になる
                     return;
                 }
 
                 // swap順序を決める
+                point_type const select_size = select_end_ - select_begin_;
                 auto const xrange = (direction.x > 0)
-                    ? boost::irange<int>(direction.x, -1, -1)
-                    : boost::irange<int>(0, std::abs(direction.x) + 1, 1);
+                    ? boost::irange<int>(select_size.x, -1, -1)
+                    : boost::irange<int>(0, select_size.x + 1, 1);
                 auto const yrange = (direction.y > 0)
-                    ? boost::irange<int>(direction.y, -1, -1)
-                    : boost::irange<int>(0, std::abs(direction.y) + 1, 1);
+                    ? boost::irange<int>(select_size.y, -1, -1)
+                    : boost::irange<int>(0, select_size.y + 1, 1);
 
                 // swap及び，選択範囲の更新
                 range_swap(select_begin_, dest_begin, xrange, yrange);
@@ -362,6 +369,14 @@ namespace impl
             }
         }
     }
+    
+    bool MoveWindow::border_check(point_type const& point)
+    {
+        int const x_width = positions_.at(0).size();
+        int const y_width = positions_      .size();
+
+        return (point.x >= 0 && point.x < x_width && point.y >= 0 && point.y < y_width);
+    }
 
     bool MoveWindow::border_check(int const x, int const y)
     {
@@ -383,7 +398,15 @@ namespace impl
         {
 			case FL_KEYDOWN:
 			{
-				devmatrix(Fl::event_key());
+                auto const key = Fl::event_key();
+                if(key == FL_Escape)
+                {
+                    wait_submit_ = true;
+                }
+                else
+                {
+                    devmatrix(Fl::event_key());
+                }
 				return 1;
 			}
             case FL_PUSH:
@@ -406,11 +429,6 @@ namespace impl
                     return 1;
                 }
             }
-            case FL_HIDE:
-            {
-                this_shared_.reset();
-                return 1;
-            }
         }
 
         return 0;
@@ -420,6 +438,23 @@ namespace impl
     {
         this_shared_ = shared_from_this();
         Fl_Window::show();
+    }
+
+    void MoveWindow::hide()
+    {
+        this_shared_.reset();
+        Fl_Window::hide();
+    }
+    
+    bool MoveWindow::wait_submit()
+    {
+        if(wait_submit_)
+        {
+            wait_submit_ = false;
+            return true;
+        }
+        else 
+            return false;
     }
 
 } // namespace impl

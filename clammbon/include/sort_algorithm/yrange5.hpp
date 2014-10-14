@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <data_type.hpp>
+#include <omp.h>
 
 class yrange5
 {
@@ -11,12 +12,14 @@ private:
     
 	//kind_rgb用構造体
 	struct kind_rgb{
-		int x, y, kind; 
+		point_type point;
+		int kind; 
 		uint_fast64_t score;
 		bool operator<(const kind_rgb& right) const {
-			return score == right.score ? x < right.x : score < right.score;
+			return score == right.score ? point.x < right.point.x : score < right.score;
 		}
 	};
+	omp_lock_t ol;
 
     question_raw_data const& data_;
     compared_type const& comp_;
@@ -26,10 +29,6 @@ private:
     // 指定した範囲の配列の和を返す
     int array_sum(return_type const& array_, int const x, int const y, int const height, int const width) const;
 
-	//縦入れ替え
-	void column_replacement(answer_type_y& matrix);
-	//横入れ替え
-	void row_replacement(answer_type_y& matrix);
 	//cv::Matの塊にする
 	cv::Mat combine_image(answer_type_y const & matrix);
 	
@@ -38,7 +37,7 @@ public:
     yrange5(question_raw_data const& data, compared_type const& comp);
     virtual ~yrange5() = default;
 
-    std::vector<answer_type_y> operator() ();
+    std::vector<answer_type_y> operator() (std::vector<std::vector<std::vector<point_type>>> const& sorted_matrix);
 };
 
 #endif

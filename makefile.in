@@ -13,8 +13,8 @@ else
 endif
 
 CXXFLAGS += -W -Wall -std=c++1y $(shell fltk-config --cxxflags)
-CPPFLAGS += -I../clammbon/include
+CPPFLAGS += -I../clammbon/include -fopenmp
 LDFLAGS  += -L../lib $(shell fltk-config --ldflags)
-LIBS     += -lopencv_core -lopencv_highgui -lopencv_imgproc
+LIBS     += -lopencv_core -lopencv_highgui -lopencv_imgproc -fopenmp
 
 # vim:set tabstop=4 noexpendtab

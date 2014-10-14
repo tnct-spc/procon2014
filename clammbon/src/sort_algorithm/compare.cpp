@@ -281,6 +281,7 @@ point_type l_choose(compared_type const& comp, point_type const next_to, std::ve
 uint_fast64_t form_evaluate(question_raw_data const& data_,compared_type const& comp_, std::vector<std::vector<point_type> > const& matrix)
 {
 	uint_fast64_t s = 0;
+#pragma omp parallel
 	for (int i = 0; i < matrix.size() - 1; ++i)for (int j = 0; j < matrix.at(0).size() - 1; ++j){
 		if (j != data_.split_num.first - 1) s += comp_[matrix[i][j].y][matrix[i][j].x][matrix[i][j + 1].y][matrix[i][j + 1].x].right;
 		if (i != data_.split_num.second - 1) s += comp_[matrix[i][j].y][matrix[i][j].x][matrix[i + 1][j].y][matrix[i + 1][j].x].down;
@@ -309,6 +310,7 @@ size_t get_kind_num(question_raw_data const& data_,std::vector<std::vector<point
 uint_fast64_t range_evaluate(question_raw_data const& data_, compared_type const& comp_, std::vector<std::vector<point_type> > matrix, int x, int y)
 {
 	uint_fast64_t s = 0;
+#pragma omp parallel
 	for (int i = 0; i < data_.split_num.second; ++i)for (int j = 0; j < data_.split_num.first; ++j){
 		if (j != data_.split_num.first -1) s += comp_[matrix[y + i][x + j].y][matrix[y + i][x + j].x][matrix[y + i][x + j + 1].y][matrix[y + i][x + j + 1].x].right;
 		if (i != data_.split_num.second -1) s += comp_[matrix[y + i][x + j].y][matrix[y + i][x + j].x][matrix[y + i + 1][x + j].y][matrix[y + i + 1][x + j].x].down;
@@ -328,14 +330,14 @@ std::vector<point_type> duplicate_delete(compared_type const& comp_, std::vector
 	};
 	int const sepx = matrix.at(0).size();
 	int const sepy = matrix.size();
-	point_type const invalid_val = { sepx, sepy};
+	point_type const invalid_val = { sepx, sepy };
 	std::vector<point_type> usable;
 	std::vector<std::vector<overlap_set>>overlap_vec(sepx*sepy);
 
 	//targetを基準に分類
 	for (int i = 0; i < sepy; i++) for (int j = 0; j < sepx; j++)
 	{
-		overlap_vec[matrix[i][j].y*sepy + matrix[i][j].x].push_back(overlap_set{ 0, { j, i }});
+		overlap_vec[matrix[i][j].y*sepy + matrix[i][j].x].push_back(overlap_set{ 0, { j, i } });
 	}
 	//被りを見つけ，その中で最小のものだけを残す
 	for (auto& one_overlap_vec : overlap_vec)
@@ -362,7 +364,7 @@ std::vector<point_type> duplicate_delete(compared_type const& comp_, std::vector
 	}
 	for (int i = 0; i < sepy; ++i)for (int j = 0; j < sepx; ++j)
 	{
-		if (overlap_vec[i*sepy + j].size() == 0) usable.push_back(point_type{ j,i });
+		if (overlap_vec[i*sepy + j].size() == 0) usable.push_back(point_type{ j, i });
 	}
 	return std::move(usable);
 }
@@ -411,4 +413,38 @@ int try_matrix_copy(std::vector<std::vector<point_type>>& sorted_matrix, std::ve
 		sorted_matrix[point.y + k][point.x + l] = matrix[k][l];
 	}
 	return 0;
+}
+
+/*指定された範囲内の場を評価する関数枠検知付き*/
+uint_fast64_t range_evaluate_contours(question_raw_data const& data_, compared_type const& comp_, std::vector<std::vector<point_type> > matrix, int x, int y)
+{
+	uint_fast64_t s = 0;
+	for (int i = 0; i < data_.split_num.second; ++i)for (int j = 0; j < data_.split_num.first; ++j){
+		if (j != data_.split_num.first - 1) s += comp_[matrix[y + i][x + j].y][matrix[y + i][x + j].x][matrix[y + i][x + j + 1].y][matrix[y + i][x + j + 1].x].right;
+		if (i != data_.split_num.second - 1) s += comp_[matrix[y + i][x + j].y][matrix[y + i][x + j].x][matrix[y + i + 1][x + j].y][matrix[y + i + 1][x + j].x].down;
+	}
+
+	//cv::findContours
+	std::vector<std::vector<point_type>> partial_matrix(data_.split_num.second, std::vector<point_type>(data_.split_num.first));
+	for (int i = 0; i < data_.split_num.second; ++i)for (int j = 0; j < data_.split_num.first; ++j)
+	{
+		partial_matrix[i][j] = matrix[y + i][x + j];
+	}
+
+	splitter sp;//どこからか持ってきてたsplitter
+	cv::Mat edges = sp.combine_grey(data_, partial_matrix);
+	cv::vector<cv::vector<cv::Point> > contours;// 輪郭情報
+	cv::findContours(edges, contours, CV_RETR_CCOMP, CV_CHAIN_APPROX_SIMPLE);
+	std::vector<double> arclength_true;
+
+	for (size_t i = 0; i < contours.size(); ++i)
+	{
+		cv::Mat contour = cv::Mat(contours[i]);
+		arclength_true.push_back(cv::arcLength(contour, true));
+	}
+
+	s -= *(std::max_element(arclength_true.begin(), arclength_true.end()));
+	s += contours.size() * matrix.size() * matrix.at(0).size();
+
+	return s;
 }

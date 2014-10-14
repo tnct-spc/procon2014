@@ -1,4 +1,5 @@
 ﻿// MS WARNINGS MACRO
+#define _CRT_SECURE_NO_WARNINGS
 #define _SCL_SECURE_NO_WARNINGS
 #include <network.hpp>
 #include <ppm_reader.hpp>
