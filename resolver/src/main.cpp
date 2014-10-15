@@ -63,10 +63,10 @@ public:
     explicit analyzer(
         std::string const& server_addr,
         int const problem_id, std::string const& player_id,
-        bool const is_yrange, bool const is_murakami, bool const is_blur
+        bool const is_auto, bool const is_blur
         )
         : client_(server_addr), problem_id_(problem_id), player_id_(player_id),
-          is_yrange_(is_yrange), is_murakami_(is_murakami), is_blur_(is_blur)
+          is_auto_(is_auto), is_blur_(is_blur)
     {
     }
     virtual ~analyzer() = default;
@@ -81,14 +81,8 @@ public:
 
         // 2次元画像に分割
         split_image_ = sp.split_image(raw_data_);
-//        if(is_blur_) split_image_ = sp.split_image_gaussianblur(split_image_);
+        if(is_blur_) split_image_ = sp.split_image_gaussianblur(split_image_);
         auto const image_comp = sorter_.image_comp(raw_data_, split_image_);
-
-		// 2次元画像に分割
-		//ぼかし使うならこっち
-		//split_image_ = splitter().split_image(raw_data_);
-		//split_image_gaussianblur = splitter().split_image_gaussianblur(split_image_);
-		//auto image_comp = sorter_.image_comp(raw_data_, split_image_gaussianblur);
 
         // 原画像推測部
         yrange2 yrange2_(raw_data_, image_comp);
@@ -104,69 +98,63 @@ public:
                 manager.add(convert_block(clone));
             });
 
-        boost::optional<boost::thread> y_thread;
-        boost::optional<boost::thread> m_thread;
-
         // YRange2 -> YRange5 Thread
-        if(is_yrange_)
-        {
-            y_thread = boost::thread(
-                [&, this]()
-                {
-                    // YRange2
-                    auto yrange2_resolve = yrange2_();
-                    if (!yrange2_resolve.empty())
-    		        {
-                        // Shoot
+        boost::thread y_thread(
+            [&, this]()
+            {
+                // YRange2
+                auto yrange2_resolve = yrange2_();
+                if (!yrange2_resolve.empty())
+		        {
+                    // Shoot
+                    if(is_auto_)
+                    {
                         auto clone = data_.clone();
                         clone.block = yrange2_resolve[0].points;
                         manager.add(convert_block(clone));
-    
-                        // GUI
-    			        for (int y2 = yrange2_resolve.size() - 1; y2 >= 0; --y2)
-    			        {
-                            gui_thread.push_back(
-                                boost::bind(gui::make_mansort_window, split_image_, yrange2_resolve.at(y2).points, "yrange2")
-                                );
-    			        }
-    		        }
-                    
-                    // YRange5
-                    auto yrange5_resolve = yrange5(raw_data_, image_comp)(yrange2_.sorted_matrix());
-                    if (!yrange5_resolve.empty())
-    		        {
-                        // GUI
-    			        for (int y5 = yrange5_resolve.size() - 1; y5 >= 0; --y5)
-    			        {
-                            gui_thread.push_back(
-                                boost::bind(gui::make_mansort_window, split_image_, yrange5_resolve.at(y5).points, "yrange5")
-                                );
-    			        }
                     }
-                });
-        }
+
+                    // GUI
+			        for (int y2 = yrange2_resolve.size() - 1; y2 >= 0; --y2)
+			        {
+                        gui_thread.push_back(
+                            boost::bind(gui::make_mansort_window, split_image_, yrange2_resolve.at(y2).points, "yrange2")
+                            );
+			        }
+		        }
+                
+                // YRange5
+                auto yrange5_resolve = yrange5(raw_data_, image_comp)(yrange2_.sorted_matrix());
+                if (!yrange5_resolve.empty())
+		        {
+                    // GUI
+			        for (int y5 = yrange5_resolve.size() - 1; y5 >= 0; --y5)
+			        {
+                        gui_thread.push_back(
+                            boost::bind(gui::make_mansort_window, split_image_, yrange5_resolve.at(y5).points, "yrange5")
+                            );
+			        }
+                }
+            });
 
         // Murakami Thread
-        if(is_murakami_)
-        {
-            m_thread = boost::thread(
-                [&]()
-                {
-                    // Murakami
-                    auto murakami_resolve = murakami_()[0].points;
-                    if(!murakami_resolve.empty())gui_thread.push_back(
-                        boost::bind(gui::make_mansort_window, split_image_, murakami_resolve, "Murakami")
-                    );
-                });
-        }
+        boost::thread m_thread(
+            [&]()
+            {
+                // Murakami
+                auto murakami_resolve = murakami_()[0].points;
+                if(!murakami_resolve.empty())gui_thread.push_back(
+                    boost::bind(gui::make_mansort_window, split_image_, murakami_resolve, "Murakami")
+                );
+            });
 
         gui_thread.push_back(
             boost::bind(gui::make_mansort_window, split_image_, "Yor are the sorter!!! Sort this!")
             );
 
         // 各Threadの待機
-        if(y_thread) y_thread->join();
-        if(m_thread) m_thread->join();
+        y_thread.join();
+        m_thread.join();
         gui_thread.wait_all_window();
     }
 
@@ -223,8 +211,7 @@ private:
 
     int const problem_id_;
     std::string const player_id_;
-    bool const is_yrange_;
-    bool const is_murakami_;
+    bool const is_auto_;
     bool const is_blur_;
 
     question_raw_data raw_data_;
@@ -278,8 +265,7 @@ int main(int const argc, char const* argv[])
     std::string server_addr;
     int         problemid;
     auto const  token = "3935105806";
-    bool        is_yrange;
-    bool        is_murakami;
+    bool        is_auto;
     bool        is_blur;
 
     try
@@ -288,25 +274,30 @@ int main(int const argc, char const* argv[])
         po::options_description opt("option");
         opt.add_options()
             ("help,h"    , "produce help message")
-            ("yrange,y"  , "process yrange2/5")
-            ("muramami,m", "process murakami")
+            ("auto,a"    , "auto submit flag")
             ("blur,b"    , "gaussian blur to image")
+#if ENABLE_NETWORK_IO
             ("server,s"  , po::value<std::string>(&server_addr), "(require)set server ip address")
-            ("problem,p" , po::value<int>(&problemid)          , "(require)set problem_id");
+            ("problem,p" , po::value<int>(&problemid)          , "(require)set problem_id")
+#endif
+            ;
 
         po::variables_map argmap;
         po::store(po::parse_command_line(argc, argv, opt), argmap);
         po::notify(argmap);
 
+#if ENABLE_NETWORK_IO
         if(argmap.count("help") || !argmap.count("server") || !argmap.count("problem"))
+#else
+        if(argmap.count("help"))
+#endif
         {
             std::cout << opt << std::endl;
             return 0;
         }
 
-        is_yrange   = argmap.count("yrange");
-        is_murakami = argmap.count("murakami");
-        is_blur     = argmap.count("blur");
+        is_auto = argmap.count("auto");
+        is_blur = argmap.count("blur");
     }
     catch(boost::program_options::error_with_option_name const& e)
     {
@@ -314,7 +305,7 @@ int main(int const argc, char const* argv[])
         std::quick_exit(-1);
     }
 
-    analyzer         analyze(server_addr, problemid, token, is_yrange, is_murakami, is_blur);
+    analyzer         analyze(server_addr, problemid, token, is_auto, is_blur);
     position_manager manager;
 
     boost::thread thread(boost::bind(&analyzer::operator(), &analyze, std::ref(manager)));
