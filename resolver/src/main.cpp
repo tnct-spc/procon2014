@@ -81,12 +81,16 @@ public:
 
         // 2次元画像に分割
         split_image_ = sp.split_image(raw_data_);
-        if(is_blur_) split_image_ = sp.split_image_gaussianblur(split_image_);
-        auto const image_comp = sorter_.image_comp(raw_data_, split_image_);
-		auto const image_comp_dx = sorter_dx.image_comp(raw_data_, split_image_);
+
+        // compare用の画像を作成
+        auto const arranged_split = is_blur_ ? sp.split_image_gaussianblur(split_image_) : split_image_;
+        auto const image_comp = sorter_.image_comp(raw_data_, arranged_split);
+		auto const image_comp_dx = sorter_dx.image_comp(raw_data_, arranged_split);
+
         // 原画像推測部
         yrange2 yrange2_(raw_data_, image_comp);
         Murakami murakami_(raw_data_, image_comp,true);
+
         // GUI Threadの起動
         gui::manager gui_thread(
             [this, &manager](std::vector<std::vector<point_type>> const& data)
