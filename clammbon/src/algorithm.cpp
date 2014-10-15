@@ -1,4 +1,4 @@
-﻿//#define NDEBUG
+﻿//#define ALGODEBUG
 #include <algorithm>
 #include <cassert>
 #include <iostream>
@@ -169,9 +169,7 @@ void algorithm::impl::operator() (boost::coroutines::coroutine<return_type>::pus
     answer.list.push_back(answer_atom{selecting_cur, std::string()});
 
     // GO
-#ifndef NDEBUG
     print(matrix);
-#endif
     yield(solve());
 }
 
@@ -183,7 +181,7 @@ void algorithm::impl::move_selecting<'U'>()
     std::swap(matrix[selecting_cur.y][selecting_cur.x], matrix[selecting_cur.y - 1][selecting_cur.x]);
     --selecting_cur.y;
     answer.list.back().actions.push_back('U');
-#ifndef NDEBUG
+#ifdef ALGODEBUG
     print(matrix);
 #endif
 }
@@ -195,7 +193,7 @@ void algorithm::impl::move_selecting<'R'>()
     std::swap(matrix[selecting_cur.y][selecting_cur.x], matrix[selecting_cur.y][selecting_cur.x + 1]);
     ++selecting_cur.x;
     answer.list.back().actions.push_back('R');
-#ifndef NDEBUG
+#ifdef ALGODEBUG
     print(matrix);
 #endif
 }
@@ -207,7 +205,7 @@ void algorithm::impl::move_selecting<'D'>()
     std::swap(matrix[selecting_cur.y][selecting_cur.x], matrix[selecting_cur.y + 1][selecting_cur.x]);
     ++selecting_cur.y;
     answer.list.back().actions.push_back('D');
-#ifndef NDEBUG
+#ifdef ALGODEBUG
     print(matrix);
 #endif
 }
@@ -219,7 +217,7 @@ void algorithm::impl::move_selecting<'L'>()
     std::swap(matrix[selecting_cur.y][selecting_cur.x], matrix[selecting_cur.y][selecting_cur.x - 1]);
     --selecting_cur.x;
     answer.list.back().actions.push_back('L');
-#ifndef NDEBUG
+#ifdef ALGODEBUG
     print(matrix);
 #endif
 }
@@ -325,9 +323,8 @@ const answer_type algorithm::impl::solve()
 
         // 残りが bfs_width x bfs_height の場合は Brute-Force
         if (height - sorting_row <= bfs_height + 1 && width - sorting_col <= bfs_width + 1) {
-#ifndef NDEBUG
-            print(matrix);
-            std::cout << "start brute_force solving" << std::endl;
+#ifdef ALGODEBUG
+            std::cerr << "start brute_force solving" << std::endl;
 #endif
             brute_force();
             break;
@@ -342,7 +339,7 @@ const answer_type algorithm::impl::solve()
         }
     }
 
-#ifndef NDEBUG
+#ifdef ALGODEBUG
     print(answer);
 #endif
 
@@ -375,7 +372,6 @@ void algorithm::impl::greedy()
     point_type waypoint;
 
     for (point_type const& target : target_queue) {
-        std::cout << "loop : " << target << std::endl;
         // 端の部分の処理
         if (is_sorted(target)) {
             continue;
@@ -462,34 +458,26 @@ void algorithm::impl::greedy()
         // 端の部分の処理
         if (target.x == width - 1) {
             // ターゲットの真の原座標が右端の場合
-            std::cout << "hoge" << std::endl;
             move_to(waypoint.up().left());
             move_selecting<'R', 'D'>();
         } else if (target.y == height - 1) {
             // ターゲットの真の原座標が下端の場合
-            std::cout << "fuga" << std::endl;
             move_to(waypoint.left().up());
             move_selecting<'D', 'R'>();
         } else if (target.x == width - 2) {
             if (selecting_cur.x == width - 1 && selecting_cur.y == sorting_row + 1 && get_point_by_point(waypoint.left()) == target.right()) {
-                std::cout << "SPECIAL CASE 1" << std::endl;
                 move_selecting<'L', 'U', 'R', 'D', 'L', 'D', 'R', 'U', 'U', 'L', 'D', 'R', 'D'>();
             } else if (selecting_cur.x == width - 2 && selecting_cur.y == sorting_row && get_point_by_point(waypoint.left().down()) == target.right()) {
-                std::cout << "SPECIAL CASE 2" << std::endl;
                 move_selecting<'R', 'D', 'L', 'D', 'R', 'U', 'U', 'L', 'D', 'R', 'D', 'L', 'U', 'U', 'R', 'D'>();
             } else if (selecting_cur.x == width - 3 && selecting_cur.y == sorting_row + 1 && get_point_by_point(waypoint.left()) == target.right()) {
-                std::cout << "SPECIAL CASE 3" << std::endl;
                 move_selecting<'R', 'U', 'R', 'D', 'L', 'D', 'R', 'U', 'U', 'L', 'D', 'R', 'D'>();
             }
         } else if (target.y == height - 2) {
             if (selecting_cur.y == height - 1 && selecting_cur.x == sorting_col + 1 && get_point_by_point(waypoint.up()) == target.down()) {
-                std::cout << "SPECIAL CASE 4" << std::endl;
                 move_selecting<'U', 'L', 'D', 'R', 'U', 'R', 'D', 'L', 'L', 'U', 'R', 'D', 'R'>();
             } else if (selecting_cur.y == height - 2 && selecting_cur.x == sorting_col && get_point_by_point(waypoint.up().right()) == target.down()) {
-                std::cout << "SPECIAL CASE 5" << std::endl;
                 move_selecting<'D', 'R', 'U', 'R', 'D', 'L', 'L', 'U', 'R', 'D', 'R', 'U', 'L', 'L', 'D', 'R'>();
             } else if (selecting_cur.y == height - 3 && selecting_cur.x == sorting_col + 1 && get_point_by_point(waypoint.up()) == target.down()) {
-                std::cout << "SPECIAL CASE 6" << std::endl;
                 move_selecting<'D', 'L', 'D', 'R', 'U', 'R', 'D', 'L', 'L', 'U', 'R', 'D', 'R'>();
             }
         }
@@ -577,9 +565,6 @@ void algorithm::impl::brute_force()
 // move_target {{{2
 void algorithm::impl::move_target(point_type const& target, char const& direction)
 {
-#ifndef NDEBUG
-    std::cout << "move_target " << target << " " << direction << std::endl;
-#endif
     // selecting の操作によって原座標が target である断片画像を指定の方向へ移動させる.
 
     // target の現在の座標
