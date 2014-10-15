@@ -10,7 +10,7 @@ void pcserver::parse(question_data const& problem, answer_type const& answer)
     try {
         test_tool::emulator emu(problem);
         auto const result = emu.start(answer);
-        output << "ACCEPTED " << result.wrong << std::endl;
+        output << "ACCEPTED " << result.wrong << "\r\n";
         sane = true;
     }
     catch(std::exception &e) {
