@@ -2,7 +2,7 @@
 #define _SCL_SECURE_NO_WARNINGS
 
 // Macro: Program Settings
-#define ENABLE_NETWORK_IO 0
+#define ENABLE_NETWORK_IO 1
 
 #include <iostream>
 #include <deque>
