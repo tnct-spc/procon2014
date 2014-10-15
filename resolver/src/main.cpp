@@ -7,6 +7,8 @@
 #include <iostream>
 #include <deque>
 #include <boost/noncopyable.hpp>
+#include <boost/optional.hpp>
+#include <boost/program_options.hpp>
 #include "data_type.hpp"
 #include "pixel_sorter.hpp"
 #include "ppm_reader.hpp"
@@ -58,21 +60,29 @@ private:
 class analyzer : boost::noncopyable
 {
 public:
-    explicit analyzer(int const problem_id, std::string const& player_id)
-        : client_(), problem_id_(problem_id), player_id_(player_id)
+    explicit analyzer(
+        std::string const& server_addr,
+        int const problem_id, std::string const& player_id,
+        bool const is_auto, bool const is_blur
+        )
+        : client_(server_addr), problem_id_(problem_id), player_id_(player_id),
+          is_auto_(is_auto), is_blur_(is_blur)
     {
     }
     virtual ~analyzer() = default;
 
     void operator() (position_manager& manager)
     {
+        splitter sp;
+
         // 問題文の入手
         raw_data_ = get_raw_question();
         data_     = get_skelton_question(raw_data_);
-        
+
         // 2次元画像に分割
-        split_image_ = splitter().split_image(raw_data_);
-        auto image_comp = sorter_.image_comp(raw_data_, split_image_);
+        split_image_ = sp.split_image(raw_data_);
+        if(is_blur_) split_image_ = sp.split_image_gaussianblur(split_image_);
+        auto const image_comp = sorter_.image_comp(raw_data_, split_image_);
 
         // 原画像推測部
         yrange2 yrange2_(raw_data_, image_comp);
@@ -97,9 +107,12 @@ public:
                 if (!yrange2_resolve.empty())
 		        {
                     // Shoot
-                    auto clone = data_.clone();
-                    clone.block = yrange2_resolve[0].points;
-                    manager.add(convert_block(clone));
+                    if(is_auto_)
+                    {
+                        auto clone = data_.clone();
+                        clone.block = yrange2_resolve[0].points;
+                        manager.add(convert_block(clone));
+                    }
 
                     // GUI
 			        for (int y2 = yrange2_resolve.size() - 1; y2 >= 0; --y2)
@@ -142,7 +155,7 @@ public:
         // 各Threadの待機
         y_thread.join();
         m_thread.join();
-        gui_thread.wait_all_window();   
+        gui_thread.wait_all_window();
     }
 
     std::string submit(answer_type const& ans) const
@@ -198,10 +211,13 @@ private:
 
     int const problem_id_;
     std::string const player_id_;
+    bool const is_auto_;
+    bool const is_blur_;
 
     question_raw_data raw_data_;
     question_data         data_;
     split_image_type  split_image_;
+	split_image_type  split_image_gaussianblur;
 
     mutable network::client client_;
     pixel_sorter<yrange5> sorter_;
@@ -244,12 +260,52 @@ void submit_func(question_data question, analyzer const& analyze)
     }
 }
 
-int main()
+int main(int const argc, char const* argv[])
 {
-    auto const ploblemid = std::getenv("PCS_PROBID") ? std::stoi(std::getenv("PCS_PROBID")) : 1;
-    auto const token     = "3935105806";
+    std::string server_addr;
+	int         problemid = 0;
+    auto const  token = "3935105806";
+    bool        is_auto;
+    bool        is_blur;
 
-    analyzer         analyze(ploblemid, token);
+    try
+    {
+        namespace po = boost::program_options;
+        po::options_description opt("option");
+        opt.add_options()
+            ("help,h"    , "produce help message")
+            ("auto,a"    , "auto submit flag")
+            ("blur,b"    , "gaussian blur to image")
+#if ENABLE_NETWORK_IO
+            ("server,s"  , po::value<std::string>(&server_addr), "(require)set server ip address")
+            ("problem,p" , po::value<int>(&problemid)          , "(require)set problem_id")
+#endif
+            ;
+
+        po::variables_map argmap;
+        po::store(po::parse_command_line(argc, argv, opt), argmap);
+        po::notify(argmap);
+
+#if ENABLE_NETWORK_IO
+        if(argmap.count("help") || !argmap.count("server") || !argmap.count("problem"))
+#else
+        if(argmap.count("help"))
+#endif
+        {
+            std::cout << opt << std::endl;
+            return 0;
+        }
+
+        is_auto = argmap.count("auto");
+        is_blur = argmap.count("blur");
+    }
+    catch(boost::program_options::error_with_option_name const& e)
+    {
+        std::cout << e.what() << std::endl;
+        std::exit(-1);
+    }
+
+    analyzer         analyze(server_addr, problemid, token, is_auto, is_blur);
     position_manager manager;
 
     boost::thread thread(boost::bind(&analyzer::operator(), &analyze, std::ref(manager)));
