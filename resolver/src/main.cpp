@@ -263,7 +263,7 @@ void submit_func(question_data question, analyzer const& analyze)
 int main(int const argc, char const* argv[])
 {
     std::string server_addr;
-    int         problemid;
+	int         problemid = 0;
     auto const  token = "3935105806";
     bool        is_auto;
     bool        is_blur;
@@ -302,7 +302,7 @@ int main(int const argc, char const* argv[])
     catch(boost::program_options::error_with_option_name const& e)
     {
         std::cout << e.what() << std::endl;
-        std::quick_exit(-1);
+        std::exit(-1);
     }
 
     analyzer         analyze(server_addr, problemid, token, is_auto, is_blur);
