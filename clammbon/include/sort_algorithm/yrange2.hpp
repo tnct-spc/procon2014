@@ -24,7 +24,7 @@ private:
 	void column_replacement(answer_type_y & answer);
 
 	//横列単位で入れ替え
-	void yrange2::row_replacement(answer_type_y& answer);
+	void row_replacement(answer_type_y& answer);
 
 	//cv::Matの塊にする
 	cv::Mat combine_image(answer_type_y const& answer);

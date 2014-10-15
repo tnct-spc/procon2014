@@ -174,14 +174,15 @@ void heap::push(int *out_cost, int *out_table, std::vector<int> &out_history, in
 
 //コンストラクタ
 algorithm_2::algorithm_2()
+    : table(nullptr), sub_table(nullptr)
 {
 }
 
 //デストラクタ
 algorithm_2::~algorithm_2()
 {
-	delete[] table;
-	delete[] sub_table;
+    if(table)     delete[] table;
+    if(sub_table) delete[] sub_table;
 }
 
 //初期化

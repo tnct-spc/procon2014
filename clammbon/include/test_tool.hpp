@@ -2,6 +2,7 @@
 #define CLAMMBON_TEST_TOOL_HPP
 
 #include <vector>
+#include <iostream>
 #include <boost/noncopyable.hpp>
 #include "data_type.hpp"
 
