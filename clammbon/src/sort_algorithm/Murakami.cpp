@@ -13,12 +13,13 @@
 #include <./gui.hpp>
 #include <boost/timer.hpp>
 #include <omp.h>
-Murakami::Murakami(question_raw_data const& data, compared_type const& comp)
+Murakami::Murakami(question_raw_data const& data, compared_type const& comp,bool const w_mode)
 	: data_(data), comp_(comp)
 {
 }
-
+/*蓮メリちゅっちゅ*/
 std::vector<answer_type_y> Murakami::operator() (){
+	bool const w_mode = true;
 	auto const width = data_.split_num.first;
 	auto const height = data_.split_num.second;
 	//sort_compare();//sorted_comparation作成
@@ -49,7 +50,7 @@ std::vector<answer_type_y> Murakami::operator() (){
 		block_combination b;
 		for (int j = i; j < block_list.size(); j++){
 			if (i == j) continue;
-			b = eval_block(block_list[i].block, block_list[j].block);
+			b = w_mode ? eval_block(block_list[i].block, block_list[j].block) : eval_block2(block_list[i].block, block_list[j].block);
 			block_list[i].score_data_[block_list[j].u_this_number] = std::move(score_data{ b.score, b.shift_x, b.shift_y });
 		}
 	}
@@ -74,7 +75,7 @@ std::vector<answer_type_y> Murakami::operator() (){
 
 					}
 					else{
-						b = eval_block(block_list[i].block, block_list[j].block);
+						b = w_mode ? eval_block(block_list[i].block, block_list[j].block) : eval_block2(block_list[i].block, block_list[j].block);
 					}
 					if (best_block_combination.score < b.score)best_block_combination = std::move(b);
 				}
@@ -91,7 +92,8 @@ std::vector<answer_type_y> Murakami::operator() (){
 			block_data_ p_b;
 			p_b.block = combined_block;
 			block_list.push_back(p_b);//結合したのを入れる
-			std::cout << "***" << block_list.size() << "***" << std::endl;
+			std::cout << "***" << block_list.size() << "***" << "\r" << std::flush;
+
 			/*
 			for (const auto& i : block_list){
 			for (const auto& j : i.block){

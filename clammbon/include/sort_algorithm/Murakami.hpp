@@ -56,7 +56,7 @@ private:
 	void make_sorted_comparation();
 	typedef point_type block_size_type;
 public:
-	Murakami(question_raw_data const& data, compared_type const& comp);
+	Murakami(question_raw_data const& data, compared_type const& comp,bool const w_mode);
 	virtual ~Murakami() = default;
 	std::vector<answer_type_y> operator() ();
 };

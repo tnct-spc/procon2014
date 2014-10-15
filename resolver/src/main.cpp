@@ -86,8 +86,7 @@ public:
 		auto const image_comp_dx = sorter_dx.image_comp(raw_data_, split_image_);
         // 原画像推測部
         yrange2 yrange2_(raw_data_, image_comp);
-        Murakami murakami_(raw_data_, image_comp);
-		Murakami murakami_dx(raw_data_, image_comp_dx);
+        Murakami murakami_(raw_data_, image_comp,true);
         // GUI Threadの起動
         gui::manager gui_thread(
             [this, &manager](std::vector<std::vector<point_type>> const& data)
@@ -142,14 +141,27 @@ public:
             [&]()
             {
                 // Murakami
+			std::cout << "村上モード" << std::endl;
                 auto murakami_resolve = murakami_()[0].points;
-				std::vector<std::vector<point_type>> murakami_resolve_dx;
+				std::vector<std::vector<point_type>> murakami_dx_resolve, murakami_w_resolve, murakami_dx_w_resolve;
+				if (!murakami_resolve.empty())gui_thread.push_back(boost::bind(gui::make_mansort_window, split_image_, murakami_resolve, "Murakami"));
 				if (murakami_resolve.empty()){
 					std::cout << "デラックス村上モード" << std::endl;
-					murakami_resolve_dx = murakami_dx()[0].points;
-					if (!murakami_resolve_dx.empty())gui_thread.push_back(boost::bind(gui::make_mansort_window, split_image_, murakami_resolve, "Murakami_dx"));
-				}else{
-					gui_thread.push_back(boost::bind(gui::make_mansort_window, split_image_, murakami_resolve, "Murakami"));
+					Murakami murakami_dx(raw_data_, image_comp_dx, true);
+					murakami_dx_resolve = murakami_dx()[0].points;
+					if (!murakami_dx_resolve.empty())gui_thread.push_back(boost::bind(gui::make_mansort_window, split_image_, murakami_dx_resolve, "Murakami_dx"));
+					if (murakami_dx_resolve.empty()){
+						std::cout << "W村上モード" << std::endl;
+						Murakami murakami_w(raw_data_, image_comp, false);
+						murakami_w_resolve = murakami_w()[0].points;
+						if (!murakami_w_resolve.empty())gui_thread.push_back(boost::bind(gui::make_mansort_window, split_image_, murakami_w_resolve, "Murakami_w"));
+						if (murakami_w_resolve.empty()){
+							std::cout << "デラックスW村上モード" << std::endl;
+							Murakami murakami_dx_w(raw_data_, image_comp_dx, false);
+							murakami_dx_w_resolve = murakami_w()[0].points;
+							if (!murakami_dx_w_resolve.empty())gui_thread.push_back(boost::bind(gui::make_mansort_window, split_image_, murakami_dx_w_resolve, "Murakami_dx_w"));
+						}
+					}
 				}
             });
 
@@ -226,7 +238,7 @@ private:
 
     mutable network::client client_;
     pixel_sorter<yrange5> sorter_;
-	pixel_sorter<Murakami> sorter_dx;
+	pixel_sorter<yrange2> sorter_dx;
 };
 
 void submit_func(question_data question, analyzer const& analyze)
