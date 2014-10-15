@@ -2,7 +2,7 @@
 #define _SCL_SECURE_NO_WARNINGS
 
 // Macro: Program Settings
-#define ENABLE_NETWORK_IO 1
+#define ENABLE_NETWORK_IO 0
 
 #include <iostream>
 #include <deque>
@@ -83,11 +83,11 @@ public:
         split_image_ = sp.split_image(raw_data_);
         if(is_blur_) split_image_ = sp.split_image_gaussianblur(split_image_);
         auto const image_comp = sorter_.image_comp(raw_data_, split_image_);
-
+		auto const image_comp_dx = sorter_dx.image_comp(raw_data_, split_image_);
         // 原画像推測部
         yrange2 yrange2_(raw_data_, image_comp);
         Murakami murakami_(raw_data_, image_comp);
-
+		Murakami murakami_dx(raw_data_, image_comp_dx);
         // GUI Threadの起動
         gui::manager gui_thread(
             [this, &manager](std::vector<std::vector<point_type>> const& data)
@@ -143,9 +143,14 @@ public:
             {
                 // Murakami
                 auto murakami_resolve = murakami_()[0].points;
-                if(!murakami_resolve.empty())gui_thread.push_back(
-                    boost::bind(gui::make_mansort_window, split_image_, murakami_resolve, "Murakami")
-                );
+				std::vector<std::vector<point_type>> murakami_resolve_dx;
+				if (murakami_resolve.empty()){
+					std::cout << "デラックス村上モード" << std::endl;
+					murakami_resolve_dx = murakami_dx()[0].points;
+					if (!murakami_resolve_dx.empty())gui_thread.push_back(boost::bind(gui::make_mansort_window, split_image_, murakami_resolve, "Murakami_dx"));
+				}else{
+					gui_thread.push_back(boost::bind(gui::make_mansort_window, split_image_, murakami_resolve, "Murakami"));
+				}
             });
 
         gui_thread.push_back(
@@ -221,6 +226,7 @@ private:
 
     mutable network::client client_;
     pixel_sorter<yrange5> sorter_;
+	pixel_sorter<Murakami> sorter_dx;
 };
 
 void submit_func(question_data question, analyzer const& analyze)
