@@ -5,6 +5,8 @@
 
 #include <sstream>
 #include <iomanip>
+#include <chrono>
+#include <thread>
 
 #include "server.hpp"
 #include "tools.hpp"
@@ -49,6 +51,9 @@ public:
 
         if(pro.valid() && ans.valid())
             pcs.parse(pro.get(), ans.get());
+        
+        std::cerr << "Processed the answer. Now I feel a bit sleepy..." << std::endl;
+        std::this_thread::sleep_for(std::chrono::seconds(5));
 
         if(pcs.ok()) {
             if(options.find("quiet") != std::string::npos)

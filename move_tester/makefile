@@ -1,7 +1,7 @@
 include ../makefile.in
 
 OUTDIR := ../bin/$(buildtype)
-TARGET = procon
+TARGET = move_tester
 
 SRCS := src/main.cpp
 PROG := $(OUTDIR)/$(TARGET)
@@ -9,9 +9,9 @@ OBJS := $(SRCS:src/%.cpp=obj/$(buildtype)/%.o)
 DEPS := $(SRCS:src/%.cpp=obj/$(buildtype)/%.d)
 
 CXXFLAGS +=
-CPPFLAGS += -Iinclude
+CPPFLAGS +=
 LDFLAGS  +=
-LIBS     += -lboost_system -lboost_thread -lboost_coroutine -lboost_timer -lboost_program_options -lpthread -lcppnetlib-server-parsers -lcppnetlib-client-connections -lcppnetlib-uri -lcrypto -lssl
+LIBS     += -lboost_system -lboost_coroutine
 
 .PHONY: all clean distclean
 

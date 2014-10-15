@@ -2,11 +2,13 @@
 #define _SCL_SECURE_NO_WARNINGS
 
 // Macro: Program Settings
-#define ENABLE_NETWORK_IO 0
+#define ENABLE_NETWORK_IO 1
 
 #include <iostream>
 #include <deque>
 #include <boost/noncopyable.hpp>
+#include <boost/optional.hpp>
+#include <boost/program_options.hpp>
 #include "data_type.hpp"
 #include "pixel_sorter.hpp"
 #include "ppm_reader.hpp"
@@ -58,101 +60,102 @@ private:
 class analyzer : boost::noncopyable
 {
 public:
-    explicit analyzer(int const problem_id, std::string const& player_id)
-        : client_(), problem_id_(problem_id), player_id_(player_id)
+    explicit analyzer(
+        std::string const& server_addr,
+        int const problem_id, std::string const& player_id,
+        bool const is_auto, bool const is_blur
+        )
+        : client_(server_addr), problem_id_(problem_id), player_id_(player_id),
+          is_auto_(is_auto), is_blur_(is_blur)
     {
     }
     virtual ~analyzer() = default;
 
     void operator() (position_manager& manager)
     {
+        splitter sp;
+
         // 問題文の入手
         raw_data_ = get_raw_question();
         data_     = get_skelton_question(raw_data_);
-        
+
         // 2次元画像に分割
-        split_image_ = splitter().split_image(raw_data_);
-        auto image_comp = sorter_.image_comp(raw_data_, split_image_);
+        split_image_ = sp.split_image(raw_data_);
+        if(is_blur_) split_image_ = sp.split_image_gaussianblur(split_image_);
+        auto const image_comp = sorter_.image_comp(raw_data_, split_image_);
 
         // 原画像推測部
         yrange2 yrange2_(raw_data_, image_comp);
         Murakami murakami_(raw_data_, image_comp);
-		
-		//std::vector<point_type> yrange2_resolve;
-		//if (!yrange2_().empty())yrange2_resolve = yrange2_()[0].points;
-		auto yrange2_resolve = yrange2_();
-        auto murakami_resolve = murakami_()[0].points;
 
-		for (auto const& one_y2 : yrange2_resolve)
-		{
-			data_.block = one_y2.points;
-			if (!data_.block.empty())manager.add(convert_block(data_)); // 解答
-			break;
-		}
-
-        // 画面表示をいくつか(yrange/Murakmi/yrange5/algo2 etc.)
-        std::vector<boost::shared_ptr<gui::impl::MoveWindow>> windows;
-		
-		//yrange2
-		if (!yrange2_resolve.empty())
-		{
-			for (int y2 = yrange2_resolve.size() - 1; y2 > 0; --y2)
-			{
-				windows.push_back(
-					gui::make_mansort_window(split_image_, yrange2_resolve.at(y2).points, "yrange2")
-					);
-			}
-		}
-
-		//yrange5
-		auto yrange5_resolve = yrange5(raw_data_, image_comp)(yrange2_.sorted_matrix());
-		if (!yrange5_resolve.empty())
-		{
-			for (int y5 = yrange5_resolve.size() - 1; y5 > 0; --y5)
-			{
-				windows.push_back(
-					gui::make_mansort_window(split_image_, yrange5_resolve.at(y5).points, "yrange5")
-					);
-			}
-		}
-
-		//murakami
-		if (!murakami_resolve.empty())windows.push_back(
-            gui::make_mansort_window(split_image_, murakami_resolve, "Murakami")
-            );
-
-		//どっちもダメだった時
-		if (yrange2_resolve.empty() && yrange5_resolve.empty()/*&& murakami_resolve.empty()*/){
-			windows.push_back(
-				gui::make_mansort_window(split_image_, "Yor are the sorter!!! Sort this!")
-				);
-		}
-
-        boost::thread th(
-            [&]()
+        // GUI Threadの起動
+        gui::manager gui_thread(
+            [this, &manager](std::vector<std::vector<point_type>> const& data)
             {
-                // futureリストでvalidを巡回し，閉じられたWindowから解とする
-                while(!windows.empty())
-                {
-                     for(auto it = windows.begin(); it != windows.end();)
-                    {
-                         auto res = gui::get_result(*it);
-						 if (res)
-						 {
-							 data_.block = res.get();
-							 manager.add(convert_block(data_)); // 解答
+                // 回答としてマーク -> 回答ジョブに追加
+                auto clone = data_.clone();
+                clone.block = data;
+                manager.add(convert_block(clone));
+            });
 
-							 it = windows.erase(it);
-						 }
-                        else ++it;
+        // YRange2 -> YRange5 Thread
+        boost::thread y_thread(
+            [&, this]()
+            {
+                // YRange2
+                auto yrange2_resolve = yrange2_();
+                if (!yrange2_resolve.empty())
+		        {
+                    // Shoot
+                    if(is_auto_)
+                    {
+                        auto clone = data_.clone();
+                        clone.block = yrange2_resolve[0].points;
+                        manager.add(convert_block(clone));
                     }
+
+                    // GUI
+			        for (int y2 = yrange2_resolve.size() - 1; y2 >= 0; --y2)
+			        {
+                        gui_thread.push_back(
+                            boost::bind(gui::make_mansort_window, split_image_, yrange2_resolve.at(y2).points, "yrange2")
+                            );
+			        }
+		        }
+                
+                // YRange5
+                auto yrange5_resolve = yrange5(raw_data_, image_comp)(yrange2_.sorted_matrix());
+                if (!yrange5_resolve.empty())
+		        {
+                    // GUI
+			        for (int y5 = yrange5_resolve.size() - 1; y5 >= 0; --y5)
+			        {
+                        gui_thread.push_back(
+                            boost::bind(gui::make_mansort_window, split_image_, yrange5_resolve.at(y5).points, "yrange5")
+                            );
+			        }
                 }
             });
 
-        gui::wait_all_window();
+        // Murakami Thread
+        boost::thread m_thread(
+            [&]()
+            {
+                // Murakami
+                auto murakami_resolve = murakami_()[0].points;
+                if(!murakami_resolve.empty())gui_thread.push_back(
+                    boost::bind(gui::make_mansort_window, split_image_, murakami_resolve, "Murakami")
+                );
+            });
 
-        th.join();
-        
+        gui_thread.push_back(
+            boost::bind(gui::make_mansort_window, split_image_, "Yor are the sorter!!! Sort this!")
+            );
+
+        // 各Threadの待機
+        y_thread.join();
+        m_thread.join();
+        gui_thread.wait_all_window();
     }
 
     std::string submit(answer_type const& ans) const
@@ -208,69 +211,121 @@ private:
 
     int const problem_id_;
     std::string const player_id_;
+    bool const is_auto_;
+    bool const is_blur_;
 
     question_raw_data raw_data_;
     question_data         data_;
     split_image_type  split_image_;
+	split_image_type  split_image_gaussianblur;
 
     mutable network::client client_;
     pixel_sorter<yrange5> sorter_;
 };
 
-question_data convert_block(question_data const& data)
+void submit_func(question_data question, analyzer const& analyze)
 {
-    auto res = data.clone();
+    algorithm algo;
+    algorithm_2 algo2;
+    algo.reset(question);
 
-    for(int i = 0; i < data.size.second; ++i)
+    auto const answer = algo.get();
+    if(answer) // 解が見つかった
     {
-        for(int j = 0; j < data.size.first; ++j)
-        {
-            auto const& target = data.block[i][j];
-            res.block[target.y][target.x] = point_type{j, i};
-        }
-    }
+#if ENABLE_NETWORK_IO
+        // TODO: 前より良くなったら提出など(普通にいらないかも．提出前に目grepしてるわけだし)
+        auto result = analyze.submit(answer.get());
+        std::cout << "Submit Result: " << result << std::endl;
 
-    return res;
+	// FIXME: 汚いしセグフォする
+	int wrong_number = std::stoi(result.substr(result.find(" ")));
+	if(wrong_number == 0)
+	{
+        algo2.reset(question);
+		auto const answer = algo2.get();
+		if (answer)
+		{
+			auto result = analyze.submit(answer.get());
+			std::cout << "Submit Result: " << result << std::endl;
+			std::cout << "勝った！" << std::endl;
+		}
+	}
+#else
+        test_tool::emulator emu(question);
+        auto result = emu.start(answer.get());
+        std::cout << "Wrong: " << result.wrong << std::endl;
+        std::cout << "Cost : " << result.cost  << std::endl;
+        std::cout << "---" << std::endl;
+#endif
+    }
 }
 
-int main()
+int main(int const argc, char const* argv[])
 {
-    auto const ploblemid = 1;
-    auto const token     = "3935105806";
+    std::string server_addr;
+	int         problemid = 0;
+    auto const  token = "3935105806";
+    bool        is_auto;
+    bool        is_blur;
 
-    analyzer         analyze(ploblemid, token);
-    algorithm        algo;
+    try
+    {
+        namespace po = boost::program_options;
+        po::options_description opt("option");
+        opt.add_options()
+            ("help,h"    , "produce help message")
+            ("auto,a"    , "auto submit flag")
+            ("blur,b"    , "gaussian blur to image")
+#if ENABLE_NETWORK_IO
+            ("server,s"  , po::value<std::string>(&server_addr), "(require)set server ip address")
+            ("problem,p" , po::value<int>(&problemid)          , "(require)set problem_id")
+#endif
+            ;
+
+        po::variables_map argmap;
+        po::store(po::parse_command_line(argc, argv, opt), argmap);
+        po::notify(argmap);
+
+#if ENABLE_NETWORK_IO
+        if(argmap.count("help") || !argmap.count("server") || !argmap.count("problem"))
+#else
+        if(argmap.count("help"))
+#endif
+        {
+            std::cout << opt << std::endl;
+            return 0;
+        }
+
+        is_auto = argmap.count("auto");
+        is_blur = argmap.count("blur");
+    }
+    catch(boost::program_options::error_with_option_name const& e)
+    {
+        std::cout << e.what() << std::endl;
+        std::exit(-1);
+    }
+
+    analyzer         analyze(server_addr, problemid, token, is_auto, is_blur);
     position_manager manager;
 
     boost::thread thread(boost::bind(&analyzer::operator(), &analyze, std::ref(manager)));
+    boost::thread_group submit_threads;
 
-    while(true)
+    while(thread.joinable())
     {
         if(!manager.empty())
         {
-            // 手順探索部
             auto question = manager.get();
-            algo.reset(question);
-    auto const answer = algo.get();
 
-            if(answer) // 解が見つかった
-            {
-#if ENABLE_NETWORK_IO
-                // TODO: 前より良くなったら提出など(普通にいらないかも．提出前に目grepしてるわけだし)
-                auto result = analyze.submit(answer.get());
-                std::cout << "Submit Result: " << result << std::endl;
-#else
-                test_tool::emulator emu(question);
-                auto result = emu.start(answer.get());
-                std::cout << "Wrong: " << result.wrong << std::endl;
-                std::cout << "Cost : " << result.cost  << std::endl;
-                std::cout << "---" << std::endl;
-#endif
-            }
+            // 手順探索部
+            submit_threads.create_thread(
+                boost::bind(submit_func, question, boost::ref(analyze))
+                );
         }
     }
 
     thread.join();
+    submit_threads.join_all();
     
     return 0;
 }

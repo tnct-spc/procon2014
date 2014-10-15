@@ -16,9 +16,51 @@
 
 namespace gui
 {
-    int wait_all_window()
+    manager::manager(std::function<void(std::vector<std::vector<point_type>> const&)> const& callback)
     {
-        return Fl::run();
+        th_ = std::make_unique<boost::thread>(
+            [this, callback]()
+            {
+                // GUI Thread
+                while(true)
+                {
+                    if(!queue_.empty())
+                    {
+                        std::lock_guard<std::mutex> lock(mutex_);
+                        for(auto const& f : queue_) windows_.push_back(f());
+                        queue_.clear();
+                    }
+
+                    for(auto it = windows_.begin(); it != windows_.end();)
+                    {
+                        auto res = gui::get_result(*it);
+                        if (res) callback(res.get()); // 解答
+
+                        if(gui::is_hide_window(*it)) it = windows_.erase(it);
+                        else                         ++it;
+                    }
+
+                    Fl::wait(0);
+                }
+            });
+    }
+
+    manager::~manager()
+    {
+        th_->join();
+        th_.reset();
+    }
+
+    void manager::wait_all_window()
+    {
+        while(!windows_.empty());
+        return;
+    }
+
+    void manager::push_back(std::function<window_ptr()> const& func)
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        queue_.push_back(func);
     }
 
     boost::shared_ptr<impl::MoveWindow> make_mansort_window(
@@ -56,11 +98,16 @@ namespace gui
 
         return make_mansort_window(splitted, position, window_name);
     }
-
+    
     boost::optional<std::vector<std::vector<point_type>>> get_result(boost::shared_ptr<impl::MoveWindow>& ptr)
     {
-        if(ptr->visible()) return boost::none;
-        else               return ptr->result();
+        if(ptr->wait_submit()) return ptr->result();
+        else                   return boost::none;
+    }
+
+    bool is_hide_window(boost::shared_ptr<impl::MoveWindow>& ptr)
+    {
+        return !ptr->visible();
     }
 
 	void combine_show_image(question_raw_data const& data_, compared_type const& comp_, std::vector<answer_type_y> const& answer)
