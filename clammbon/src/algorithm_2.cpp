@@ -330,6 +330,10 @@ auto algorithm_2::get() -> boost::optional<return_type>
 #endif
 
 	while (1){
+#ifdef debug3
+		int h;
+		std::cin >> h;
+#endif
 		//探索
 		algorithm_2::prescanning();
 		//取得
@@ -412,14 +416,62 @@ auto algorithm_2::get() -> boost::optional<return_type>
 
 //走査準備(全てのマスを一つづつscaningで調べる)
 void algorithm_2::prescanning(){
-	for (int y = 0; y < size_y; y++){
-		for (int x = 0; x < size_x; x++){
-			keiro[0] = y;
-			keiro[1] = x;
-			keiro_count = 2;
-			scanning(y, x, y, x, -1);
+	//実験として選択を変えずに１回回して、経路が増えなかったらいつもどうりやる。
+	do_exchange = false;
+	limitter = true;
+	//historyから特定
+	int doy=-1, dox=-1;
+	int i;
+	for (i = history_limit; i > 0; i--){
+		if (history[i] < 16){
+			doy = history[i - 1];
+			dox = history[i];
+			break;
 		}
 	}
+	for (i + 1; i < history_limit; i++){
+		switch (history[i]){
+		case 16:
+		case 20:
+			doy--;
+			break;
+		case 17:
+		case 21:
+			dox++;
+			break;
+		case 18:
+		case 22:
+			doy++;
+			break;
+		case 19:
+		case 23:
+			dox--;
+			break;
+		default:
+			break;
+		}
+	}
+	if (doy != -1 && dox != -1){
+		keiro_count = 0;
+		scanning(doy, dox, doy, dox, -1);
+		
+		if (do_exchange == false){
+			limitter = false;
+			keiro_count = 0;
+			scanning(doy, dox, doy, dox, -1);
+		}
+	}/*
+	if (do_exchange==false){
+		limitter = true;
+		for (int y = 0; y < size_y; y++){
+			for (int x = 0; x < size_x; x++){
+				keiro[0] = y;
+				keiro[1] = x;
+				keiro_count = 2;
+				scanning(y, x, y, x, -1);
+			}
+		}
+	}*/
 }
 
 //走査
@@ -462,52 +514,35 @@ void algorithm_2::scanning(int y, int x, int y_before, int x_before, int URDL){
 		//上
 		if (y > 0 && URDL != 2){
 			//近くなる/遠くなる/平行/中のまま
-
-			if (size_y / 2 - 1 <= y && size_y / 2 - 1 <= table[y * size_x + x] / size_x || size_y / 2 - 1 > y && size_y / 2 - 1 > table[y * size_x + x] / size_x){
-				if (size_x / 2 - 1 <= x && size_x / 2 - 1 <= table[y * size_x + x] % size_x || size_x / 2 - 1 > x && size_x / 2 - 1> table[y * size_x + x] % size_x){
-					//中にいる
-					feel = 1;
-				}
-				else{
-					//平行
-					feel = 1;
-				}
+			//自分
+			if (size_y / 2 < y && size_y / 2 <= table[y * size_x + x] / size_x || size_y / 2 > y && size_y / 2 > table[y * size_x + x] / size_x){
+				//平行
+				feel = 1;
+			}
+			else if (size_y / 2 <= y && size_y / 2 > table[y * size_x + x] / size_x){
+				//近くなる
+				feel = 2;
 			}
 			else{
-				if (size_y / 2 - 1 <= y && size_y / 2 - 1 > table[y * size_x + x] / size_x){
-					//近くなる
-					feel = 2;
-				}
-				else{
-					//遠くなる
-					feel = 0;
-				}
+				//遠くなる
+				feel = 0;
 			}
-
-
-			if (size_y / 2 - 1 <= y && size_y / 2 - 1 <= table[(y - 1) * size_x + x] / size_x || size_y / 2 - 1 > y && size_y / 2 - 1 > table[(y - 1) * size_x + x] / size_x){
-				if (size_x / 2 - 1 <= x && size_x / 2 - 1 <= table[(y - 1) * size_x + x] % size_x || size_x / 2 - 1 > x && size_x / 2 - 1> table[(y - 1) * size_x + x] % size_x){
-					//中にいる
-					feeled = 1;
-				}
-				else{
-					//平行
-					feeled = 1;
-				}
+			//交換相手
+			if (size_y / 2 <= y && size_y / 2 <= table[(y - 1) * size_x + x] / size_x || size_y / 2 - 1 > y && size_y / 2 > table[(y - 1) * size_x + x] / size_x){
+				//平行
+				feeled = 1;
+			}
+			else if (size_y / 2 > y && size_y / 2 <= table[(y - 1) * size_x + x] / size_x){
+				//近くなる
+				feeled = 2;
 			}
 			else{
-				if (size_y / 2 - 1 <= x && size_y / 2 - 1 > table[(y - 1) * size_x + x] / size_x){
-					//遠くなる
-					feeled = 0;
-				}
-				else{
-					//近くなる
-					feeled = 2;
-				}
+				//遠くなる
+				feeled = 0;
 			}
-
 			
-			if ((feel == 2 || feeled == 2) || (feel == 1 && feeled == 1)){
+			if ((limitter == true && (feel >= 1 && feeled >= 1)) || (limitter == false && ((feel >= 0 && feeled >= 1) || (feel >= 1 && feeled >= 0)))){
+			//if (feel >= 1 && feeled >= 1){
 				if ((feel == 2 && feeled >= 1) || (feel >= 1 && feeled == 2)){
 					keiro[keiro_count] = 16;
 				}
@@ -524,53 +559,36 @@ void algorithm_2::scanning(int y, int x, int y_before, int x_before, int URDL){
 		}
 		//右
 		if (x < size_x - 1 && URDL != 3){
-
 			//近くなる/遠くなる/平行/中のまま
-
-			if (size_x / 2 - 1 <= x && size_x / 2 - 1 <= table[y * size_x + x] % size_x || size_x / 2 - 1 > x && size_x / 2 - 1> table[y * size_x + x] % size_x){
-				if (size_y / 2 - 1 <= y && size_y / 2 - 1 <= table[y * size_x + x] / size_x || size_y / 2 - 1 > y && size_y / 2 - 1 > table[y * size_x + x] / size_x){
-					//中にいる
-					feel = 1;
-				}
-				else{
-					//平行
-					feel = 1;
-				}
+			//自分
+			if (size_x / 2 <= x && size_x / 2 <= table[y * size_x + x] % size_x || size_x / 2 - 1 > x && size_x / 2 > table[y * size_x + x] % size_x){
+				//平行
+				feel = 1;
+			}
+			else if (size_x / 2 > x && size_x / 2 <= table[y * size_x + x] % size_x){
+				//近くなる
+				feel = 2;
 			}
 			else{
-				if (size_x / 2 - 1 <= x && size_x / 2 - 1 > table[y * size_x + x] % size_x){
-					//遠くなる
-					feel = 0;
-				}
-				else{
-					//近くなる
-					feel = 2;
-				}
+				//遠くなる
+				feel = 0;
 			}
-
-
-			if (size_y / 2 - 1 <= y && size_y / 2 - 1 <= table[y * size_x + (x + 1)] / size_x || size_y / 2 - 1 > y && size_y / 2 - 1 > table[y * size_x + (x + 1)] / size_x){
-				if (size_x / 2 - 1 <= x && size_x / 2 - 1 <= table[y * size_x + (x + 1)] % size_x || size_x / 2 - 1 > x && size_x / 2 - 1> table[y * size_x + (x + 1)] % size_x){
-					//中にいる
-					feeled = 1;
-				}
-				else{
-					//平行
-					feeled = 1;
-				}
+			//交換相手
+			if (size_x / 2 < x && size_x / 2 <= table[y * size_x + (x + 1)] % size_x || size_x / 2 > x && size_x / 2 > table[y * size_x + (x + 1)] % size_x){
+				//平行
+				feeled = 1;
+			}
+			else if (size_x / 2 <= x && size_x / 2 > table[y * size_x + (x + 1)] % size_x){
+				//近くなる
+				feeled = 2;
 			}
 			else{
-				if (size_x / 2 - 1 <= x && size_x / 2 - 1 > table[y * size_x + (x + 1)] % size_x){
-					//近くなる
-					feeled = 2;
-				}
-				else{
-					//遠くなる
-					feeled = 0;
-				}
+				//遠くなる
+				feeled = 0;
 			}
 
-			if ((feel == 2 || feeled == 2) || (feel == 1 && feeled == 1)){
+			if ((limitter == true && (feel >= 1 && feeled >= 1)) || (limitter == false && ((feel >= 0 && feeled >= 1) || (feel >= 1 && feeled >= 0)))){
+			//if (feel >= 1 && feeled >= 1){
 				if ((feel == 2 && feeled >= 1) || (feel >= 1 && feeled == 2)){
 					keiro[keiro_count] = 17;
 				}
@@ -588,51 +606,35 @@ void algorithm_2::scanning(int y, int x, int y_before, int x_before, int URDL){
 		//下
 		if (y < size_y - 1 && URDL != 0){
 			//近くなる/遠くなる/平行/中のまま
-
-			if (size_y / 2 - 1 <= y && size_y / 2 - 1 <= table[y * size_x + x] / size_x || size_y / 2 - 1 > y && size_y / 2 - 1 > table[y * size_x + x] / size_x){
-				if (size_x / 2 - 1 <= x && size_x / 2 - 1 <= table[y * size_x + x] % size_x || size_x / 2 - 1 > x && size_x / 2 - 1> table[y * size_x + x] % size_x){
-					//中にいる
-					feel = 1;
-				}
-				else{
-					//平行
-					feel = 1;
-				}
+			//自分
+			if (size_y / 2 <= y && size_y / 2 <= table[y * size_x + x] / size_x || size_y / 2 - 1 > y && size_y / 2 > table[y * size_x + x] / size_x){
+				//平行
+				feel = 1;
+			}
+			else if (size_y / 2 > y && size_y / 2 <= table[y * size_x + x] / size_x){
+				//近くなる
+				feel = 2;
 			}
 			else{
-				if (size_y / 2 - 1 <= y && size_y / 2 - 1 > table[y * size_x + x] / size_x){
-					//遠くなる
-					feel = 0;
-				}
-				else{
-					//近くなる
-					feel = 2;
-				}
+				//遠くなる
+				feel = 0;
 			}
-
-
-			if (size_y / 2 - 1 <= y && size_y / 2 - 1 <= table[(y + 1) * size_x + x] / size_x || size_y / 2 - 1 > y && size_y / 2 - 1 > table[(y + 1) * size_x + x] / size_x){
-				if (size_x / 2 - 1 <= x && size_x / 2 - 1 <= table[(y + 1) * size_x + x] % size_x || size_x / 2 - 1 > x && size_x / 2 - 1> table[(y + 1) * size_x + x] % size_x){
-					//中にいる
-					feeled = 1;
-				}
-				else{
-					//平行
-					feeled = 1;
-				}
+			//交換相手
+			if (size_y / 2 < y && size_y / 2 <= table[(y + 1) * size_x + x] / size_x || size_y / 2 > y && size_y / 2 > table[(y + 1) * size_x + x] / size_x){
+				//平行
+				feeled = 1;
+			}
+			else if (size_y / 2 <= y && size_y / 2 > table[(y + 1) * size_x + x] / size_x){
+				//近くなる
+				feeled = 2;
 			}
 			else{
-				if (size_y / 2 - 1 <= y && size_y / 2 - 1 > table[(y + 1) * size_x + x] / size_x){
-					//近くなる
-					feeled = 2;
-				}
-				else{
-					//遠くなる
-					feeled = 0;
-				}
+				//遠くなる
+				feeled = 0;
 			}
 
-			if ((feel == 2 || feeled == 2) || (feel == 1 && feeled == 1)){
+			if ((limitter == true && (feel >= 1 && feeled >= 1)) || (limitter == false && ((feel >= 0 && feeled >= 1) || (feel >= 1 && feeled >= 0)))){
+			//if (feel >= 1 && feeled >= 1){
 				if ((feel == 2 && feeled >= 1) || (feel >= 1 && feeled == 2)){
 					keiro[keiro_count] = 18;
 				}
@@ -650,51 +652,35 @@ void algorithm_2::scanning(int y, int x, int y_before, int x_before, int URDL){
 		//左
 		if (x > 0 && URDL != 1){
 			//近くなる/遠くなる/平行/中のまま
-
-			if (size_x / 2 - 1 <= x && size_x / 2 - 1 <= table[y * size_x + x] % size_x || size_x / 2 - 1 > x && size_x / 2 - 1 > table[y * size_x + x] % size_x){
-				if (size_y / 2 - 1 <= y && size_y / 2 - 1 <= table[y * size_x + x] / size_x || size_y / 2 - 1 > y && size_y / 2 - 1 > table[y * size_x + x] / size_x){
-					//中にいる
-					feel = 1;
-				}
-				else{
-					//平行
-					feel = 1;
-				}
+			//自分
+			if (size_x / 2 < x && size_x / 2 <= table[y * size_x + x] % size_x || size_x / 2 > x && size_x / 2 > table[y * size_x + x] % size_x){
+				//平行
+				feel = 1;
+			}
+			else if (size_x / 2 <= x && size_x / 2 > table[y * size_x + x] % size_x){
+				//近くなる
+				feel = 2;
 			}
 			else{
-				if (size_x / 2 - 1 <= x && size_x / 2 - 1 > table[y * size_x + x] % size_x){
-					//近くなる
-					feel = 2;
-				}
-				else{
-					//遠くなる
-					feel = 0;
-				}
+				//遠くなる
+				feel = 0;
 			}
-
-
-			if (size_y / 2 - 1 <= y && size_y / 2 - 1 <= table[y * size_x + (x - 1)] / size_x || size_y / 2 - 1 > y && size_y / 2 - 1 > table[y * size_x + (x - 1)] / size_x){
-				if (size_x / 2 - 1 <= x && size_x / 2 - 1 <= table[y * size_x + (x - 1)] % size_x || size_x / 2 - 1 > x && size_x / 2 - 1 > table[y * size_x + (x - 1)] % size_x){
-					//中にいる
-					feeled = 1;
-				}
-				else{
-					//平行
-					feeled = 1;
-				}
+			//交換相手
+			if (size_x / 2 <= x && size_x / 2 <= table[y * size_x + (x - 1)] % size_x || size_x / 2 - 1 > x && size_x / 2 > table[y * size_x + (x - 1)] % size_x){
+				//平行
+				feeled = 1;
+			}
+			else if (size_x / 2 > x && size_x / 2 <= table[y * size_x + (x - 1)] % size_x){
+				//近くなる
+				feeled = 2;
 			}
 			else{
-				if (size_x / 2 - 1 <= x && size_x / 2 - 1 > table[y * size_x + (x - 1)] % size_x){
-					//遠くなる
-					feeled = 0;
-				}
-				else{
-					//近くなる
-					feeled = 2;
-				}
+				//遠くなる
+				feeled = 0;
 			}
 
-			if ((feel == 2 || feeled == 2) || (feel == 1 && feeled == 1)){
+			if ((limitter == true && (feel >= 1 && feeled >= 1)) || (limitter == false && ((feel >= 0 && feeled >= 1) || (feel >= 1 && feeled >= 0)))){
+			//if (feel >= 1 && feeled >= 1){
 				if ((feel == 2 && feeled >= 1) || (feel >= 1 && feeled == 2)){
 					keiro[keiro_count] = 19;
 				}
@@ -723,6 +709,8 @@ void algorithm_2::scanning(int y, int x, int y_before, int x_before, int URDL){
 #endif
 		}
 
+		do_exchange = true;
+
 		//パターン配列(経路)に保存
 		for (i = 0; i < keiro_count; i++){
 			history[history_limit + i] = keiro[i];
@@ -740,22 +728,35 @@ void algorithm_2::scanning(int y, int x, int y_before, int x_before, int URDL){
 		S = 0;
 		C = 0;
 		//ゴールまでの距離
-		
+		/*
+		for (int i = 0; i < size_y; i++){
+			for (int j = 0; j < size_x; j++){
+				std::cout << table[i*size_x + j]<<",";
+			}
+			std::cout << std::endl;
+		}
+		*/
 		for (i = 0; i < size; i++){
 		
-			G += abs(table[i] / size_x - i / size_x) + abs(table[i] % size_x - i % size_x);
+			//G += abs(table[i] / size_x - i / size_x) + abs(table[i] % size_x - i % size_x);
 		
-			/*
-			if (!(size_y / 2 - 1 <= i / size_x && size_y / 2 - 1 <= table[i] / size_x || size_y / 2 - 1 > i / size_x && size_y / 2 - 1 > table[i] / size_x)){
-				//y軸で違う面//★奇数偶数どうなの
-				G += abs(table[i] / size_x - size_y / 2 - 1);
+			//y軸で違う面か★奇数偶数どうなの
+			if (size_y / 2 > i / size_x && size_y / 2 <= table[i] / size_x){
+				G += abs(i / size_x - size_y / 2);
 			}
-			if (!(size_x / 2 - 1 <= i % size_x && size_x / 2 - 1 <= table[i] % size_x || size_x / 2 - 1 > i % size_x && size_x / 2 - 1 > table[i] % size_x)){
-				//x軸で違う面//★奇数偶数どうなの
-				G += abs(table[i] % size_x - size_x / 2 - 1);
+			else if (size_y / 2 <= i / size_x && size_y / 2 > table[i] / size_x){
+				G += abs(i / size_x - (size_y / 2 - 1));
 			}
-			*/
+			//x軸で違う面//★奇数偶数どうなの
+			if (size_x / 2 > i % size_x && size_x / 2 <= table[i] % size_x){
+				G += abs(i % size_x - size_x / 2);
+			}
+			else if (size_x / 2 <= i % size_x && size_x / 2 > table[i] % size_x){
+				G += abs(i % size_x - (size_x / 2 - 1));
+			}
 		}
+		//std::cout << "\ngoal=" << G << std::endl;
+		//std::cin >> G;
 		//交換コストと選択コストも入れる
 		for (i = 0; i < sub_history_limit; i++){
 			if (sub_history[i] < 16){
@@ -777,6 +778,13 @@ void algorithm_2::scanning(int y, int x, int y_before, int x_before, int URDL){
 			harray.pop(&cost, table, subhistory, &subhistory_limit);
 		}
 #else
+#ifdef debug3
+		std::cout << cost << "  ";
+		for (int h = 0; h < sub_history_limit; h++){
+			std::cout << sub_history[h] << ",";
+		}
+		std::cout << std::endl;
+#endif
 		//登録
 		harray.pop(&cost, table, sub_history, &sub_history_limit, &oya);
 #endif

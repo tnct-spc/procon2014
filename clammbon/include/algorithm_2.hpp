@@ -71,9 +71,9 @@ private:
 	//std::vector<std::vector<uint8_t>> start_distance;
 	//std::vector<std::vector<uint8_t>> goal_distance;
 
-	const int goal = 10;
-	const int sentaku = 10;
-	const int coukan = 10;
+	int goal = 10;
+	int sentaku = 10;
+	int coukan = 10;
 	//1,1,1		ノーマル
 	//10,5,3	選択が短いのを作れた
 	//10 8 4
@@ -96,7 +96,10 @@ private:
 	std::vector<int> root2;//use shorting
 	int sizemaxroot1 = 1;//use shorting
 	int sizemaxroot2 = 1;//use shorting
-
+	bool do_exchange;
+	bool limitter;
+	bool none;
+	bool first=true;
 
 	//順番に探索を開始する
 	void prescanning();
