@@ -145,29 +145,29 @@ void algorithm::impl::process(boost::coroutines::coroutine<return_type>::push_ty
 }
 
 // yoshikawa {{{1
-int algorithm::impl::form_evaluate(matrix_type const& matrix)
+int algorithm::impl::form_evaluate(mat_type const& mat)
 {
 	int s = 0;
-	for (int i = 0; i < matrix.size(); ++i)
+	for (int i = 0; i < mat.size(); ++i)
 	{
-		for (int j = 0; j < matrix.at(0).size(); ++j)
+		for (int j = 0; j < mat.at(0).size(); ++j)
 		{
-			s += matrix[i][j].manhattan({ j, i });
+			s += mat[i][j].manhattan({ j, i });
 		}
 	}
 	return s;
 }
 
-point_type algorithm::impl::get_start_point(matrix_type const& matrix)
+point_type algorithm::impl::get_start_point(mat_type const& mat)
 {
 	int max_val = 0;
 	point_type max_point;//場所
 
-	for (int i = 0; i < matrix.size(); ++i)
+	for (int i = 0; i < mat.size(); ++i)
 	{
-		for (int j = 0; j < matrix.at(0).size(); ++j)
+		for (int j = 0; j < mat.at(0).size(); ++j)
 		{
-			int temp = std::abs(matrix[i][j].manhattan({ j, i }));
+			int temp = std::abs(mat[i][j].manhattan({ j, i }));
 			if (temp > max_val)
 			{
 				max_val = temp;
@@ -239,6 +239,10 @@ evaluate_set_type algorithm::impl::try_l(evaluate_set_type const& eval_set)
 	return_set.direct += "L";
 	return_set.position = new_position;
 	return std::move(return_set);
+}
+
+void algorithm::impl::ymove() {
+    auto const& problem = matrix;
 }
 
 // implements {{{1
@@ -436,7 +440,7 @@ const answer_type algorithm::impl::solve()
 	// Ian Parberry 氏のアルゴリズムを長方形に拡張したもの
 	// とりあえず1回選択のみ
 
-	////
+	// 
 
 	for (;;) {
 		// 貪欲法を適用
