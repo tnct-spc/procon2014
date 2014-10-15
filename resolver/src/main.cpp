@@ -3,6 +3,7 @@
 
 // Macro: Program Settings
 #define ENABLE_NETWORK_IO 1
+#define ENABLE_SAVE_IMAGE 0
 
 #include <iostream>
 #include <deque>
@@ -64,9 +65,15 @@ public:
         std::string const& server_addr,
         int const problem_id, std::string const& player_id,
         bool const is_auto, bool const is_blur
+#if ENABLE_SAVE_IMAGE
+        ,std::string const& dir_path = "./saved_image"
+#endif
         )
-        : client_(server_addr), problem_id_(problem_id), player_id_(player_id),
-          is_auto_(is_auto), is_blur_(is_blur)
+        : client_(server_addr), problem_id_(problem_id), player_id_(player_id)
+        , is_auto_(is_auto), is_blur_(is_blur)
+#if ENABLE_SAVE_IMAGE
+        , dir_path_(dir_path), saved_num_(0)
+#endif
     {
     }
     virtual ~analyzer() = default;
@@ -191,6 +198,11 @@ private:
 #if ENABLE_NETWORK_IO
         // ネットワーク通信から
         std::string const data = client_.get_problem(problem_id_).get();
+#if ENABLE_SAVE_IMAGE
+        std::ofstream ofs((boost::format("%s/prob%02d.ppm") % dir_path_ % saved_num_++).str(), std::ios::binary);
+        ofs << data;
+        ofs.close();
+#endif
         return ppm_reader().from_data(data);
 #else
         // ファイルから
@@ -243,6 +255,11 @@ private:
     mutable network::client client_;
     pixel_sorter<yrange5> sorter_;
 	pixel_sorter<yrange2> sorter_dx;
+
+#if ENABLE_SAVE_IMAGE
+    mutable std::string dir_path_;
+    mutable int         saved_num_;
+#endif
 };
 
 void submit_func(question_data question, analyzer const& analyze)
@@ -289,6 +306,9 @@ int main(int const argc, char const* argv[])
     auto const  token = "3935105806";
     bool        is_auto;
     bool        is_blur;
+#if ENABLE_SAVE_IMAGE
+    std::string save_dir;
+#endif
 
     try
     {
@@ -298,6 +318,9 @@ int main(int const argc, char const* argv[])
             ("help,h"    , "produce help message")
             ("auto,a"    , "auto submit flag")
             ("blur,b"    , "gaussian blur to image")
+#if ENABLE_SAVE_IMAGE
+            ("save_dir"  , po::value<std::string>(&save_dir)   , "(require)set image dir to save")
+#endif
 #if ENABLE_NETWORK_IO
             ("server,s"  , po::value<std::string>(&server_addr), "(require)set server ip address")
             ("problem,p" , po::value<int>(&problemid)          , "(require)set problem_id")
@@ -327,7 +350,12 @@ int main(int const argc, char const* argv[])
         std::exit(-1);
     }
 
+#if ENABLE_SAVE_IMAGE
+    if(save_dir.empty()) save_dir = "./saved_image";
+    analyzer         analyze(server_addr, problemid, token, is_auto, is_blur, save_dir);
+#else
     analyzer         analyze(server_addr, problemid, token, is_auto, is_blur);
+#endif
     position_manager manager;
 
     boost::thread thread(boost::bind(&analyzer::operator(), &analyze, std::ref(manager)));
