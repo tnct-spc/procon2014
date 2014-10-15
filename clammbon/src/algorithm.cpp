@@ -70,16 +70,13 @@ private:
 	void print(step_type const& step) const;
 
 	// yoshikawa
-	matrix_type destination(matrix_type const& completion);
-	int form_evaluate(matrix_type const& completion, matrix_type const& matrix);
-	point_type get_start_point(matrix_type const& completion, matrix_type const& matrix);
-	int eval_two_piece(matrix_type const& destination, evaluate_set_type const& eval_set, point_type const& new_position);
-	evaluate_set_type try_u(matrix_type const& destination, evaluate_set_type const& eval_set);
-	evaluate_set_type try_r(matrix_type const& destination, evaluate_set_type const& eval_set);
-	evaluate_set_type try_d(matrix_type const& destination, evaluate_set_type const& eval_set);
-	evaluate_set_type try_l(matrix_type const& destination, evaluate_set_type const& eval_set);
-
-
+	int form_evaluate(matrix_type const& matrix);
+	point_type get_start_point(matrix_type const& matrix);
+	int eval_two_piece(evaluate_set_type const& eval_set, point_type const& new_position);
+	evaluate_set_type try_u(evaluate_set_type const& eval_set);
+	evaluate_set_type try_r(evaluate_set_type const& eval_set);
+	evaluate_set_type try_d(evaluate_set_type const& eval_set);
+	evaluate_set_type try_l(evaluate_set_type const& eval_set);
 
 	std::vector<std::vector<point_type>> matrix;
 	std::unordered_set<point_type> sorted_points;
@@ -148,34 +145,20 @@ void algorithm::impl::process(boost::coroutines::coroutine<return_type>::push_ty
 }
 
 // yoshikawa {{{1
-matrix_type algorithm::impl::destination(matrix_type const& completion)
-{
-	matrix_type answer(completion.size(), std::vector<point_type>(completion.at(0).size()));
-	for (int i = 0; i < completion.size(); ++i)
-	{
-		for (int j = 0; j < completion.at(0).size(); ++j)
-		{
-			answer[completion[i][j].y][completion[i][j].x] = point_type{ j, i };
-		}
-	}
-	return(std::move(answer));
-}
-
-int algorithm::impl::form_evaluate(matrix_type const& completion, matrix_type const& matrix)
+int algorithm::impl::form_evaluate(matrix_type const& matrix)
 {
 	int s = 0;
 	for (int i = 0; i < matrix.size(); ++i)
 	{
 		for (int j = 0; j < matrix.at(0).size(); ++j)
 		{
-			s += std::abs(completion[matrix[i][j].x][matrix[i][j].y].y - i);
-			s += std::abs(completion[matrix[i][j].x][matrix[i][j].y].x - j);
+			s += matrix[i][j].manhattan({ j, i });
 		}
 	}
 	return s;
 }
 
-point_type algorithm::impl::get_start_point(matrix_type const& completion, matrix_type const& matrix)
+point_type algorithm::impl::get_start_point(matrix_type const& matrix)
 {
 	int max_val = 0;
 	point_type max_point;//場所
@@ -184,7 +167,7 @@ point_type algorithm::impl::get_start_point(matrix_type const& completion, matri
 	{
 		for (int j = 0; j < matrix.at(0).size(); ++j)
 		{
-			int temp = std::abs(completion[matrix[i][j].x][matrix[i][j].y].y - i) + std::abs(completion[matrix[i][j].x][matrix[i][j].y].x - j);
+			int temp = std::abs(matrix[i][j].manhattan({ j, i }));
 			if (temp > max_val)
 			{
 				max_val = temp;
@@ -195,66 +178,63 @@ point_type algorithm::impl::get_start_point(matrix_type const& completion, matri
 	return max_point;
 }
 
-int algorithm::impl::eval_two_piece(matrix_type const& destination, evaluate_set_type const& eval_set, point_type const& new_position)
+int algorithm::impl::eval_two_piece(evaluate_set_type const& eval_set, point_type const& new_position)
 {
 	int s = 0;
 	point_type const& content_a = eval_set.matrix[eval_set.position.y][eval_set.position.x];
 	//aの新しい場所からの距離
-	s += std::abs(destination[content_a.y][content_a.x].x - new_position.x);
-	s += std::abs(destination[content_a.y][content_a.x].y - new_position.y);
+	s += content_a.manhattan(new_position);
 	//aの古い場所からの距離
-	s -= std::abs(destination[content_a.y][content_a.x].x - eval_set.position.x);
-	s -= std::abs(destination[content_a.y][content_a.x].y - eval_set.position.y);
-
+	s -= content_a.manhattan(eval_set.position);
 	point_type const& content_b = eval_set.matrix[new_position.y][new_position.x];
 	//bの新しい場所からの距離
-	s += std::abs(destination[content_b.y][content_b.x].x - eval_set.position.x);
-	s += std::abs(destination[content_b.y][content_b.x].y - eval_set.position.y);
+	s += content_b.manhattan(eval_set.position);
 	//bの古い場所からの距離
-	s -= std::abs(destination[content_b.y][content_b.x].x - new_position.x);
-	s -= std::abs(destination[content_b.y][content_b.x].y - new_position.y);
+	s -= content_b.manhattan(new_position);
+
 	assert(s == -2 || s == 0 || s == 2);
 	return s;
 }
 
-evaluate_set_type algorithm::impl::try_u(matrix_type const& destination, evaluate_set_type const& eval_set)
+
+evaluate_set_type algorithm::impl::try_u(evaluate_set_type const& eval_set)
 {
 	point_type const& new_position = { eval_set.position.x, eval_set.position.y - 1 };
 	evaluate_set_type return_set = eval_set;
-	return_set.score += eval_two_piece(destination, eval_set, new_position);
+	return_set.score += eval_two_piece(eval_set, new_position);
 	std::swap(return_set.matrix[return_set.position.y][return_set.position.x], return_set.matrix[new_position.y][new_position.x]);
 	return_set.direct += "U";
 	return_set.position = new_position;
 	return std::move(return_set);
 }
 
-evaluate_set_type algorithm::impl::try_r(matrix_type const& destination, evaluate_set_type const& eval_set)
+evaluate_set_type algorithm::impl::try_r(evaluate_set_type const& eval_set)
 {
 	point_type const& new_position = { eval_set.position.x + 1, eval_set.position.y };
 	evaluate_set_type return_set = eval_set;
-	return_set.score += eval_two_piece(destination, eval_set, new_position);
+	return_set.score += eval_two_piece(eval_set, new_position);
 	std::swap(return_set.matrix[return_set.position.y][return_set.position.x], return_set.matrix[new_position.y][new_position.x]);
 	return_set.direct += "R";
 	return_set.position = new_position;
 	return std::move(return_set);
 }
 
-evaluate_set_type algorithm::impl::try_d(matrix_type const& destination, evaluate_set_type const& eval_set)
+evaluate_set_type algorithm::impl::try_d(evaluate_set_type const& eval_set)
 {
 	point_type const& new_position = { eval_set.position.x, eval_set.position.y + 1 };
 	evaluate_set_type return_set = eval_set;
-	return_set.score += eval_two_piece(destination, return_set, new_position);
+	return_set.score += eval_two_piece(return_set, new_position);
 	std::swap(return_set.matrix[return_set.position.y][return_set.position.x], return_set.matrix[new_position.y][new_position.x]);
 	return_set.direct += "D";
 	return_set.position = new_position;
 	return std::move(return_set);
 }
 
-evaluate_set_type algorithm::impl::try_l(matrix_type const& destination, evaluate_set_type const& eval_set)
+evaluate_set_type algorithm::impl::try_l(evaluate_set_type const& eval_set)
 {
 	point_type const& new_position = { eval_set.position.x - 1, eval_set.position.y };
 	evaluate_set_type return_set = eval_set;
-	return_set.score += eval_two_piece(destination, eval_set, new_position);
+	return_set.score += eval_two_piece(eval_set, new_position);
 	std::swap(return_set.matrix[return_set.position.y][return_set.position.x], return_set.matrix[new_position.y][new_position.x]);
 	return_set.direct += "L";
 	return_set.position = new_position;
