@@ -2,7 +2,7 @@
 #define _SCL_SECURE_NO_WARNINGS
 
 // Macro: Program Settings
-#define ENABLE_NETWORK_IO 0
+#define ENABLE_NETWORK_IO 1
 
 #include <iostream>
 #include <deque>
@@ -246,7 +246,7 @@ void submit_func(question_data question, analyzer const& analyze)
 
 int main()
 {
-    auto const ploblemid = 1;
+    auto const ploblemid = std::getenv("PCS_PROBID") ? std::stoi(std::getenv("PCS_PROBID")) : 1;
     auto const token     = "3935105806";
 
     analyzer         analyze(ploblemid, token);
