@@ -29,7 +29,7 @@ void Answer::convert(std::string const& s)
         al.list.push_back(a);
     }
     final_answer = al;
-    outerr << "STATUS: answer loaded successfully\n" << std::endl;
+    outerr << "STATUS: submitted answer was loaded successfully\n" << std::endl;
     sane = true;
 }
 
