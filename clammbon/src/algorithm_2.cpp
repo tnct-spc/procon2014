@@ -3,6 +3,7 @@
 ////////////////////////////////////////////
 #define nosaiki//★
 #define debug//☆
+#define debug3
 
 #ifdef debug
 #include <boost/timer/timer.hpp>
@@ -422,6 +423,10 @@ void algorithm_2::prescanning(){
 	//historyから特定
 	int doy=-1, dox=-1;
 	int i;
+	for (i = 0; i < history_limit; i++){
+		std::cout << history[i] << ".";
+	}
+	std::cout << std::endl;
 	for (i = history_limit; i > 0; i--){
 		if (history[i] < 16){
 			doy = history[i - 1];
@@ -456,12 +461,14 @@ void algorithm_2::prescanning(){
 		scanning(doy, dox, doy, dox, -1);
 		
 		if (do_exchange == false){
+			std::cout << "リミット解除！！！！" << std::endl;
 			limitter = false;
 			keiro_count = 0;
 			scanning(doy, dox, doy, dox, -1);
 		}
-	}/*
-	if (do_exchange==false){
+	}
+	if (do_exchange==false && first==true){
+		std::cout << "iei" << std::endl;
 		limitter = true;
 		for (int y = 0; y < size_y; y++){
 			for (int x = 0; x < size_x; x++){
@@ -471,7 +478,8 @@ void algorithm_2::prescanning(){
 				scanning(y, x, y, x, -1);
 			}
 		}
-	}*/
+		first = false;
+	}
 }
 
 //走査
@@ -797,7 +805,12 @@ void algorithm_2::scanning(int y, int x, int y_before, int x_before, int URDL){
 
 	//うち経路消すん
 	keiro[keiro_count] = 0;
-	if (keiro_count>2) keiro_count -= 1;
+	if (first){
+		if (keiro_count>2) keiro_count -= 1;
+	}
+	else{
+		if (keiro_count>0) keiro_count -= 1;
+	}
 
 	y = y_before;
 	x = x_before;
