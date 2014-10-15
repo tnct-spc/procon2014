@@ -70,8 +70,9 @@ private:
 	void print(step_type const& step) const;
 
 	// yoshikawa
-	int form_evaluate(matrix_type const& matrix);
-	point_type get_start_point(matrix_type const& matrix);
+	void ymove();
+	int form_evaluate(matrix_type const& mat);
+	point_type get_start_point(matrix_type const& mat);
 	int eval_two_piece(evaluate_set_type const& eval_set, point_type const& new_position);
 	evaluate_set_type try_u(evaluate_set_type const& eval_set);
 	evaluate_set_type try_r(evaluate_set_type const& eval_set);
@@ -145,7 +146,7 @@ void algorithm::impl::process(boost::coroutines::coroutine<return_type>::push_ty
 }
 
 // yoshikawa {{{1
-int algorithm::impl::form_evaluate(mat_type const& mat)
+int algorithm::impl::form_evaluate(matrix_type const& mat)
 {
 	int s = 0;
 	for (int i = 0; i < mat.size(); ++i)
@@ -158,7 +159,7 @@ int algorithm::impl::form_evaluate(mat_type const& mat)
 	return s;
 }
 
-point_type algorithm::impl::get_start_point(mat_type const& mat)
+point_type algorithm::impl::get_start_point(matrix_type const& mat)
 {
 	int max_val = 0;
 	point_type max_point;//場所
@@ -241,8 +242,178 @@ evaluate_set_type algorithm::impl::try_l(evaluate_set_type const& eval_set)
 	return std::move(return_set);
 }
 
-void algorithm::impl::ymove() {
-    auto const& problem = matrix;
+void algorithm::impl::ymove()
+{
+	int const width = matrix.at(0).size();
+	int const height = matrix.size();
+   
+	std::vector<evaluate_set_type>answer_y;
+	answer_y.reserve(1000);
+	std::vector<evaluate_set_type> first_temp;
+	first_temp.reserve(4);
+	std::vector<evaluate_set_type> second_temp;
+	second_temp.reserve(16);
+
+	evaluate_set_type start;
+	start.matrix = matrix;
+	start.position = get_start_point(matrix);
+	start.content = matrix[start.position.y][start.position.x];
+	start.score = form_evaluate(start.matrix);
+	start.direct = " ";
+	answer_y.push_back(std::move(start));
+
+	std::cout << "select piece position = " << start.position << std::endl;
+	std::cout << "select piece content = " << start.content << std::endl;
+
+	int c = 0;
+	do//とりあえず良くなってる間回る
+	{
+		c++;
+
+		if (answer_y.back().position.y != 0 && answer_y.back().direct.back() != 'D')
+		{
+			first_temp.push_back(std::move(try_u(answer_y.back())));
+			//std::cout << "上やった" << std::endl;
+			//for (auto const& line : first_temp.back().matrix)
+			//{
+			//	for (auto const& piece : line)
+			//	{
+			//		std::cout << piece;
+			//	}
+			//	std::cout << std::endl;
+			//}
+			//std::cout << std::endl;
+		}
+		if (answer_y.back().position.x != width - 1 && answer_y.back().direct.back() != 'L')
+		{
+			first_temp.push_back(std::move(try_r(answer_y.back())));
+			//std::cout << "右やった" << std::endl;
+			//for (auto const& line : first_temp.back().matrix)
+			//{
+			//	for (auto const& piece : line)
+			//	{
+			//		std::cout << piece;
+			//	}
+			//	std::cout << std::endl;
+			//}
+			//std::cout << std::endl;
+		}
+		if (answer_y.back().position.y != height - 1 && answer_y.back().direct.back() != 'U')
+		{
+			first_temp.push_back(std::move(try_d(answer_y.back())));
+			//std::cout << "下やった" << std::endl;
+			//for (auto const& line : first_temp.back().matrix)
+			//{
+			//	for (auto const& piece : line)
+			//	{
+			//		std::cout << piece;
+			//	}
+			//	std::cout << std::endl;
+			//}
+			//std::cout << std::endl;
+		}
+		if (answer_y.back().position.x != 0 && answer_y.back().direct.back() != 'R')
+		{
+			first_temp.push_back(std::move(try_l(answer_y.back())));
+			//std::cout << "左やった" << std::endl;
+			//for (auto const& line : first_temp.back().matrix)
+			//{
+			//	for (auto const& piece : line)
+			//	{
+			//		std::cout << piece;
+			//	}
+			//	std::cout << std::endl;
+			//}
+			//std::cout << std::endl;
+		}
+
+		//std::cout << "fisrt temp size = " << first_temp.size() << std::endl;
+		for (auto const& one_first_temp : first_temp)
+		{
+			//std::cout << "------------------------------------------------" << std::endl;
+			if (one_first_temp.position.y != 0 && one_first_temp.direct.back() != 'D')
+			{
+				second_temp.push_back(std::move(try_u(one_first_temp)));
+				//std::cout << "上やった" << std::endl;
+				//for (auto const& line : second_temp.back().matrix)
+				//{
+				//	for (auto const& piece : line)
+				//	{
+				//		std::cout << piece;
+				//	}
+				//	std::cout << std::endl;
+				//}
+				//std::cout << std::endl;
+			}
+			if (one_first_temp.position.x != width - 1 && one_first_temp.direct.back() != 'L')
+			{
+				second_temp.push_back(std::move(try_r(one_first_temp)));
+				//std::cout << "右やった" << std::endl;
+				//for (auto const& line : second_temp.back().matrix)
+				//{
+				//	for (auto const& piece : line)
+				//	{
+				//		std::cout << piece;
+				//	}
+				//	std::cout << std::endl;
+				//}
+				//std::cout << std::endl;
+			}
+			if (one_first_temp.position.y != height - 1 && one_first_temp.direct.back() != 'U')
+			{
+				second_temp.push_back(std::move(try_d(one_first_temp)));
+				//std::cout << "下やった" << std::endl;
+				//for (auto const& line : second_temp.back().matrix)
+				//{
+				//	for (auto const& piece : line)
+				//	{
+				//		std::cout << piece;
+				//	}
+				//	std::cout << std::endl;
+				//}
+				//std::cout << std::endl;
+			}
+			if (one_first_temp.position.x != 0 && one_first_temp.direct.back() != 'R')
+			{
+				second_temp.push_back(std::move(try_l(one_first_temp)));
+				//std::cout << "左やった" << std::endl;
+				//for (auto const& line : second_temp.back().matrix)
+				//{
+				//	for (auto const& piece : line)
+				//	{
+				//		std::cout << piece;
+				//	}
+				//	std::cout << std::endl;
+				//}
+				//std::cout << std::endl;
+			}
+		}
+
+		//std::cout << "second temp size = " << second_temp.size() << std::endl;
+
+		answer_y.push_back(
+			*std::min_element(second_temp.begin(), second_temp.end(), [](evaluate_set_type a, evaluate_set_type b){return a.score < b.score; })
+			);
+		first_temp.clear();
+		second_temp.clear();
+
+		for (auto const& line : answer_y.back().matrix)
+		{
+			for (auto const& piece : line)
+			{
+				std::cout << piece;
+			}
+			std::cout << std::endl;
+		}
+		std::cout << "score = " << answer_y.back().score << std::endl;
+
+//	} while (answer_y.at(answer_y.size() - 2).score >= answer_y.back().score);
+	} while (c < 10);
+
+	std::cout << answer_y.back().direct << std::endl;
+	
+	answer.list.push_back(answer_atom{ answer_y.back().position, answer_y.back().direct });
+	matrix = answer_y.back().matrix;
 }
 
 // implements {{{1
