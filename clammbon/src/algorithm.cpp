@@ -1,4 +1,4 @@
-﻿#define NDEBUG
+﻿//#define NDEBUG
 #include <algorithm>
 #include <cassert>
 #include <iostream>
