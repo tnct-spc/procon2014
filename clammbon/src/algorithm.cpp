@@ -1,4 +1,4 @@
-﻿#define NDEBUG
+﻿//#define NDEBUG
 #include <algorithm>
 #include <cassert>
 #include <iostream>
@@ -410,9 +410,9 @@ void algorithm::impl::ymove()
 //	} while (answer_y.at(answer_y.size() - 2).score >= answer_y.back().score);
 	} while (c < 10);
 
-	std::cout << answer_y.back().direct << std::endl;
-	
-	answer.list.push_back(answer_atom{ answer_y.back().position, answer_y.back().direct });
+    answer_y.back().direct = answer_y.back().direct.substr(1);
+
+	answer.list.push_back(answer_atom{ answer_y.back().position, answer_y.back().direct.substr(1) });
 	matrix = answer_y.back().matrix;
 }
 
@@ -452,13 +452,6 @@ void algorithm::impl::operator() (boost::coroutines::coroutine<return_type>::pus
 
 	// ソート済み断片画像
 	std::unordered_set<point_type> sorted_points;
-
-	// 移動に用いる断片画像の原座標
-	// 右下を選んでおけば間違いない
-	selecting = point_type{width - 1, height - 1};
-	selecting_cur = current_point(selecting);
-
-	answer.list.push_back(answer_atom{selecting_cur, std::string()});
 
 	// GO
 #ifndef NDEBUG
@@ -611,7 +604,11 @@ const answer_type algorithm::impl::solve()
 	// Ian Parberry 氏のアルゴリズムを長方形に拡張したもの
 	// とりあえず1回選択のみ
 
-	// 
+    ymove();
+
+	selecting = point_type{width - 1, height - 1};
+	selecting_cur = current_point(selecting);
+	answer.list.push_back(answer_atom{selecting_cur, std::string()});
 
 	for (;;) {
 		// 貪欲法を適用
