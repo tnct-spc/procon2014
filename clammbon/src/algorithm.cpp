@@ -14,12 +14,22 @@
 // 幅優先探索に切り換えるタイミング
 // 2 にすると速い
 #define BFS_NUM 3
+typedef std::vector<std::vector<point_type>> matrix_type;
+struct evaluate_set_type
+{
+	matrix_type matrix;
+	point_type position;//場所
+	point_type content;
+	int score;
+	std::string direct;
+};
 
 // class definition {{{1
 class algorithm::impl : boost::noncopyable
 {
 public:
     typedef algorithm::return_type return_type;
+
 
     impl() = default;
     virtual ~impl() = default;
@@ -55,6 +65,18 @@ private:
     void print(std::vector<std::vector<point_type>> const& mat) const;
     void print(answer_type const& answer) const;
     void print(step_type const& step) const;
+
+	// yoshikawa
+	matrix_type destination(matrix_type const& completion);
+	int form_evaluate(matrix_type const& completion, matrix_type const& matrix);
+	point_type get_start_point(matrix_type const& completion, matrix_type const& matrix);
+	int eval_two_piece(matrix_type const& destination, evaluate_set_type const& eval_set, point_type const& new_position);
+	evaluate_set_type try_u(matrix_type const& destination, evaluate_set_type const& eval_set);
+	evaluate_set_type try_r(matrix_type const& destination, evaluate_set_type const& eval_set);
+	evaluate_set_type try_d(matrix_type const& destination, evaluate_set_type const& eval_set);
+	evaluate_set_type try_l(matrix_type const& destination, evaluate_set_type const& eval_set);
+
+
 
     std::vector<std::vector<point_type>> matrix;
     std::unordered_set<point_type> sorted_points;
@@ -118,6 +140,120 @@ void algorithm::impl::process(boost::coroutines::coroutine<return_type>::push_ty
 {
     // 訳ありで転送するだけの関数
     (*this)(yield);
+}
+
+// yoshikawa {{{1
+matrix_type algorithm::impl::destination(matrix_type const& completion)
+{
+	matrix_type answer(completion.size(), std::vector<point_type>(completion.at(0).size()));
+	for (int i = 0; i < completion.size(); ++i)
+	{
+		for (int j = 0; j < completion.at(0).size(); ++j)
+		{
+			answer[completion[i][j].y][completion[i][j].x] = point_type{ j, i };
+		}
+	}
+	return(std::move(answer));
+}
+
+int algorithm::impl::form_evaluate(matrix_type const& completion, matrix_type const& matrix)
+{
+	int s = 0;
+	for (int i = 0; i < matrix.size(); ++i)
+	{
+		for (int j = 0; j < matrix.at(0).size(); ++j)
+		{
+			s += std::abs(completion[matrix[i][j].x][matrix[i][j].y].y - i);
+			s += std::abs(completion[matrix[i][j].x][matrix[i][j].y].x - j);
+		}
+	}
+	return s;
+}
+
+point_type algorithm::impl::get_start_point(matrix_type const& completion, matrix_type const& matrix)
+{
+	int max_val = 0;
+	point_type max_point;//場所
+
+	for (int i = 0; i < matrix.size(); ++i)
+	{
+		for (int j = 0; j < matrix.at(0).size(); ++j)
+		{
+			int temp = std::abs(completion[matrix[i][j].x][matrix[i][j].y].y - i) + std::abs(completion[matrix[i][j].x][matrix[i][j].y].x - j);
+			if (temp > max_val)
+			{
+				max_val = temp;
+				max_point = point_type{ j, i };
+			}
+		}
+	}
+	return max_point;
+}
+
+int algorithm::impl::eval_two_piece(matrix_type const& destination, evaluate_set_type const& eval_set, point_type const& new_position)
+{
+	int s = 0;
+	point_type const& content_a = eval_set.matrix[eval_set.position.y][eval_set.position.x];
+	//aの新しい場所からの距離
+	s += std::abs(destination[content_a.y][content_a.x].x - new_position.x);
+	s += std::abs(destination[content_a.y][content_a.x].y - new_position.y);
+	//aの古い場所からの距離
+	s -= std::abs(destination[content_a.y][content_a.x].x - eval_set.position.x);
+	s -= std::abs(destination[content_a.y][content_a.x].y - eval_set.position.y);
+
+	point_type const& content_b = eval_set.matrix[new_position.y][new_position.x];
+	//bの新しい場所からの距離
+	s += std::abs(destination[content_b.y][content_b.x].x - eval_set.position.x);
+	s += std::abs(destination[content_b.y][content_b.x].y - eval_set.position.y);
+	//bの古い場所からの距離
+	s -= std::abs(destination[content_b.y][content_b.x].x - new_position.x);
+	s -= std::abs(destination[content_b.y][content_b.x].y - new_position.y);
+	assert(s == -2 || s == 0 || s == 2);
+	return s;
+}
+
+evaluate_set_type algorithm::impl::try_u(matrix_type const& destination, evaluate_set_type const& eval_set)
+{
+	point_type const& new_position = { eval_set.position.x, eval_set.position.y - 1 };
+	evaluate_set_type return_set = eval_set;
+	return_set.score += eval_two_piece(destination, eval_set, new_position);
+	std::swap(return_set.matrix[return_set.position.y][return_set.position.x], return_set.matrix[new_position.y][new_position.x]);
+	return_set.direct += "U";
+	return_set.position = new_position;
+	return std::move(return_set);
+}
+
+evaluate_set_type algorithm::impl::try_r(matrix_type const& destination, evaluate_set_type const& eval_set)
+{
+	point_type const& new_position = { eval_set.position.x + 1, eval_set.position.y };
+	evaluate_set_type return_set = eval_set;
+	return_set.score += eval_two_piece(destination, eval_set, new_position);
+	std::swap(return_set.matrix[return_set.position.y][return_set.position.x], return_set.matrix[new_position.y][new_position.x]);
+	return_set.direct += "R";
+	return_set.position = new_position;
+	return std::move(return_set);
+}
+
+evaluate_set_type algorithm::impl::try_d(matrix_type const& destination, evaluate_set_type const& eval_set)
+{
+	point_type const& new_position = { eval_set.position.x, eval_set.position.y + 1 };
+	evaluate_set_type return_set = eval_set;
+	return_set.score += eval_two_piece(destination, return_set, new_position);
+	std::swap(return_set.matrix[return_set.position.y][return_set.position.x], return_set.matrix[new_position.y][new_position.x]);
+	return_set.direct += "D";
+	return_set.position = new_position;
+	return std::move(return_set);
+}
+
+evaluate_set_type algorithm::impl::try_l(matrix_type const& destination, evaluate_set_type const& eval_set)
+{
+	point_type const& new_position = { eval_set.position.x - 1, eval_set.position.y };
+	evaluate_set_type return_set = eval_set;
+	return_set.score += eval_two_piece(destination, eval_set, new_position);
+	std::swap(return_set.matrix[return_set.position.y][return_set.position.x], return_set.matrix[new_position.y][new_position.x]);
+	return_set.direct += "L";
+	return_set.position = new_position;
+	return std::move(return_set);
 }
 
 // implements {{{1
@@ -297,6 +433,8 @@ const answer_type algorithm::impl::solve()
 {
     // Ian Parberry 氏のアルゴリズムを長方形に拡張したもの
     // とりあえず1回選択のみ
+
+	////
 
     for (;;) {
         // 残りが BFS_NUM x BFS_NUM の場合は Brute-Force
