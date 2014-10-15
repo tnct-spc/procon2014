@@ -4,6 +4,7 @@
 #include <iostream>
 #include <iterator>
 #include <unordered_map>
+#include <queue>
 #include <boost/bind.hpp>
 #include <boost/coroutine/all.hpp>
 #include <boost/coroutine/coroutine.hpp>
@@ -246,174 +247,98 @@ void algorithm::impl::ymove()
 {
 	int const width = matrix.at(0).size();
 	int const height = matrix.size();
-   
-	std::vector<evaluate_set_type>answer_y;
-	answer_y.reserve(1000);
-	std::vector<evaluate_set_type> first_temp;
-	first_temp.reserve(4);
-	std::vector<evaluate_set_type> second_temp;
-	second_temp.reserve(16);
+
+	std::queue<evaluate_set_type> que;
+	std::vector<evaluate_set_type> children;
+	children.reserve(900);
 
 	evaluate_set_type start;
 	start.matrix = matrix;
-	start.position = get_start_point(matrix);
-	start.content = matrix[start.position.y][start.position.x];
+	start.content = get_start_point(matrix);
+	start.position = matrix[start.position.y][start.position.x]; 
 	start.score = form_evaluate(start.matrix);
 	start.direct = " ";
-	answer_y.push_back(std::move(start));
+	que.push(start);
+
+	evaluate_set_type best = start;
+	
+	int depth = 0;
+	int order = 1;
+
+	std::cout << "algorighm start" << std::endl;
 
 	std::cout << "select piece position = " << start.position << std::endl;
 	std::cout << "select piece content = " << start.content << std::endl;
 
-	int c = 0;
-	do//とりあえず良くなってる間回る
+	while (que.size() > 0 && order<1e8)
 	{
-		c++;
+		//std::cout << "depth = " << depth++ << " score = " << best.score << " que size = " << que.size() << std::endl;
 
-		if (answer_y.back().position.y != 0 && answer_y.back().direct.back() != 'D')
+		while (que.size() > 0)
 		{
-			first_temp.push_back(std::move(try_u(answer_y.back())));
-			//std::cout << "上やった" << std::endl;
-			//for (auto const& line : first_temp.back().matrix)
-			//{
-			//	for (auto const& piece : line)
-			//	{
-			//		std::cout << piece;
-			//	}
-			//	std::cout << std::endl;
-			//}
-			//std::cout << std::endl;
-		}
-		if (answer_y.back().position.x != width - 1 && answer_y.back().direct.back() != 'L')
-		{
-			first_temp.push_back(std::move(try_r(answer_y.back())));
-			//std::cout << "右やった" << std::endl;
-			//for (auto const& line : first_temp.back().matrix)
-			//{
-			//	for (auto const& piece : line)
-			//	{
-			//		std::cout << piece;
-			//	}
-			//	std::cout << std::endl;
-			//}
-			//std::cout << std::endl;
-		}
-		if (answer_y.back().position.y != height - 1 && answer_y.back().direct.back() != 'U')
-		{
-			first_temp.push_back(std::move(try_d(answer_y.back())));
-			//std::cout << "下やった" << std::endl;
-			//for (auto const& line : first_temp.back().matrix)
-			//{
-			//	for (auto const& piece : line)
-			//	{
-			//		std::cout << piece;
-			//	}
-			//	std::cout << std::endl;
-			//}
-			//std::cout << std::endl;
-		}
-		if (answer_y.back().position.x != 0 && answer_y.back().direct.back() != 'R')
-		{
-			first_temp.push_back(std::move(try_l(answer_y.back())));
-			//std::cout << "左やった" << std::endl;
-			//for (auto const& line : first_temp.back().matrix)
-			//{
-			//	for (auto const& piece : line)
-			//	{
-			//		std::cout << piece;
-			//	}
-			//	std::cout << std::endl;
-			//}
-			//std::cout << std::endl;
-		}
+			auto const node = que.front();
+			que.pop();
 
-		//std::cout << "fisrt temp size = " << first_temp.size() << std::endl;
-		for (auto const& one_first_temp : first_temp)
-		{
-			//std::cout << "------------------------------------------------" << std::endl;
-			if (one_first_temp.position.y != 0 && one_first_temp.direct.back() != 'D')
+			if (best.score > node.score) best = node;
+
+			if (node.position.y != 0 && node.direct.back() != 'D')
 			{
-				second_temp.push_back(std::move(try_u(one_first_temp)));
-				//std::cout << "上やった" << std::endl;
-				//for (auto const& line : second_temp.back().matrix)
-				//{
-				//	for (auto const& piece : line)
-				//	{
-				//		std::cout << piece;
-				//	}
-				//	std::cout << std::endl;
-				//}
-				//std::cout << std::endl;
+				auto child = try_u(node);
+				if (child.score <= node.score)
+				{
+					children.push_back(std::move(child));
+				}
 			}
-			if (one_first_temp.position.x != width - 1 && one_first_temp.direct.back() != 'L')
+			if (node.position.x != width - 1 && node.direct.back() != 'L')
 			{
-				second_temp.push_back(std::move(try_r(one_first_temp)));
-				//std::cout << "右やった" << std::endl;
-				//for (auto const& line : second_temp.back().matrix)
-				//{
-				//	for (auto const& piece : line)
-				//	{
-				//		std::cout << piece;
-				//	}
-				//	std::cout << std::endl;
-				//}
-				//std::cout << std::endl;
+				auto child = try_r(node);
+				if (child.score <= node.score)
+				{
+					children.push_back(std::move(child));
+				}
 			}
-			if (one_first_temp.position.y != height - 1 && one_first_temp.direct.back() != 'U')
+			if (node.position.y != height - 1 && node.direct.back() != 'U')
 			{
-				second_temp.push_back(std::move(try_d(one_first_temp)));
-				//std::cout << "下やった" << std::endl;
-				//for (auto const& line : second_temp.back().matrix)
-				//{
-				//	for (auto const& piece : line)
-				//	{
-				//		std::cout << piece;
-				//	}
-				//	std::cout << std::endl;
-				//}
-				//std::cout << std::endl;
+				auto child = try_d(node);
+				if (child.score <= node.score)
+				{
+					children.push_back(std::move(child));
+				}
 			}
-			if (one_first_temp.position.x != 0 && one_first_temp.direct.back() != 'R')
+			if (node.position.x != 0 && node.direct.back() != 'R')
 			{
-				second_temp.push_back(std::move(try_l(one_first_temp)));
-				//std::cout << "左やった" << std::endl;
-				//for (auto const& line : second_temp.back().matrix)
-				//{
-				//	for (auto const& piece : line)
-				//	{
-				//		std::cout << piece;
-				//	}
-				//	std::cout << std::endl;
-				//}
-				//std::cout << std::endl;
+				auto child = try_l(node);
+				if (child.score <= node.score)
+				{
+					children.push_back(std::move(child));
+				}
 			}
 		}
+		
+		std::sort(children.begin(), children.end(), [](evaluate_set_type a, evaluate_set_type b){return a.score < b.score; });
 
-		//std::cout << "second temp size = " << second_temp.size() << std::endl;
-
-		answer_y.push_back(
-			*std::min_element(second_temp.begin(), second_temp.end(), [](evaluate_set_type a, evaluate_set_type b){return a.score < b.score; })
-			);
-		first_temp.clear();
-		second_temp.clear();
-
-		for (auto const& line : answer_y.back().matrix)
+		for (int i = 0; i < children.size() && i < 100; ++i)
 		{
-			for (auto const& piece : line)
-			{
-				std::cout << piece;
-			}
-			std::cout << std::endl;
+			que.push(children.at(i));
 		}
-		std::cout << "score = " << answer_y.back().score << std::endl;
 
-//	} while (answer_y.at(answer_y.size() - 2).score >= answer_y.back().score);
-	} while (c < 10);
+		children.clear();
+		order += que.size();
+	}
 
-    answer_y.back().direct = answer_y.back().direct.substr(1);
+	std::cout << "best score = " << best.score << std::endl;
 
-	answer.list.push_back(answer_atom{ answer_y.back().position, answer_y.back().direct.substr(1) });
-	matrix = answer_y.back().matrix;
+	std::cout << "answer list size = " << answer.list.size() << std::endl;
+	point_type a = best.position;
+	std::string b = best.direct.substr(1);
+
+	std::cout << "best position = " << a << std::endl;
+	std::cout << "best direct = " << b << std::endl;
+
+	//matrix = best.matrix;
+	//answer.list.push_back({ best.position, best.direct.substr(1) });
+	//std::cout << "push_back done " << std::endl;
+
 }
 
 // implements {{{1
