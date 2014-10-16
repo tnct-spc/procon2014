@@ -3,7 +3,6 @@
 
 #include <vector>
 #include <data_type.hpp>
-#include <omp.h>
 
 class yrange5
 {
@@ -19,7 +18,6 @@ private:
 			return score == right.score ? point.x < right.point.x : score < right.score;
 		}
 	};
-	omp_lock_t ol;
 
     question_raw_data const& data_;
     compared_type const& comp_;
