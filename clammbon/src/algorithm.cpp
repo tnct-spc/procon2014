@@ -1,4 +1,4 @@
-﻿//#define ALGODEBUG
+﻿#define ALGODEBUG
 #include <algorithm>
 #include <cassert>
 #include <iostream>
@@ -182,6 +182,7 @@ void algorithm::impl::move_selecting<'U'>()
     --selecting_cur.y;
     answer.list.back().actions.push_back('U');
 #ifdef ALGODEBUG
+    std::cout << "U" << std::endl;
     print(matrix);
 #endif
 }
@@ -194,6 +195,7 @@ void algorithm::impl::move_selecting<'R'>()
     ++selecting_cur.x;
     answer.list.back().actions.push_back('R');
 #ifdef ALGODEBUG
+    std::cout << "R" << std::endl;
     print(matrix);
 #endif
 }
@@ -206,6 +208,7 @@ void algorithm::impl::move_selecting<'D'>()
     ++selecting_cur.y;
     answer.list.back().actions.push_back('D');
 #ifdef ALGODEBUG
+    std::cout << "D" << std::endl;
     print(matrix);
 #endif
 }
@@ -218,6 +221,7 @@ void algorithm::impl::move_selecting<'L'>()
     --selecting_cur.x;
     answer.list.back().actions.push_back('L');
 #ifdef ALGODEBUG
+    std::cout << "L" << std::endl;
     print(matrix);
 #endif
 }
@@ -339,9 +343,7 @@ const answer_type algorithm::impl::solve()
         }
     }
 
-#ifdef ALGODEBUG
     print(answer);
-#endif
 
     return answer;
 }
@@ -372,11 +374,9 @@ void algorithm::impl::greedy()
     point_type waypoint;
 
     for (point_type const& target : target_queue) {
+        std::cerr << target << std::endl;
         // 端の部分の処理
         if (is_sorted(target)) {
-            continue;
-        } else if ((target.x == width - 1 || target.y == height - 1 ) && current_point(target) == target) {
-            sorted_points.insert(target);
             continue;
         } else if (target.x == width - 2 || target.y == height - 1) {
             // ターゲットが右から2番目の断片画像のとき
@@ -458,27 +458,35 @@ void algorithm::impl::greedy()
         // 端の部分の処理
         if (target.x == width - 1) {
             // ターゲットの真の原座標が右端の場合
+            std::cout << "hoge" << std::endl;
             move_to(waypoint.up().left());
             move_selecting<'R', 'D'>();
         } else if (target.y == height - 1) {
             // ターゲットの真の原座標が下端の場合
+            std::cout << "fuga" << std::endl;
             move_to(waypoint.left().up());
             move_selecting<'D', 'R'>();
-        } else if (target.x == width - 2) {
-            if (selecting_cur.x == width - 1 && selecting_cur.y == sorting_row + 1 && get_point_by_point(waypoint.left()) == target.right()) {
-                move_selecting<'L', 'U', 'R', 'D', 'L', 'D', 'R', 'U', 'U', 'L', 'D', 'R', 'D'>();
+        } else if (waypoint.x == width - 1) {
+            if (get_point_by_point(waypoint.left()) == target.right()) {
+                std::cout << "SPECIAL CASE 1 START" << std::endl;
+                move_to(waypoint.left().down());
+                move_selecting<'U', 'R', 'D', 'L', 'D', 'R', 'U', 'U', 'L', 'D', 'R', 'D'>();
+                std::cout << "SPECIAL CASE 1 END" << std::endl;
             } else if (selecting_cur.x == width - 2 && selecting_cur.y == sorting_row && get_point_by_point(waypoint.left().down()) == target.right()) {
-                move_selecting<'R', 'D', 'L', 'D', 'R', 'U', 'U', 'L', 'D', 'R', 'D', 'L', 'U', 'U', 'R', 'D'>();
-            } else if (selecting_cur.x == width - 3 && selecting_cur.y == sorting_row + 1 && get_point_by_point(waypoint.left()) == target.right()) {
-                move_selecting<'R', 'U', 'R', 'D', 'L', 'D', 'R', 'U', 'U', 'L', 'D', 'R', 'D'>();
+                std::cout << "SPECIAL CASE 2 START" << std::endl;
+                move_selecting<'R', 'D', 'L', 'D', 'R', 'U', 'U', 'L', 'D', 'R', 'D'>();
+                std::cout << "SPECIAL CASE 2 END" << std::endl;
             }
-        } else if (target.y == height - 2) {
-            if (selecting_cur.y == height - 1 && selecting_cur.x == sorting_col + 1 && get_point_by_point(waypoint.up()) == target.down()) {
-                move_selecting<'U', 'L', 'D', 'R', 'U', 'R', 'D', 'L', 'L', 'U', 'R', 'D', 'R'>();
+        } else if (waypoint.y == height - 1) {
+            if (get_point_by_point(waypoint.up()) == target.down()) {
+                std::cout << "SPECIAL CASE 3 START" << std::endl;
+                move_to(waypoint.up().right());
+                move_selecting<'L', 'D', 'R', 'U', 'R', 'D', 'L', 'L', 'U', 'R', 'D', 'R'>();
+                std::cout << "SPECIAL CASE 3 END" << std::endl;
             } else if (selecting_cur.y == height - 2 && selecting_cur.x == sorting_col && get_point_by_point(waypoint.up().right()) == target.down()) {
-                move_selecting<'D', 'R', 'U', 'R', 'D', 'L', 'L', 'U', 'R', 'D', 'R', 'U', 'L', 'L', 'D', 'R'>();
-            } else if (selecting_cur.y == height - 3 && selecting_cur.x == sorting_col + 1 && get_point_by_point(waypoint.up()) == target.down()) {
-                move_selecting<'D', 'L', 'D', 'R', 'U', 'R', 'D', 'L', 'L', 'U', 'R', 'D', 'R'>();
+                std::cout << "SPECIAL CASE 4 START" << std::endl;
+                move_selecting<'D', 'R', 'U', 'R', 'D', 'L', 'L', 'U', 'R', 'D', 'R'>();
+                std::cout << "SPECIAL CASE 4 END" << std::endl;
             }
         }
 
