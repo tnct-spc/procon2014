@@ -46,7 +46,9 @@ namespace test_tool
         for(auto const& select : answer.list)
         {
             selected = select.position;
+#ifdef _DEBUG
             std::cerr << (boost::format("selecting (%d,%d)") % selected.x % selected.y).str() << std::endl;
+#endif
             for(const char action : select.actions)
             {
 #ifdef _DEBUG
