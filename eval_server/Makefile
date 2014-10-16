@@ -41,7 +41,7 @@ distclean:
 
 install:
 	mkdir -p $(RESDEST)
-	cp -r res problem_set $(RESDEST)
+	cp -ru res problem_set $(RESDEST)
 	install $(PROG) $(DEST)
 
 # vim:set tabstop=4 noexpandtab
