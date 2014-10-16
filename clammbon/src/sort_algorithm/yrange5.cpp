@@ -126,7 +126,7 @@ std::vector<answer_type_y> yrange5::operator() (std::vector<std::vector<std::vec
 				int const u_height = (height % 2 == 0) ? height / 2 + 1 : height / 2;
 				int const r_width = width / 2;
 				int const d_height = height / 2;
-				int const l_width = (width % 2 == 0) ? height / 2 + 1 : width / 2;
+				int const l_width = (width % 2 == 0) ? width / 2 + 1 : width / 2;
 
 				//上に見ていく
 				for (int i = 0; i < height - 1; ++i)
