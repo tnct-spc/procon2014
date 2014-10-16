@@ -16,6 +16,7 @@
 #include "splitter.hpp"
 #include "algorithm.hpp"
 #include "algorithm_2.hpp"
+#include "charles.hpp"
 #include "gui.hpp"
 #include "network.hpp"
 #include "test_tool.hpp"
@@ -268,6 +269,7 @@ void submit_func(question_data question, analyzer const& analyze)
 {
     algorithm algo;
     algorithm_2 algo2;
+	charles algo3;
     algo.reset(question);
 
     auto const answer = algo.get();
@@ -288,8 +290,16 @@ void submit_func(question_data question, analyzer const& analyze)
 		if (answer)
 		{
 			auto result = analyze.submit(answer.get());
-			std::cout << "Submit Result: " << result << std::endl;
+			std::cout << "Submit Result   : " << result << std::endl;
 			std::cout << "勝った！" << std::endl;
+		}
+		algo3.reset(question);
+		auto const answer2 = algo3.get();
+		if (answer2)
+		{
+			auto result = analyze.submit(answer2.get());
+			std::cout << "Submit Result 2 : " << result << std::endl;
+			std::cout << "さらに勝った！" << std::endl;
 		}
 	}
 #else
