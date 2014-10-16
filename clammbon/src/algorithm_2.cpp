@@ -1,13 +1,14 @@
 ////////////////////////////////////////////
 /////A* Algorithm (最優先探索アルゴリズム)///////
 ////////////////////////////////////////////
-#define debug//★
+//#define debug//★
 
-#ifdef debug
+#ifdef _DEBUG
 #include <boost/timer/timer.hpp>
 #endif
 
 #include "algorithm_2.hpp"
+#include <iostream>
 
 //コンストラクタ
 heap::heap(){
@@ -42,7 +43,7 @@ void heap::pop(int *in_cost, std::vector<int> &in_table, std::vector<int> &in_hi
 		table.resize(1000000 * sizemaxcount, std::vector<int>(yx));
 		heaptable.resize(1000000 * sizemaxcount);
 		LIST_OC.resize(1000000 * sizemaxcount);
-#ifdef debug
+#ifdef _DEBUG
 		std::cout << ">< heap.cpp vector pass1,000,000" << std::endl;
 #endif
 	}
@@ -242,7 +243,7 @@ void algorithm_2::reset(question_data const& data)
 	sub_history.resize(10000);
 	root1.resize(1024);
 	root2.resize(1024);
-#ifdef debug_incost
+#ifdef _DEBUG_incost
 	std::cout << "\ngoal=";
 	std::cin >> goal;
 	std::cout << "sentaku=";
@@ -255,9 +256,9 @@ void algorithm_2::reset(question_data const& data)
 auto algorithm_2::get() -> boost::optional<return_type>
 {
 	int i, count;
-#ifdef debug
 	std::cout << "algorythm_2 start" << std::endl;
 	std::cout << "size_y=" << size_y << ",size_x=" << size_x << std::endl;
+#ifdef _DEBUG
 	for (int y = 0; size_y > y; y++){
 		for (int x = 0; size_x > x; x++){
 			std::cout << std::setw(3) << table[y * size_x + x] << ",";
@@ -280,7 +281,44 @@ auto algorithm_2::get() -> boost::optional<return_type>
 			if (table[i] == i) count++;
 		}
 		if (count == size){
-#ifdef debug
+			std::cout << "algorithm_2 finish" << std::endl;
+			for (int i = 0; i < history_limit; i++){
+				switch (history[i]){
+				case 16:
+				case 20:
+					std::cout << ",U";
+					break;
+				case 17:
+				case 21:
+					std::cout << ",R";
+					break;
+				case 18:
+				case 22:
+					std::cout << ",D";
+					break;
+				case 19:
+				case 23:
+					std::cout << ",L";
+					break;
+				default:
+					std::cout << "," << history[i];
+					break;
+				}
+			}
+			std::cout << std::endl;
+			int ANSWER_S = 0, ANSWER_C = 0;
+			for (int i = 0; i < history_limit; i++){
+				if (history[i] < 16){
+					ANSWER_S += 1;
+				}
+				else{
+					ANSWER_C += 1;
+				}
+			}
+			ANSWER_S /= 2;
+			std::cout << "選択コスト=" << cost_s << ",交換コスト=" << cost_c << std::endl;
+			std::cout << "cost=" << ANSWER_S * cost_s + ANSWER_C * cost_c << " S: " << ANSWER_S << " C: " << ANSWER_C << std::endl;
+#ifdef _DEBUG
 			//完成☆後で消したりなんたり
 			std::string result = timer.format();
 			std::cout << "end" << std::endl;
@@ -309,18 +347,18 @@ auto algorithm_2::get() -> boost::optional<return_type>
 				}
 			}
 			std::cout << std::endl;
-			int debug_S = 0, debug_C = 0;
+			int _DEBUG_S = 0, _DEBUG_C = 0;
 			for (int i = 0; i < history_limit; i++){
 				if (history[i] < 16){
-					debug_S += 1;
+					_DEBUG_S += 1;
 				}
 				else{
-					debug_C += 1;
+					_DEBUG_C += 1;
 				}
 			}
-			debug_S /= 2;
+			_DEBUG_S /= 2;
 			std::cout << "選択コスト=" << cost_s << ",交換コスト=" << cost_c << std::endl;
-			std::cout << "cost=" << debug_S * cost_s + debug_C * cost_c << " S: " << debug_S << " C: " << debug_C << std::endl;
+			std::cout << "cost=" << _DEBUG_S * cost_s + _DEBUG_C * cost_c << " S: " << _DEBUG_S << " C: " << _DEBUG_C << std::endl;
 #endif
 			harray.end();
 			//解をanswer_typeにして返す
@@ -510,7 +548,7 @@ void algorithm_2::scanning(int y, int x, int y_before, int x_before, int URDL){
 			sizemaxhistory++;
 			history.resize(10000 * sizemaxhistory);
 			sub_history.resize(10000 * sizemaxhistory);
-#ifdef debug
+#ifdef _DEBUG
 			std::cout << ">< search.cpp history vector pass10,000" << std::endl;
 #endif
 		}
@@ -594,7 +632,7 @@ void algorithm_2::shorting(){
 			if (root1_count > 1024 * sizemaxroot1 - 1){
 				sizemaxroot1++;
 				root1.resize(1024 * sizemaxroot1);
-#ifdef debug
+#ifdef _DEBUG
 				std::cout << ">< search.cpp root1 vector pass1,024" << std::endl;
 #endif
 			}
@@ -615,7 +653,7 @@ void algorithm_2::shorting(){
 			if (root2_count > 1024 * sizemaxroot2 - 1){
 				sizemaxroot2++;
 				root2.resize(1024 * sizemaxroot2);
-#ifdef debug
+#ifdef _DEBUG
 				std::cout << ">< search.cpp root2 vector pass10,000" << std::endl;
 #endif
 			}

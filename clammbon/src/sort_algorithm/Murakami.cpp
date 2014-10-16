@@ -31,7 +31,7 @@ std::vector<answer_type_y> Murakami::operator() (){
 	std::cout << "no use openMP" << std::endl;
 	#endif
 	make_sorted_comparation();
-	boost::timer t;
+	//boost::timer t;
 	std::vector<block_data_> block_list(height * width);
 	unsigned int unique_number_cnt = 0;
 	//ブロックの左上に分割画像を配置するループ
@@ -82,8 +82,8 @@ std::vector<answer_type_y> Murakami::operator() (){
 			}
 
 			if (best_block_combination.score == std::numeric_limits<bigint>::min()){
-				std::cout << "本当に結合するブロックがなかったので解を出さずにMurakamiは終了します";
-				throw std::runtime_error("本当に結合するブロックがなかった");
+				//std::cout << "本当に結合するブロックがなかったので解を出さずにMurakamiは終了します";
+				throw std::runtime_error("Murakami_runtime_error");
 			}
 			block_type combined_block = std::move(combine_block(best_block_combination));//ブロックを結合する
 			boost::remove_erase_if(block_list, [&best_block_combination](block_data_ it){//block_listから結合する前のブロックを消す
@@ -115,12 +115,12 @@ std::vector<answer_type_y> Murakami::operator() (){
 			*/
 		}
 	}catch (...){
-			std::cerr << "Murakamiダメでした";
-			std::cout << t.elapsed() << "s経過した(Murakami内で計測)" << std::endl;
+		std::cerr << "ダメ_Murakami_だめ" << std::endl;
+			//std::cout << t.elapsed() << "s経過した(Murakami内で計測)" << std::endl;
 			std::vector<std::vector<point_type>>exception_array;
 			return std::vector<answer_type_y>{ { std::move(exception_array), 0, cv::Mat() } }; 
 		}
-		std::cout << t.elapsed() << "s経過した(Murakami内で計測)" << std::endl;
+		//std::cout << t.elapsed() << "s経過した(Murakami内で計測)" << std::endl;
 		/*デバッグ表示
 		for (int i = 0; i < height; i++){
 			for (int j = 0; j < width; j++){

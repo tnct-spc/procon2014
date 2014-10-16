@@ -48,6 +48,8 @@ public:
         if(user_active[playerid]) {
             res << "REJECTED !!\r\n";
         } else {
+            user_active[playerid] = true;
+
             pcserver pcs;
             Problem pro(problem_set);
             pro.load(problemid);
@@ -193,7 +195,7 @@ int main()
     server.start();
 
     while(running) {
-        ;
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
     server.stop();
     return 0;
