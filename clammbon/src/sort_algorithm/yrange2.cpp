@@ -261,7 +261,7 @@ std::vector<answer_type_y> yrange2::operator() ()
 	int const yrange2_ans = answer.size();
 	std::sort(answer.begin(), answer.end(), [](answer_type_y a, answer_type_y b){return a.score < b.score; });
 	if (answer.size() >= yrange2_show_ans) answer.resize(yrange2_show_ans);
-
+	if(yrange2_ans==0)std::cout<<"◆◆◆並びませんでした◆◆◆"<<std::endl;
 #ifdef _DEBUG
 //	//一枚のcv::Matにする
 //#pragma omp parallel for
