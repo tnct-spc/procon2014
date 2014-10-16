@@ -1,4 +1,4 @@
-﻿//#define NDEBUG
+﻿//#define _DEBUG
 #include <algorithm>
 #include <cassert>
 #include <iostream>
@@ -163,21 +163,23 @@ int algorithm::impl::form_evaluate(matrix_type const& mat)
 point_type algorithm::impl::get_start_point(matrix_type const& mat)
 {
 	int max_val = 0;
-	point_type max_point;//場所
+	point_type max_point;//実態
+	point_type position;
 
 	for (int i = 0; i < mat.size(); ++i)
 	{
 		for (int j = 0; j < mat.at(0).size(); ++j)
 		{
-			int temp = std::abs(mat[i][j].manhattan({ j, i }));
+			int temp = mat[i][j].manhattan({ j, i });
 			if (temp > max_val)
 			{
 				max_val = temp;
 				max_point = point_type{ j, i };
+				position = point_type{ mat[i][j].x, mat[i][j].y };
 			}
 		}
 	}
-	return max_point;
+	return position;
 }
 
 int algorithm::impl::eval_two_piece(evaluate_set_type const& eval_set, point_type const& new_position)
@@ -254,11 +256,13 @@ void algorithm::impl::ymove()
 
 	evaluate_set_type start;
 	start.matrix = matrix;
-	start.content = get_start_point(matrix);
-	start.position = matrix[start.position.y][start.position.x]; 
+	start.position = get_start_point(matrix);
+	start.content = matrix[start.position.y][start.position.x];
 	start.score = form_evaluate(start.matrix);
 	start.direct = " ";
 	que.push(start);
+
+	point_type const start_position = start.position;
 
 	evaluate_set_type best = start;
 	
@@ -273,10 +277,9 @@ void algorithm::impl::ymove()
 	while (que.size() > 0 && order<1e8)
 	{
 		//std::cout << "depth = " << depth++ << " score = " << best.score << " que size = " << que.size() << std::endl;
-
 		while (que.size() > 0)
 		{
-			auto const node = que.front();
+				auto const node = que.front();
 			que.pop();
 
 			if (best.score > node.score) best = node;
@@ -320,8 +323,19 @@ void algorithm::impl::ymove()
 		for (int i = 0; i < children.size() && i < 100; ++i)
 		{
 			que.push(children.at(i));
-		}
 
+			for (auto const& line : que.back().matrix)
+			{
+				for (auto const& point : line)
+				{
+					std::cout << point;
+				}
+				std::cout << std::endl;
+			}
+			std::cout <<children.at(i).direct<< std::endl;
+
+		}
+		std::cout << "------------------------------------------------" << std::endl;
 		children.clear();
 		order += que.size();
 	}
@@ -335,9 +349,9 @@ void algorithm::impl::ymove()
 	std::cout << "best position = " << a << std::endl;
 	std::cout << "best direct = " << b << std::endl;
 
-	//matrix = best.matrix;
-	//answer.list.push_back({ best.position, best.direct.substr(1) });
-	//std::cout << "push_back done " << std::endl;
+	matrix = best.matrix;
+	answer.list.push_back({ start_position, best.direct.substr(1) });
+	std::cout << "push_back done " << std::endl;
 
 }
 
@@ -379,7 +393,7 @@ void algorithm::impl::operator() (boost::coroutines::coroutine<return_type>::pus
 	std::unordered_set<point_type> sorted_points;
 
 	// GO
-#ifndef NDEBUG
+#ifdef _DEBUG
 	print(matrix);
 #endif
 	yield(solve());
@@ -393,7 +407,7 @@ void algorithm::impl::move_selecting<'U'>()
 	std::swap(matrix[selecting_cur.y][selecting_cur.x], matrix[selecting_cur.y - 1][selecting_cur.x]);
 	--selecting_cur.y;
 	answer.list.back().actions.push_back('U');
-#ifndef NDEBUG
+#ifdef _DEBUG
 	print(matrix);
 #endif
 }
@@ -405,7 +419,7 @@ void algorithm::impl::move_selecting<'R'>()
 	std::swap(matrix[selecting_cur.y][selecting_cur.x], matrix[selecting_cur.y][selecting_cur.x + 1]);
 	++selecting_cur.x;
 	answer.list.back().actions.push_back('R');
-#ifndef NDEBUG
+#ifdef _DEBUG
 	print(matrix);
 #endif
 }
@@ -417,7 +431,7 @@ void algorithm::impl::move_selecting<'D'>()
 	std::swap(matrix[selecting_cur.y][selecting_cur.x], matrix[selecting_cur.y + 1][selecting_cur.x]);
 	++selecting_cur.y;
 	answer.list.back().actions.push_back('D');
-#ifndef NDEBUG
+#ifdef _DEBUG
 	print(matrix);
 #endif
 }
@@ -429,7 +443,7 @@ void algorithm::impl::move_selecting<'L'>()
 	std::swap(matrix[selecting_cur.y][selecting_cur.x], matrix[selecting_cur.y][selecting_cur.x - 1]);
 	--selecting_cur.x;
 	answer.list.back().actions.push_back('L');
-#ifndef NDEBUG
+#ifdef _DEBUG
 	print(matrix);
 #endif
 }
@@ -541,7 +555,7 @@ const answer_type algorithm::impl::solve()
 
 		// 残りが bfs_width x bfs_height の場合は Brute-Force
 		if (height - sorting_row <= bfs_height + 1 && width - sorting_col <= bfs_width + 1) {
-#ifndef NDEBUG
+#ifdef _DEBUG
 			print(matrix);
 			std::cout << "start brute_force solving" << std::endl;
 #endif
@@ -558,7 +572,7 @@ const answer_type algorithm::impl::solve()
 		}
 	}
 
-#ifndef NDEBUG
+#ifdef _DEBUG
 	print(answer);
 #endif
 
@@ -784,7 +798,7 @@ void algorithm::impl::brute_force()
 // move_target {{{2
 void algorithm::impl::move_target(point_type const& target, char const& direction)
 {
-#ifndef NDEBUG
+#ifdef _DEBUG
 	std::cout << "move_target " << target << " " << direction << std::endl;
 #endif
 	// selecting の操作によって原座標が target である断片画像を指定の方向へ移動させる.
