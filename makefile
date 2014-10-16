@@ -3,28 +3,28 @@ buildtype := release
 .PHONY: all clean test
 
 all :
-	cd clammbon     ; buildtype=$(buildtype) make
-	cd resolver     ; buildtype=$(buildtype) make
-	cd eval_movement; buildtype=$(buildtype) make
-	cd eval_position; buildtype=$(buildtype) make
-	cd eval_server  ; buildtype=$(buildtype) make
-	cd test         ; buildtype=$(buildtype) make
-	cd prob_maker   ; buildtype=$(buildtype) make
-	cd move_tester  ; buildtype=$(buildtype) make
+	cd clammbon     ; buildtype=$(buildtype) $(MAKE)
+	cd resolver     ; buildtype=$(buildtype) $(MAKE)
+	cd eval_movement; buildtype=$(buildtype) $(MAKE)
+	cd eval_position; buildtype=$(buildtype) $(MAKE)
+	cd eval_server  ; buildtype=$(buildtype) $(MAKE)
+	cd test         ; buildtype=$(buildtype) $(MAKE)
+	cd prob_maker   ; buildtype=$(buildtype) $(MAKE)
+	cd move_tester  ; buildtype=$(buildtype) $(MAKE)
 
 clean :
-	cd clammbon     ; buildtype=$(buildtype) make clean
-	cd resolver     ; buildtype=$(buildtype) make clean
-	cd eval_movement; buildtype=$(buildtype) make clean
-	cd eval_position; buildtype=$(buildtype) make clean
-	cd eval_server  ; buildtype=$(buildtype) make clean
-	cd test         ; buildtype=$(buildtype) make clean
-	cd prob_maker   ; buildtype=$(buildtype) make clean
-	cd move_tester  ; buildtype=$(buildtype) make clean
+	cd clammbon     ; buildtype=$(buildtype) $(MAKE) clean
+	cd resolver     ; buildtype=$(buildtype) $(MAKE) clean
+	cd eval_movement; buildtype=$(buildtype) $(MAKE) clean
+	cd eval_position; buildtype=$(buildtype) $(MAKE) clean
+	cd eval_server  ; buildtype=$(buildtype) $(MAKE) clean
+	cd test         ; buildtype=$(buildtype) $(MAKE) clean
+	cd prob_maker   ; buildtype=$(buildtype) $(MAKE) clean
+	cd move_tester  ; buildtype=$(buildtype) $(MAKE) clean
 
 test :
-	cd clammbon     ; buildtype=$(buildtype) make
-	cd test         ; buildtype=$(buildtype) make
+	cd clammbon     ; buildtype=$(buildtype) $(MAKE)
+	cd test         ; buildtype=$(buildtype) $(MAKE)
 	./bin/$(buildtype)/test
 
 # vim:set tabstop=4 noexpendtab
