@@ -336,7 +336,7 @@ std::vector<point_type> duplicate_delete(compared_type const& comp_, std::vector
 	//targetを基準に分類
 	for (int i = 0; i < sepy; i++) for (int j = 0; j < sepx; j++)
 	{
-		overlap_vec[matrix[i][j].y*sepy + matrix[i][j].x].push_back(overlap_set{ 0, { j, i } });
+		overlap_vec[matrix[i][j].y*sepx + matrix[i][j].x].push_back(overlap_set{ 0, { j, i } });
 	}
 	//被りを見つけ，その中で最小のものだけを残す
 	for (auto& one_overlap_vec : overlap_vec)
@@ -363,7 +363,7 @@ std::vector<point_type> duplicate_delete(compared_type const& comp_, std::vector
 	}
 	for (int i = 0; i < sepy; ++i)for (int j = 0; j < sepx; ++j)
 	{
-		if (overlap_vec[i*sepy + j].size() == 0) usable.push_back(point_type{ j, i });
+		if (overlap_vec[i*sepx + j].size() == 0) usable.push_back(point_type{ j, i });
 	}
 	return std::move(usable);
 }
