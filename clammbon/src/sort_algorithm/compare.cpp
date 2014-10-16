@@ -281,7 +281,6 @@ point_type l_choose(compared_type const& comp, point_type const next_to, std::ve
 uint_fast64_t form_evaluate(question_raw_data const& data_,compared_type const& comp_, std::vector<std::vector<point_type> > const& matrix)
 {
 	uint_fast64_t s = 0;
-#pragma omp parallel
 	for (int i = 0; i < matrix.size() - 1; ++i)for (int j = 0; j < matrix.at(0).size() - 1; ++j){
 		if (j != data_.split_num.first - 1) s += comp_[matrix[i][j].y][matrix[i][j].x][matrix[i][j + 1].y][matrix[i][j + 1].x].right;
 		if (i != data_.split_num.second - 1) s += comp_[matrix[i][j].y][matrix[i][j].x][matrix[i + 1][j].y][matrix[i + 1][j].x].down;
