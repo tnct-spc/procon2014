@@ -572,7 +572,9 @@ void algorithm::impl::greedy()
     point_type waypoint;
 
     for (point_type const& target : target_queue) {
-        std::cerr << target << std::endl;
+#ifdef _DEBUG
+        std::cerr << "loop " << target << std::endl;
+#endif
         // 端の部分の処理
         if (is_sorted(target)) {
             continue;
@@ -656,12 +658,26 @@ void algorithm::impl::greedy()
         // 端の部分の処理
         if (target.x == width - 1) {
             // ターゲットの真の原座標が右端の場合
+#ifdef _DEBUG
+            std::cerr << "右端" << std::endl;
+#endif
+            move_to(waypoint.down().left());
             move_to(waypoint.up().left());
             move_selecting<'R', 'D'>();
+#ifdef _DEBUG
+            std::cerr << "右端done" << std::endl;
+#endif
         } else if (target.y == height - 1) {
             // ターゲットの真の原座標が下端の場合
+#ifdef _DEBUG
+            std::cerr << "下端" << std::endl;
+#endif
+            move_to(waypoint.right().up());
             move_to(waypoint.left().up());
             move_selecting<'D', 'R'>();
+#ifdef _DEBUG
+            std::cerr << "下端done" << std::endl;
+#endif
         } else if (waypoint.x == width - 1) {
             if (get_point_by_point(waypoint.left()) == target.right()) {
 #ifdef _DEBUG

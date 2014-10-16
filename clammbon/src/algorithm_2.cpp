@@ -1,18 +1,19 @@
+ï»¿////////////////////////////////////////////
+/////A* Algorithm (æœ€å„ªå…ˆæ¢ç´¢ã‚¢ãƒ«ã‚´ãƒªã‚ºãƒ )///////
 ////////////////////////////////////////////
-/////A* Algorithm (Å—Dæ’TõƒAƒ‹ƒSƒŠƒYƒ€)///////
-////////////////////////////////////////////
-#define debug//š
+//#define debug//â˜…
 
-#ifdef debug
+#ifdef _DEBUG
 #include <boost/timer/timer.hpp>
 #endif
 
 #include "algorithm_2.hpp"
+#include <iostream>
 
-//ƒRƒ“ƒXƒgƒ‰ƒNƒ^
+//ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
 heap::heap(){
 }
-//ƒfƒXƒgƒ‰ƒNƒ^
+//ãƒ‡ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
 heap::~heap(){
 }
 
@@ -20,7 +21,7 @@ void heap::setup(const int *in_y, const int *in_x){
 	y = *in_y;
 	x = *in_x;
 	yx = y*x;
-	//”z—ñ‚ÌƒŠƒTƒCƒY™‚¨‚¨‚æ‚»
+	//é…åˆ—ã®ãƒªã‚µã‚¤ã‚ºâ˜†ãŠãŠã‚ˆã
 	cost.resize(1000000);
 	history.resize(1000000);
 	history_limit.resize(1000000);
@@ -42,23 +43,23 @@ void heap::pop(int *in_cost, std::vector<int> &in_table, std::vector<int> &in_hi
 		table.resize(1000000 * sizemaxcount, std::vector<int>(yx));
 		heaptable.resize(1000000 * sizemaxcount);
 		LIST_OC.resize(1000000 * sizemaxcount);
-#ifdef debug
+#ifdef _DEBUG
 		std::cout << ">< heap.cpp vector pass1,000,000" << std::endl;
 #endif
 	}
-	//d•¡Šm”F2
+	//é‡è¤‡ç¢ºèª2
 	bool ok = true;
 	int sizepos;
-	auto match_pos = NODE_.find(NODE{in_table,0});//TE‚Ì‘æ“ñˆø”‚ÍŠÖŒW‚È‚¢
-	if (match_pos != NODE_.end()){ //ƒe[ƒuƒ‹‚ªˆê’v‚µ‚½
+	auto match_pos = NODE_.find(NODE{in_table,0});//TEã®ç¬¬äºŒå¼•æ•°ã¯é–¢ä¿‚ãªã„
+	if (match_pos != NODE_.end()){ //ãƒ†ãƒ¼ãƒ–ãƒ«ãŒä¸€è‡´ã—ãŸ
 		sizepos = match_pos->pos;
 		ok = false;
 		if (*in_cost < cost[sizepos]){
-			//‚±‚Ìƒm[ƒh‚ªi‚Ìƒe[ƒuƒ‹‚æ‚èƒRƒXƒg‚ª’á‚¢
-			//ƒ‰ƒxƒ‹‚Â‚¯‚Ä‚ ‚Æ‚ÅÁ‚µ‚½‚Ù‚¤‚ª‚¢‚¢‚©‚àH©‚»‚Ì•K—v‚Í‚È‚³‚»‚¤
+			//ã“ã®ãƒãƒ¼ãƒ‰ãŒiã®ãƒ†ãƒ¼ãƒ–ãƒ«ã‚ˆã‚Šã‚³ã‚¹ãƒˆãŒä½ã„
+			//ãƒ©ãƒ™ãƒ«ã¤ã‘ã¦ã‚ã¨ã§æ¶ˆã—ãŸã»ã†ãŒã„ã„ã‹ã‚‚ï¼Ÿâ†ãã®å¿…è¦ã¯ãªã•ãã†
 			if (LIST_OC[sizepos] == true){
-				//‚±‚Ìƒm[ƒh‚Æ“¯‚¶ƒe[ƒuƒ‹‚ªOpenƒŠƒXƒg‚ÉŠÜ‚Ü‚ê‚Ä‚¢‚é
-				//Ÿ‘‚«Š·‚¦
+				//ã“ã®ãƒãƒ¼ãƒ‰ã¨åŒã˜ãƒ†ãƒ¼ãƒ–ãƒ«ãŒOpenãƒªã‚¹ãƒˆã«å«ã¾ã‚Œã¦ã„ã‚‹
+				//â—†æ›¸ãæ›ãˆ
 				cost[sizepos] = *in_cost;
 				history_limit[sizepos] = *in_history_limit;
 				history[sizepos].resize(history_limit[sizepos]);
@@ -67,8 +68,8 @@ void heap::pop(int *in_cost, std::vector<int> &in_table, std::vector<int> &in_hi
 				}
 			}
 			else{
-				//‚±‚Ìƒm[ƒh‚Æ“¯‚¶ƒe[ƒuƒ‹‚ªCloseƒŠƒXƒg‚ÉŠÜ‚Ü‚ê‚Ä‚¢‚é
-				//Ÿ‘‚«Š·‚¦
+				//ã“ã®ãƒãƒ¼ãƒ‰ã¨åŒã˜ãƒ†ãƒ¼ãƒ–ãƒ«ãŒCloseãƒªã‚¹ãƒˆã«å«ã¾ã‚Œã¦ã„ã‚‹
+				//â—†æ›¸ãæ›ãˆ
 				LIST_OC[sizepos] = true;
 				cost[sizepos] = *in_cost;
 				history_limit[sizepos] = *in_history_limit;
@@ -80,28 +81,28 @@ void heap::pop(int *in_cost, std::vector<int> &in_table, std::vector<int> &in_hi
 		}
 	}
 	if (ok == true){
-		//ƒRƒXƒg‘}“ü
+		//ã‚³ã‚¹ãƒˆæŒ¿å…¥
 		cost[size] = *in_cost;
 
-		//—š—ğ‘}“ü
+		//å±¥æ­´æŒ¿å…¥
 		history[size].resize(*in_history_limit);
 		for (i = 0; i < *in_history_limit; i++){
 			history[size][i] = in_history[i];
 		}
 		history_limit[size] = *in_history_limit;
 
-		//ƒe[ƒuƒ‹‘}“ü
+		//ãƒ†ãƒ¼ãƒ–ãƒ«æŒ¿å…¥
 		for (i = 0; i < yx; i++){
 			table[size][i] = in_table[i];
 		}
 
-		//NODE‚É‘}“ü
+		//NODEã«æŒ¿å…¥
 		NODE_.insert(NODE(table[size], size));
 
-		//OPEN_LIST‘}“ü
+		//OPEN_LISTæŒ¿å…¥
 		LIST_OC[size] = true;
 
-		//ƒq[ƒv”z—ñ‘}“ü
+		//ãƒ’ãƒ¼ãƒ—é…åˆ—æŒ¿å…¥
 		while (1){
 			me = top;
 			top = (top - 1) / 2;
@@ -130,13 +131,13 @@ void heap::push(int *out_cost, std::vector<int> &out_table, std::vector<int> &ou
 
 	pos--;
 
-	//OPEN‚©‚çCLOSE_LIST‚ÉˆÚ“®
+	//OPENã‹ã‚‰CLOSE_LISTã«ç§»å‹•
 	LIST_OC[out] = false;
 
-	//ƒRƒXƒg‘}“ü
+	//ã‚³ã‚¹ãƒˆæŒ¿å…¥
 	*out_cost = cost[out];
 
-	//—š—ğ‘}“ü
+	//å±¥æ­´æŒ¿å…¥
 	i = 0;
 	*out_history_limit = history_limit[out];
 	while (i < *out_history_limit){
@@ -144,12 +145,12 @@ void heap::push(int *out_cost, std::vector<int> &out_table, std::vector<int> &ou
 		i++;
 	}
 
-	//ƒe[ƒuƒ‹‘}“ü
+	//ãƒ†ãƒ¼ãƒ–ãƒ«æŒ¿å…¥
 	for (i = 0; i < yx; i++){
 		out_table[i] = table[out][i];
 	}
 
-	//ƒq[ƒv”z—ñ‘}“ü
+	//ãƒ’ãƒ¼ãƒ—é…åˆ—æŒ¿å…¥
 	while (1){
 		me = bottom;
 		bottom = (bottom * 2);
@@ -200,40 +201,40 @@ void heap::end(){
 	std::vector<std::vector<int>>().swap(history);
 	std::vector<int>().swap(history_limit);
 }
-//ƒRƒ“ƒXƒgƒ‰ƒNƒ^
+//ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
 algorithm_2::algorithm_2()
 {
 }
 
-//ƒfƒXƒgƒ‰ƒNƒ^
+//ãƒ‡ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
 algorithm_2::~algorithm_2()
 {
 }
 
-//‰Šú‰»
+//åˆæœŸåŒ–
 void algorithm_2::reset(question_data const& data)
 {
-	// ƒf[ƒ^‚ÌƒNƒ[ƒ“
+	// ãƒ‡ãƒ¼ã‚¿ã®ã‚¯ãƒ­ãƒ¼ãƒ³
 	data_ = data.clone();
 
-	// •‚Æ‚‚³
+	// å¹…ã¨é«˜ã•
 	size_y = data_->size.second;
 	size_x = data_->size.first;
 	size = size_y * size_x;
 
-	// ƒRƒXƒg‚ÆƒŒ[ƒg
+	// ã‚³ã‚¹ãƒˆã¨ãƒ¬ãƒ¼ãƒˆ
 	cost_s = data_->cost_select;
 	cost_c = data_->cost_change;
 
-	// ƒe[ƒuƒ‹
-	//table‚É‚æ‚»‚©‚ç–á‚Á‚Ä‚«‚½ƒ}ƒgƒŠƒNƒX‚ğ®—‚µ‚Ä‘}“ü
+	// ãƒ†ãƒ¼ãƒ–ãƒ«
+	//tableã«ã‚ˆãã‹ã‚‰è²°ã£ã¦ããŸãƒãƒˆãƒªã‚¯ã‚¹ã‚’æ•´ç†ã—ã¦æŒ¿å…¥
 	table.resize(size);
 	for (int y = 0; size_y > y; y++){
 		for (int x = 0; size_x > x; x++){
 			table[y * size_x + x] = data_->block[y][x].y * size_x + data_->block[y][x].x;
 		}
 	}
-	//‰Šú‰»
+	//åˆæœŸåŒ–
 	harray.setup(&size_y, &size_x);
 
 
@@ -242,7 +243,7 @@ void algorithm_2::reset(question_data const& data)
 	sub_history.resize(10000);
 	root1.resize(1024);
 	root2.resize(1024);
-#ifdef debug_incost
+#ifdef _DEBUG_incost
 	std::cout << "\ngoal=";
 	std::cin >> goal;
 	std::cout << "sentaku=";
@@ -255,36 +256,32 @@ void algorithm_2::reset(question_data const& data)
 auto algorithm_2::get() -> boost::optional<return_type>
 {
 	int i, count;
-#ifdef debug
 	std::cout << "algorythm_2 start" << std::endl;
 	std::cout << "size_y=" << size_y << ",size_x=" << size_x << std::endl;
+#ifdef _DEBUG
 	for (int y = 0; size_y > y; y++){
 		for (int x = 0; size_x > x; x++){
 			std::cout << std::setw(3) << table[y * size_x + x] << ",";
 		}
 		std::cout << std::endl;
 	}
-	//ƒpƒYƒ‹ƒXƒ^[ƒg
+	//ãƒ‘ã‚ºãƒ«ã‚¹ã‚¿ãƒ¼ãƒˆ
 	std::cout << "start" << std::endl;
-	boost::timer::cpu_timer timer; // ŠÔŒv‘ª‚ğŠJn
+	boost::timer::cpu_timer timer; // æ™‚é–“è¨ˆæ¸¬ã‚’é–‹å§‹
 #endif
 
 	while (1){
-		//’Tõ
+		//æ¢ç´¢
 		algorithm_2::prescanning();
-		//æ“¾
+		//å–å¾—
 		harray.push(&cost, table, history, &history_limit);
-		//Š®¬”»’è
+		//å®Œæˆåˆ¤å®š
 		count = 0;
 		for (i = 0; i<size; i++){
 			if (table[i] == i) count++;
 		}
 		if (count == size){
-#ifdef debug
-			//Š®¬™Œã‚ÅÁ‚µ‚½‚è‚È‚ñ‚½‚è
-			std::string result = timer.format();
-			std::cout << "end" << std::endl;
-			std::cout << "ˆ—ŠÔ:" << result << std::endl;
+			std::cout << "algorithm_2 finish" << std::endl;
 			for (int i = 0; i < history_limit; i++){
 				switch (history[i]){
 				case 16:
@@ -309,21 +306,62 @@ auto algorithm_2::get() -> boost::optional<return_type>
 				}
 			}
 			std::cout << std::endl;
-			int debug_S = 0, debug_C = 0;
+			int ANSWER_S = 0, ANSWER_C = 0;
 			for (int i = 0; i < history_limit; i++){
 				if (history[i] < 16){
-					debug_S += 1;
+					ANSWER_S += 1;
 				}
 				else{
-					debug_C += 1;
+					ANSWER_C += 1;
 				}
 			}
-			debug_S /= 2;
-			std::cout << "‘I‘ğƒRƒXƒg=" << cost_s << ",ŒğŠ·ƒRƒXƒg=" << cost_c << std::endl;
-			std::cout << "cost=" << debug_S * cost_s + debug_C * cost_c << " S: " << debug_S << " C: " << debug_C << std::endl;
+			ANSWER_S /= 2;
+			std::cout << "é¸æŠã‚³ã‚¹ãƒˆ=" << cost_s << ",äº¤æ›ã‚³ã‚¹ãƒˆ=" << cost_c << std::endl;
+			std::cout << "cost=" << ANSWER_S * cost_s + ANSWER_C * cost_c << " S: " << ANSWER_S << " C: " << ANSWER_C << std::endl;
+#ifdef _DEBUG
+			//å®Œæˆâ˜†å¾Œã§æ¶ˆã—ãŸã‚Šãªã‚“ãŸã‚Š
+			std::string result = timer.format();
+			std::cout << "end" << std::endl;
+			std::cout << "å‡¦ç†æ™‚é–“:" << result << std::endl;
+			for (int i = 0; i < history_limit; i++){
+				switch (history[i]){
+				case 16:
+				case 20:
+					std::cout << ",U";
+					break;
+				case 17:
+				case 21:
+					std::cout << ",R";
+					break;
+				case 18:
+				case 22:
+					std::cout << ",D";
+					break;
+				case 19:
+				case 23:
+					std::cout << ",L";
+					break;
+				default:
+					std::cout << "," << history[i];
+					break;
+				}
+			}
+			std::cout << std::endl;
+			int _DEBUG_S = 0, _DEBUG_C = 0;
+			for (int i = 0; i < history_limit; i++){
+				if (history[i] < 16){
+					_DEBUG_S += 1;
+				}
+				else{
+					_DEBUG_C += 1;
+				}
+			}
+			_DEBUG_S /= 2;
+			std::cout << "é¸æŠã‚³ã‚¹ãƒˆ=" << cost_s << ",äº¤æ›ã‚³ã‚¹ãƒˆ=" << cost_c << std::endl;
+			std::cout << "cost=" << _DEBUG_S * cost_s + _DEBUG_C * cost_c << " S: " << _DEBUG_S << " C: " << _DEBUG_C << std::endl;
 #endif
 			harray.end();
-			//‰ğ‚ğanswer_type‚É‚µ‚Ä•Ô‚·
+			//è§£ã‚’answer_typeã«ã—ã¦è¿”ã™
 			answer_type answerlist;
 			point_type position;
 			std::ostringstream stream;
@@ -333,7 +371,7 @@ auto algorithm_2::get() -> boost::optional<return_type>
 				pos++;
 				position.x = history[pos];
 				pos++;
-				while (pos < history.size() && 16 <= history[pos]){
+				while (pos < history_limit && 16 <= history[pos]){
 					switch (history[pos]){
 					case 16:
 					case 20:
@@ -362,7 +400,7 @@ auto algorithm_2::get() -> boost::optional<return_type>
 	}
 }
 
-//‘–¸€”õ(‘S‚Ä‚Ìƒ}ƒX‚ğˆê‚Â‚Ã‚Âscaning‚Å’²‚×‚é)
+//èµ°æŸ»æº–å‚™(å…¨ã¦ã®ãƒã‚¹ã‚’ä¸€ã¤ã¥ã¤scaningã§èª¿ã¹ã‚‹)
 void algorithm_2::prescanning(){
 	for (int y = 0; y < size_y; y++){
 		for (int x = 0; x < size_x; x++){
@@ -374,16 +412,16 @@ void algorithm_2::prescanning(){
 	}
 }
 
-//‘–¸
+//èµ°æŸ»
 void algorithm_2::scanning(int y, int x, int y_before, int x_before, int URDL){
 	int i, buff;
 	bool feel, feeled;
 
-	//Å‰‚¾‚¯ã‰º¶‰E‚ğ’Ê‚è‚ ‚Æ‚ÍÄ‹A“I‚É—ˆ‚Ä•Û‘¶‚·‚éi‚¿‚å‚Á‚Æ–³‘Ê‚¾‚¯‚Ç’¼‚·ŠÔ‚ª‚È‚©‚Á‚½j
+	//æœ€åˆã ã‘ä¸Šä¸‹å·¦å³ã‚’é€šã‚Šã‚ã¨ã¯å†å¸°çš„ã«æ¥ã¦ä¿å­˜ã™ã‚‹ï¼ˆã¡ã‚‡ã£ã¨ç„¡é§„ã ã‘ã©ç›´ã™æ™‚é–“ãŒãªã‹ã£ãŸï¼‰
 
 	if ((y == y_before && x == x_before)){
-		//i‚Ş(ã‰E‰º¶‚Ì‡)
-		//ã
+		//é€²ã‚€(ä¸Šå³ä¸‹å·¦ã®é †)
+		//ä¸Š
 		if (y > 0 && URDL != 2){
 			if (table[y * size_x + x] / size_x < y){
 				feel = true;
@@ -406,14 +444,14 @@ void algorithm_2::scanning(int y, int x, int y_before, int x_before, int URDL){
 					keiro[keiro_count] = 20;
 				}
 				keiro_count += 1;
-				//ŒğŠ·
+				//äº¤æ›
 				buff = table[y * size_x + x];
 				table[y * size_x + x] = table[(y - 1) * size_x + x];
 				table[(y - 1) * size_x + x] = buff;
 				scanning(y - 1, x, y, x, 0);
 			}
 		}
-		//‰E
+		//å³
 		if (x < size_x - 1 && URDL != 3){
 			if (table[y * size_x + x] % size_x > x){
 				feel = true;
@@ -436,14 +474,14 @@ void algorithm_2::scanning(int y, int x, int y_before, int x_before, int URDL){
 					keiro[keiro_count] = 21;
 				}
 				keiro_count += 1;
-				//ŒğŠ·
+				//äº¤æ›
 				buff = table[y * size_x + x];
 				table[y * size_x + x] = table[y * size_x + (x + 1)];
 				table[y * size_x + (x + 1)] = buff;
 				scanning(y, x + 1, y, x, 1);
 			}
 		}
-		//‰º
+		//ä¸‹
 		if (y < size_y - 1 && URDL != 0){
 			if (table[y * size_x + x] / size_x > y){
 				feel = true;
@@ -466,14 +504,14 @@ void algorithm_2::scanning(int y, int x, int y_before, int x_before, int URDL){
 					keiro[keiro_count] = 22;
 				}
 				keiro_count += 1;
-				//ŒğŠ·
+				//äº¤æ›
 				buff = table[y * size_x + x];
 				table[y * size_x + x] = table[(y + 1) * size_x + x];
 				table[(y + 1) * size_x + x] = buff;
 				scanning(y + 1, x, y, x, 2);
 			}
 		}
-		//¶
+		//å·¦
 		if (x > 0 && URDL != 1){
 			if (table[y * size_x + x] % size_x < x){
 				feel = true;
@@ -496,7 +534,7 @@ void algorithm_2::scanning(int y, int x, int y_before, int x_before, int URDL){
 					keiro[keiro_count] = 23;
 				}
 				keiro_count += 1;
-				//ŒğŠ·
+				//äº¤æ›
 				buff = table[y * size_x + x];
 				table[y * size_x + x] = table[y * size_x + (x - 1)];
 				table[y * size_x + (x - 1)] = buff;
@@ -504,37 +542,37 @@ void algorithm_2::scanning(int y, int x, int y_before, int x_before, int URDL){
 			}
 		}
 	}
-	if ((y != y_before || x != x_before)) //ˆê”ÔÅ‰ˆÈŠO
+	if ((y != y_before || x != x_before)) //ä¸€ç•ªæœ€åˆä»¥å¤–
 	{
 		if (history_limit > 10000 * sizemaxhistory - 2){
 			sizemaxhistory++;
 			history.resize(10000 * sizemaxhistory);
 			sub_history.resize(10000 * sizemaxhistory);
-#ifdef debug
+#ifdef _DEBUG
 			std::cout << ">< search.cpp history vector pass10,000" << std::endl;
 #endif
 		}
-		//ƒpƒ^[ƒ“”z—ñ(Œo˜H)‚É•Û‘¶
+		//ãƒ‘ã‚¿ãƒ¼ãƒ³é…åˆ—(çµŒè·¯)ã«ä¿å­˜
 		for (i = 0; i < keiro_count; i++){
 			history[history_limit + i] = keiro[i];
 		}
 		history_limit += keiro_count;
-		//¡¡¡¡shorting¡¡¡¡
+		//â– â– â– â– shortingâ– â– â– â– 
 		sub_history_limit = history_limit;
 		for (i = 0; i < sub_history_limit; i++){
 			sub_history[i] = history[i];
 		}
 		shorting();
-		//¡¡¡¡¡¡¡¡¡¡¡¡
-		//cost = ‘I‘ğƒRƒXƒg+ŒğŠ·ƒRƒXƒg+ƒS[ƒ‹‚Ü‚Å‚Ì‹——£;
+		//â– â– â– â– â– â– â– â– â– â– â– â– 
+		//cost = é¸æŠã‚³ã‚¹ãƒˆ+äº¤æ›ã‚³ã‚¹ãƒˆ+ã‚´ãƒ¼ãƒ«ã¾ã§ã®è·é›¢;
 		G = 0;
 		S = 0;
 		C = 0;
-		//ƒS[ƒ‹‚Ü‚Å‚Ì‹——£
+		//ã‚´ãƒ¼ãƒ«ã¾ã§ã®è·é›¢
 		for (i = 0; i < size; i++){
 			G += abs(table[i] / size_x - i / size_x) + abs(table[i] % size_x - i % size_x);
 		}
-		//ŒğŠ·ƒRƒXƒg‚Æ‘I‘ğƒRƒXƒg‚à“ü‚ê‚é
+		//äº¤æ›ã‚³ã‚¹ãƒˆã¨é¸æŠã‚³ã‚¹ãƒˆã‚‚å…¥ã‚Œã‚‹
 		for (i = 0; i < sub_history_limit; i++){
 			if (sub_history[i] < 16){
 				S++;
@@ -549,32 +587,32 @@ void algorithm_2::scanning(int y, int x, int y_before, int x_before, int URDL){
 		cost = G + S + C;
 
 #ifdef test2
-		//@@@d—vFF‚±‚±‚â‚ç‚È‚«‚á©‚â‚ç‚È‚­‚Ä‚à‚¢‚¢‚©‚à
-		//Å‘å‘I‘ğ‰ñ”‚æ‚è‘å‚«‚¢‚È‚ç‚â‚ß‚é
+		//@@@é‡è¦ï¼šï¼šã“ã“ã‚„ã‚‰ãªãã‚ƒâ†ã‚„ã‚‰ãªãã¦ã‚‚ã„ã„ã‹ã‚‚
+		//æœ€å¤§é¸æŠå›æ•°ã‚ˆã‚Šå¤§ãã„ãªã‚‰ã‚„ã‚ã‚‹
 		if (S / 15 < 3){
 			harray.pop(&cost, table, subhistory, &subhistory_limit);
 		}
 #else
-		//“o˜^
+		//ç™»éŒ²
 		harray.pop(&cost, table, sub_history, &sub_history_limit);
 #endif
 		history_limit -= keiro_count;
 	}
-	//‘S•”Œ©I‚í‚Á‚½‚çtable‚ğŒ³’Ê‚è‚É‚µ‚Ä•Ô‚·
+	//å…¨éƒ¨è¦‹çµ‚ã‚ã£ãŸã‚‰tableã‚’å…ƒé€šã‚Šã«ã—ã¦è¿”ã™
 	buff = table[y * size_x + x];
 	table[y * size_x + x] = table[y_before * size_x + x_before];
 	table[y_before * size_x + x_before] = buff;
 
-	//‚¤‚¿Œo˜HÁ‚·‚ñ
+	//ã†ã¡çµŒè·¯æ¶ˆã™ã‚“
 	keiro[keiro_count] = 0;
 	if (keiro_count>2) keiro_count -= 1;
 
 	y = y_before;
 	x = x_before;
-	//Å‰‚ÌŠK‘w‚Éã‚ª‚é
+	//æœ€åˆã®éšå±¤ã«ä¸ŠãŒã‚‹
 }
 void algorithm_2::shorting(){
-	//Œo˜H‚ğ‚Ü‚Æ‚ß‚Ä’Zk‚·‚é
+	//çµŒè·¯ã‚’ã¾ã¨ã‚ã¦çŸ­ç¸®ã™ã‚‹
 	int i;
 	int x1_head, y1_head, root1_count, y1_tail, x1_tail;
 	int x2_head, y2_head, root2_count, y2_tail, x2_tail;
@@ -594,7 +632,7 @@ void algorithm_2::shorting(){
 			if (root1_count > 1024 * sizemaxroot1 - 1){
 				sizemaxroot1++;
 				root1.resize(1024 * sizemaxroot1);
-#ifdef debug
+#ifdef _DEBUG
 				std::cout << ">< search.cpp root1 vector pass1,024" << std::endl;
 #endif
 			}
@@ -615,7 +653,7 @@ void algorithm_2::shorting(){
 			if (root2_count > 1024 * sizemaxroot2 - 1){
 				sizemaxroot2++;
 				root2.resize(1024 * sizemaxroot2);
-#ifdef debug
+#ifdef _DEBUG
 				std::cout << ">< search.cpp root2 vector pass10,000" << std::endl;
 #endif
 			}
@@ -698,7 +736,7 @@ void algorithm_2::shorting(){
 		}
 		//Rule2
 		else if (y1_tail == y2_tail && x1_tail == x2_tail && root2_count == 1){
-			//root2‚ÌŠe•ûŒü‚ğ”½“]
+			//root2ã®å„æ–¹å‘ã‚’åè»¢
 			reverse(&root2[0]);
 			sub_history[count] = root2[0];
 			count++;
@@ -710,7 +748,7 @@ void algorithm_2::shorting(){
 		}
 		//Rule3
 		else if (y1_head == y2_head && x1_head == x2_head && root1_count == 1){
-			//root1‚ÌŠe•ûŒü‚ğ”½“]
+			//root1ã®å„æ–¹å‘ã‚’åè»¢
 			reverse(&root1[0]);
 			sub_history[start] = y1_tail;
 			start++;
@@ -730,9 +768,9 @@ void algorithm_2::shorting(){
 		}
 		//Rule4
 		else if (y1_head == y2_tail && x1_head == x2_tail && root1_count == 1 && root2_count == 1){
-			//root1‚ÌŠe•ûŒü‚ğ”½“]
+			//root1ã®å„æ–¹å‘ã‚’åè»¢
 			reverse(&root1[0]);
-			//root2‚ÌŠe•ûŒü‚ğ”½“]
+			//root2ã®å„æ–¹å‘ã‚’åè»¢
 			reverse(&root2[0]);
 			sub_history[start] = y1_tail;
 			sub_history[start + 1] = x1_tail;
