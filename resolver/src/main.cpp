@@ -3,6 +3,7 @@
 
 // Macro: Program Settings
 #define ENABLE_NETWORK_IO 1
+#define ENABLE_SAVE_IMAGE 0
 
 #include <iostream>
 #include <deque>
@@ -64,9 +65,15 @@ public:
         std::string const& server_addr,
         int const problem_id, std::string const& player_id,
         bool const is_auto, bool const is_blur
+#if ENABLE_SAVE_IMAGE
+        ,std::string const& dir_path = "./saved_image"
+#endif
         )
-        : client_(server_addr), problem_id_(problem_id), player_id_(player_id),
-          is_auto_(is_auto), is_blur_(is_blur)
+        : client_(server_addr), problem_id_(problem_id), player_id_(player_id)
+        , is_auto_(is_auto), is_blur_(is_blur)
+#if ENABLE_SAVE_IMAGE
+        , dir_path_(dir_path), saved_num_(0)
+#endif
     {
     }
     virtual ~analyzer() = default;
@@ -81,12 +88,15 @@ public:
 
         // 2次元画像に分割
         split_image_ = sp.split_image(raw_data_);
-        if(is_blur_) split_image_ = sp.split_image_gaussianblur(split_image_);
-        auto const image_comp = sorter_.image_comp(raw_data_, split_image_);
+
+        // compare用の画像を作成
+        auto const arranged_split = is_blur_ ? sp.split_image_gaussianblur(split_image_) : split_image_;
+        auto const image_comp = sorter_.image_comp(raw_data_, arranged_split);
+		auto const image_comp_dx = sorter_dx.image_comp(raw_data_, arranged_split);
 
         // 原画像推測部
         yrange2 yrange2_(raw_data_, image_comp);
-        Murakami murakami_(raw_data_, image_comp);
+        Murakami murakami_(raw_data_, image_comp,true);
 
         // GUI Threadの起動
         gui::manager gui_thread(
@@ -142,10 +152,28 @@ public:
             [&]()
             {
                 // Murakami
+			std::cout << "村上モード" << std::endl;
                 auto murakami_resolve = murakami_()[0].points;
-                if(!murakami_resolve.empty())gui_thread.push_back(
-                    boost::bind(gui::make_mansort_window, split_image_, murakami_resolve, "Murakami")
-                );
+				std::vector<std::vector<point_type>> murakami_dx_resolve, murakami_w_resolve, murakami_dx_w_resolve;
+				if (!murakami_resolve.empty())gui_thread.push_back(boost::bind(gui::make_mansort_window, split_image_, murakami_resolve, "Murakami"));
+				if (murakami_resolve.empty()){
+					std::cout << "デラックス村上モード" << std::endl;
+					Murakami murakami_dx(raw_data_, image_comp_dx, true);
+					murakami_dx_resolve = murakami_dx()[0].points;
+					if (!murakami_dx_resolve.empty())gui_thread.push_back(boost::bind(gui::make_mansort_window, split_image_, murakami_dx_resolve, "Murakami_dx"));
+					if (murakami_dx_resolve.empty()){
+						std::cout << "W村上モード" << std::endl;
+						Murakami murakami_w(raw_data_, image_comp, false);
+						murakami_w_resolve = murakami_w()[0].points;
+						if (!murakami_w_resolve.empty())gui_thread.push_back(boost::bind(gui::make_mansort_window, split_image_, murakami_w_resolve, "Murakami_w"));
+						if (murakami_w_resolve.empty()){
+							std::cout << "デラックスW村上モード" << std::endl;
+							Murakami murakami_dx_w(raw_data_, image_comp_dx, false);
+							murakami_dx_w_resolve = murakami_w()[0].points;
+							if (!murakami_dx_w_resolve.empty())gui_thread.push_back(boost::bind(gui::make_mansort_window, split_image_, murakami_dx_w_resolve, "Murakami_dx_w"));
+						}
+					}
+				}
             });
 
         gui_thread.push_back(
@@ -170,6 +198,11 @@ private:
 #if ENABLE_NETWORK_IO
         // ネットワーク通信から
         std::string const data = client_.get_problem(problem_id_).get();
+#if ENABLE_SAVE_IMAGE
+        std::ofstream ofs((boost::format("%s/prob%02d.ppm") % dir_path_ % saved_num_++).str(), std::ios::binary);
+        ofs << data;
+        ofs.close();
+#endif
         return ppm_reader().from_data(data);
 #else
         // ファイルから
@@ -221,6 +254,12 @@ private:
 
     mutable network::client client_;
     pixel_sorter<yrange5> sorter_;
+	pixel_sorter<yrange2> sorter_dx;
+
+#if ENABLE_SAVE_IMAGE
+    mutable std::string dir_path_;
+    mutable int         saved_num_;
+#endif
 };
 
 void submit_func(question_data question, analyzer const& analyze)
@@ -267,6 +306,9 @@ int main(int const argc, char const* argv[])
     auto const  token = "3935105806";
     bool        is_auto;
     bool        is_blur;
+#if ENABLE_SAVE_IMAGE
+    std::string save_dir;
+#endif
 
     try
     {
@@ -276,6 +318,9 @@ int main(int const argc, char const* argv[])
             ("help,h"    , "produce help message")
             ("auto,a"    , "auto submit flag")
             ("blur,b"    , "gaussian blur to image")
+#if ENABLE_SAVE_IMAGE
+            ("save_dir"  , po::value<std::string>(&save_dir)   , "(require)set image dir to save")
+#endif
 #if ENABLE_NETWORK_IO
             ("server,s"  , po::value<std::string>(&server_addr), "(require)set server ip address")
             ("problem,p" , po::value<int>(&problemid)          , "(require)set problem_id")
@@ -305,7 +350,12 @@ int main(int const argc, char const* argv[])
         std::exit(-1);
     }
 
+#if ENABLE_SAVE_IMAGE
+    if(save_dir.empty()) save_dir = "./saved_image";
+    analyzer         analyze(server_addr, problemid, token, is_auto, is_blur, save_dir);
+#else
     analyzer         analyze(server_addr, problemid, token, is_auto, is_blur);
+#endif
     position_manager manager;
 
     boost::thread thread(boost::bind(&analyzer::operator(), &analyze, std::ref(manager)));
