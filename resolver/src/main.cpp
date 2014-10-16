@@ -309,8 +309,8 @@ void submit_func(question_data question, analyzer const& analyze)
 			do{
 				result = analyze.submit(answer2.get());
 				std::cout << "Submit Result 2 : " << result << std::endl;
-            }
-            while(result == "ERROR");
+			}
+			while(result == "ERROR");
 			std::cout << "さらに勝った！" << std::endl;
 		}
 	}
