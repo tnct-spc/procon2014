@@ -371,7 +371,7 @@ auto algorithm_2::get() -> boost::optional<return_type>
 				pos++;
 				position.x = history[pos];
 				pos++;
-				while (pos < history.size() && 16 <= history[pos]){
+				while (pos < history_limit && 16 <= history[pos]){
 					switch (history[pos]){
 					case 16:
 					case 20:
