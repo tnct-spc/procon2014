@@ -278,8 +278,13 @@ void submit_func(question_data question, analyzer const& analyze)
 #if ENABLE_NETWORK_IO
         // TODO: 前より良くなったら提出など(普通にいらないかも．提出前に目grepしてるわけだし)
 		std::cout << "Submit! Wait 5 sec" << std::endl;
-        auto result = analyze.submit(answer.get());
-        std::cout << "Submit Result: " << result << std::endl;
+
+        std::string result;
+        do{
+            result = analyze.submit(answer.get());
+            std::cout << "Submit Result: " << result << std::endl;
+        }
+        while(result == "ERROR");
 
 	// FIXME: 汚いしセグフォする//セグフォはしなくなったらしい
 	int wrong_number = std::stoi(result.substr(result.find(" ")));
@@ -289,16 +294,23 @@ void submit_func(question_data question, analyzer const& analyze)
 		auto const answer = algo2.get();
 		if (answer)
 		{
-			auto result = analyze.submit(answer.get());
-			std::cout << "Submit Result   : " << result << std::endl;
+			do{
+				result = analyze.submit(answer.get());
+				std::cout << "Submit Result: " << result << std::endl;
+			}
+			while(result == "ERROR");
 			std::cout << "勝った！" << std::endl;
 		}
+
 		algo3.reset(question);
 		auto const answer2 = algo3.get();
 		if (answer2)
 		{
-			auto result = analyze.submit(answer2.get());
-			std::cout << "Submit Result 2 : " << result << std::endl;
+			do{
+				result = analyze.submit(answer2.get());
+				std::cout << "Submit Result 2 : " << result << std::endl;
+            }
+            while(result == "ERROR");
 			std::cout << "さらに勝った！" << std::endl;
 		}
 	}
