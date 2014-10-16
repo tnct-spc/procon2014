@@ -1,5 +1,4 @@
-﻿#define ALGODEBUG
-#include <algorithm>
+﻿#include <algorithm>
 #include <cassert>
 #include <iostream>
 #include <iterator>
@@ -10,10 +9,6 @@
 #include <boost/function.hpp>
 #include <boost/noncopyable.hpp>
 #include "algorithm.hpp"
-
-// 幅優先探索に切り換えるタイミング
-// 2 にすると速い
-constexpr int BFS_MAX_SIZE = 3;
 
 // class definition {{{1
 class algorithm::impl : boost::noncopyable
@@ -57,6 +52,8 @@ private:
     void print(std::vector<std::vector<point_type>> const& mat) const;
     void print(answer_type const& answer) const;
     void print(step_type const& step) const;
+
+    static constexpr int BFS_MAX_SIZE = 3;
 
     std::vector<std::vector<point_type>> matrix;
     std::unordered_set<point_type> sorted_points;
@@ -169,7 +166,9 @@ void algorithm::impl::operator() (boost::coroutines::coroutine<return_type>::pus
     answer.list.push_back(answer_atom{selecting_cur, std::string()});
 
     // GO
+#ifdef _DEBUG
     print(matrix);
+#endif
     yield(solve());
 }
 
@@ -181,8 +180,8 @@ void algorithm::impl::move_selecting<'U'>()
     std::swap(matrix[selecting_cur.y][selecting_cur.x], matrix[selecting_cur.y - 1][selecting_cur.x]);
     --selecting_cur.y;
     answer.list.back().actions.push_back('U');
-#ifdef ALGODEBUG
-    std::cout << "U" << std::endl;
+#ifdef _DEBUG
+    std::cerr << "U" << std::endl;
     print(matrix);
 #endif
 }
@@ -194,8 +193,8 @@ void algorithm::impl::move_selecting<'R'>()
     std::swap(matrix[selecting_cur.y][selecting_cur.x], matrix[selecting_cur.y][selecting_cur.x + 1]);
     ++selecting_cur.x;
     answer.list.back().actions.push_back('R');
-#ifdef ALGODEBUG
-    std::cout << "R" << std::endl;
+#ifdef _DEBUG
+    std::cerr << "R" << std::endl;
     print(matrix);
 #endif
 }
@@ -207,8 +206,8 @@ void algorithm::impl::move_selecting<'D'>()
     std::swap(matrix[selecting_cur.y][selecting_cur.x], matrix[selecting_cur.y + 1][selecting_cur.x]);
     ++selecting_cur.y;
     answer.list.back().actions.push_back('D');
-#ifdef ALGODEBUG
-    std::cout << "D" << std::endl;
+#ifdef _DEBUG
+    std::cerr << "D" << std::endl;
     print(matrix);
 #endif
 }
@@ -220,8 +219,8 @@ void algorithm::impl::move_selecting<'L'>()
     std::swap(matrix[selecting_cur.y][selecting_cur.x], matrix[selecting_cur.y][selecting_cur.x - 1]);
     --selecting_cur.x;
     answer.list.back().actions.push_back('L');
-#ifdef ALGODEBUG
-    std::cout << "L" << std::endl;
+#ifdef _DEBUG
+    std::cerr << "L" << std::endl;
     print(matrix);
 #endif
 }
@@ -327,7 +326,7 @@ const answer_type algorithm::impl::solve()
 
         // 残りが bfs_width x bfs_height の場合は Brute-Force
         if (height - sorting_row <= bfs_height + 1 && width - sorting_col <= bfs_width + 1) {
-#ifdef ALGODEBUG
+#ifdef _DEBUG
             std::cerr << "start brute_force solving" << std::endl;
 #endif
             brute_force();
@@ -343,7 +342,9 @@ const answer_type algorithm::impl::solve()
         }
     }
 
+#ifdef _DEBUG
     print(answer);
+#endif
 
     return answer;
 }
@@ -458,35 +459,49 @@ void algorithm::impl::greedy()
         // 端の部分の処理
         if (target.x == width - 1) {
             // ターゲットの真の原座標が右端の場合
-            std::cout << "hoge" << std::endl;
             move_to(waypoint.up().left());
             move_selecting<'R', 'D'>();
         } else if (target.y == height - 1) {
             // ターゲットの真の原座標が下端の場合
-            std::cout << "fuga" << std::endl;
             move_to(waypoint.left().up());
             move_selecting<'D', 'R'>();
         } else if (waypoint.x == width - 1) {
             if (get_point_by_point(waypoint.left()) == target.right()) {
-                std::cout << "SPECIAL CASE 1 START" << std::endl;
+#ifdef _DEBUG
+                std::cerr << "SPECIAL CASE 1 START" << std::endl;
+#endif
                 move_to(waypoint.left().down());
                 move_selecting<'U', 'R', 'D', 'L', 'D', 'R', 'U', 'U', 'L', 'D', 'R', 'D'>();
-                std::cout << "SPECIAL CASE 1 END" << std::endl;
+#ifdef _DEBUG
+                std::cerr << "SPECIAL CASE 1 END" << std::endl;
+#endif
             } else if (selecting_cur.x == width - 2 && selecting_cur.y == sorting_row && get_point_by_point(waypoint.left().down()) == target.right()) {
-                std::cout << "SPECIAL CASE 2 START" << std::endl;
+#ifdef _DEBUG
+                std::cerr << "SPECIAL CASE 2 START" << std::endl;
+#endif
                 move_selecting<'R', 'D', 'L', 'D', 'R', 'U', 'U', 'L', 'D', 'R', 'D'>();
-                std::cout << "SPECIAL CASE 2 END" << std::endl;
+#ifdef _DEBUG
+                std::cerr << "SPECIAL CASE 2 END" << std::endl;
+#endif
             }
         } else if (waypoint.y == height - 1) {
             if (get_point_by_point(waypoint.up()) == target.down()) {
-                std::cout << "SPECIAL CASE 3 START" << std::endl;
+#ifdef _DEBUG
+                std::cerr << "SPECIAL CASE 3 START" << std::endl;
+#endif
                 move_to(waypoint.up().right());
                 move_selecting<'L', 'D', 'R', 'U', 'R', 'D', 'L', 'L', 'U', 'R', 'D', 'R'>();
-                std::cout << "SPECIAL CASE 3 END" << std::endl;
+#ifdef _DEBUG
+                std::cerr << "SPECIAL CASE 3 END" << std::endl;
+#endif
             } else if (selecting_cur.y == height - 2 && selecting_cur.x == sorting_col && get_point_by_point(waypoint.up().right()) == target.down()) {
-                std::cout << "SPECIAL CASE 4 START" << std::endl;
+#ifdef _DEBUG
+                std::cerr << "SPECIAL CASE 4 START" << std::endl;
+#endif
                 move_selecting<'D', 'R', 'U', 'R', 'D', 'L', 'L', 'U', 'R', 'D', 'R'>();
-                std::cout << "SPECIAL CASE 4 END" << std::endl;
+#ifdef _DEBUG
+                std::cerr << "SPECIAL CASE 4 END" << std::endl;
+#endif
             }
         }
 
@@ -911,17 +926,17 @@ void algorithm::impl::print(std::vector<std::vector<point_type>> const& mat) con
 {
     for (std::vector<point_type> const& row : mat) {
         for (point_type const& point : row) {
-            std::cout << boost::format("%1$02X ") % point.num();
+            std::cerr << boost::format("%1$02X ") % point.num();
         }
-        std::cout << std::endl;
+        std::cerr << std::endl;
     }
-    std::cout << std::endl;
+    std::cerr << std::endl;
 }
 
 void algorithm::impl::print(answer_type const& answer) const
 {
-    std::cout << answer.serialize() << std::endl;
-    std::cout << std::endl;
+    std::cerr << answer.serialize() << std::endl;
+    std::cerr << std::endl;
 }
 
 void algorithm::impl::print(step_type const& step) const
