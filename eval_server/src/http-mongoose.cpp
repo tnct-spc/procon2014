@@ -48,6 +48,8 @@ public:
         if(user_active[playerid]) {
             res << "REJECTED !!\r\n";
         } else {
+            user_active[playerid] = true;
+
             pcserver pcs;
             Problem pro(problem_set);
             pro.load(problemid);
