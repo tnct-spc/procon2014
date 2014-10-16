@@ -9,7 +9,6 @@
 #include "opencv2/imgproc/imgproc.hpp"
 #include <omp.h>
 #include <data_type.hpp>
-#include <sort_algorithm/compare.hpp>
 #include <sort_algorithm/adjacent.hpp>
 #include <sort_algorithm/compare.hpp>
 #include <sort_algorithm/yrange2.hpp>
