@@ -252,19 +252,18 @@ void algorithm::impl::ymove()
     evaluate_set_type start = evaluate_set_type{ matrix, start_position, matrix[start_position.y][start_position.x], form_evaluate(start.matrix), " " };
     evaluate_set_type best = start;
     int depth = 0;
-    int order = 1;
     
     que.push(start);
 
     //std::cout << "select piece position = " << start.position << std::endl;
     //std::cout << "select piece content = " << start.content << std::endl;
 
-    while (que.size() > 0 && order<1e8)
+    while (que.size() > 0 && depth++ < 100)
     {
         //std::cout << "depth = " << depth++ << " score = " << best.score << " que size = " << que.size() << std::endl;
         while (que.size() > 0)
         {
-                auto const node = que.front();
+            auto const node = que.front();
             que.pop();
 
             if (best.score > node.score) best = node;
@@ -310,7 +309,6 @@ void algorithm::impl::ymove()
             que.push(children.at(i));
         }
         children.clear();
-        order += que.size();
     }
 
     matrix = best.matrix;
