@@ -46,9 +46,12 @@ namespace test_tool
         for(auto const& select : answer.list)
         {
             selected = select.position;
+#ifdef _DEBUG
             std::cerr << (boost::format("selecting (%d,%d)") % selected.x % selected.y).str() << std::endl;
+#endif
             for(const char action : select.actions)
             {
+#ifdef _DEBUG
                 // debug
                 std::cerr << "Current state:" << std::endl;
                 for(auto a : state) {
@@ -57,10 +60,13 @@ namespace test_tool
                     }
                     std::cerr << std::endl;
                 }
+#endif
 
                 // 移動先を見つけて交換(std::vectorからあふれた時はatが例外を送出する)
                 auto const target = target_point(action, selected);
+#ifdef _DEBUG
                 std::cerr << (boost::format("%c: moving from (%d,%d) to (%d,%d)") % action % selected.x % selected.y % target.x % target.y).str() << std::endl;
+#endif
                 std::swap(
                     state.at(selected.y).at(selected.x),
                     state.at(target  .y).at(target  .x)

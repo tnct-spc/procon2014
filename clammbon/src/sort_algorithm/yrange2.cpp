@@ -269,21 +269,20 @@ std::vector<answer_type_y> yrange2::operator() ()
 //	{
 //		answer.at(c).mat_image = std::move(combine_image(answer.at(c)));
 //	}
-
     std::cout << "There are " << yrange2_ans << " solutions by yrange2." << std::endl;
-	for (auto const& one_answer : answer)
-	{
-		for (int i = 0; i < one_answer.points.size(); ++i)
-		{
-			for (int j = 0; j < one_answer.points.at(0).size(); ++j)
-			{
-				auto const& data = one_answer.points[i][j];
-				std::cout << boost::format("(%2d,%2d) ") % data.x % data.y;
-			}
-			std::cout << "\n";
-		}
-		std::cout << "score = " << one_answer.score << std::endl;
-	}
+	//for (auto const& one_answer : answer)
+	//{
+	//	for (int i = 0; i < one_answer.points.size(); ++i)
+	//	{
+	//		for (int j = 0; j < one_answer.points.at(0).size(); ++j)
+	//		{
+	//			auto const& data = one_answer.points[i][j];
+	//			std::cout << boost::format("(%2d,%2d) ") % data.x % data.y;
+	//		}
+	//		std::cout << "\n";
+	//	}
+	//	std::cout << "score = " << one_answer.score << std::endl;
+	//}
 	//gui::show_image(data_, comp_, answer);
 #endif
 	return answer;

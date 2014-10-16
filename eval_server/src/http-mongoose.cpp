@@ -5,6 +5,8 @@
 
 #include <sstream>
 #include <iomanip>
+#include <chrono>
+#include <thread>
 
 #include "server.hpp"
 #include "tools.hpp"
@@ -17,6 +19,7 @@ using namespace Mongoose;
 class MyController : public Controller
 {
     std::string problem_set = std::getenv("PCS_PROBSET") ? std::getenv("PCS_PROBSET") : "default";
+    std::map<std::string, bool> user_active; // key: playerid
 public:
     void show_usage(Request &req, StreamResponse &res)
     {
@@ -42,24 +45,32 @@ public:
         std::cerr << "options: " << options << std::endl;
         std::cerr << "answer:\n" << answer << std::endl;
 
-        pcserver pcs;
-        Problem pro(problem_set);
-        pro.load(problemid);
-        Answer ans(answer);
+        if(user_active[playerid]) {
+            res << "REJECTED !!\r\n";
+        } else {
+            user_active[playerid] = true;
 
-        if(pro.valid() && ans.valid())
-            pcs.parse(pro.get(), ans.get());
-
-        if(pcs.ok()) {
-            if(options.find("quiet") != std::string::npos)
-                res << pcs.get_output();
-            else
-                res << pcs.get_error() << pcs.get_output();
-        } else
-            res << pro.get_error() << ans.get_error() << pcs.get_error();
-
-//        std::cerr << pro.get_error() << ans.get_error() << pcs.get_error() << pcs.get_output();
-
+            pcserver pcs;
+            Problem pro(problem_set);
+            pro.load(problemid);
+            Answer ans(answer);
+    
+            if(pro.valid() && ans.valid())
+                pcs.parse(pro.get(), ans.get());
+            
+            std::cerr << "Processed the answer. Now I feel a bit sleepy..." << std::endl;
+            std::this_thread::sleep_for(std::chrono::seconds(5));
+    
+            if(pcs.ok()) {
+                if(options.find("quiet") != std::string::npos)
+                    res << pcs.get_output();
+                else
+                    res << pcs.get_error() << pcs.get_output();
+            } else
+                res << pro.get_error() << ans.get_error() << pcs.get_error();
+    
+            user_active[playerid] = false;
+        }
         res.setHeader("Content-Type", "text/plain");
     }
     void dl_problem(Request &req, StreamResponse &res)
@@ -184,7 +195,7 @@ int main()
     server.start();
 
     while(running) {
-        ;
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
     server.stop();
     return 0;
