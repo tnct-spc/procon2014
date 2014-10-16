@@ -247,6 +247,8 @@ evaluate_set_type algorithm::impl::try_l(evaluate_set_type const& eval_set)
 
 void algorithm::impl::ymove()
 {
+	std::cout << "ymove start" << std::endl;
+
 	int const width = matrix.at(0).size();
 	int const height = matrix.size();
 
@@ -254,25 +256,16 @@ void algorithm::impl::ymove()
 	std::vector<evaluate_set_type> children;
 	children.reserve(900);
 
-	evaluate_set_type start;
-	start.matrix = matrix;
-	start.position = get_start_point(matrix);
-	start.content = matrix[start.position.y][start.position.x];
-	start.score = form_evaluate(start.matrix);
-	start.direct = " ";
-	que.push(start);
-
-	point_type const start_position = start.position;
-
+	point_type const start_position = get_start_point(matrix);
+	evaluate_set_type start = evaluate_set_type{ matrix, start_position, matrix[start_position.y][start_position.x], form_evaluate(start.matrix), " " };
 	evaluate_set_type best = start;
-	
 	int depth = 0;
 	int order = 1;
+	
+	que.push(start);
 
-	std::cout << "algorighm start" << std::endl;
-
-	std::cout << "select piece position = " << start.position << std::endl;
-	std::cout << "select piece content = " << start.content << std::endl;
+	//std::cout << "select piece position = " << start.position << std::endl;
+	//std::cout << "select piece content = " << start.content << std::endl;
 
 	while (que.size() > 0 && order<1e8)
 	{
@@ -323,36 +316,15 @@ void algorithm::impl::ymove()
 		for (int i = 0; i < children.size() && i < 100; ++i)
 		{
 			que.push(children.at(i));
-
-			for (auto const& line : que.back().matrix)
-			{
-				for (auto const& point : line)
-				{
-					std::cout << point;
-				}
-				std::cout << std::endl;
-			}
-			std::cout <<children.at(i).direct<< std::endl;
-
 		}
-		std::cout << "------------------------------------------------" << std::endl;
 		children.clear();
 		order += que.size();
 	}
 
-	std::cout << "best score = " << best.score << std::endl;
-
-	std::cout << "answer list size = " << answer.list.size() << std::endl;
-	point_type a = best.position;
-	std::string b = best.direct.substr(1);
-
-	std::cout << "best position = " << a << std::endl;
-	std::cout << "best direct = " << b << std::endl;
-
 	matrix = best.matrix;
 	answer.list.push_back({ start_position, best.direct.substr(1) });
-	std::cout << "push_back done " << std::endl;
 
+	std::cout << "ymove done." << std::endl;
 }
 
 // implements {{{1
