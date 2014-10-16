@@ -7,6 +7,7 @@
 #include <algorithm>
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
+#include <omp.h>
 #include <data_type.hpp>
 #include <sort_algorithm/compare.hpp>
 #include <sort_algorithm/adjacent.hpp>
@@ -76,6 +77,9 @@ std::vector<answer_type_y> yrange5::operator() (std::vector<std::vector<std::vec
 	answer.reserve(height*width * 2);
 	splitter sp;
 
+	omp_init_lock(&ol);
+
+#pragma omp parallel for
 	for (int c = 0; c < mother_matrix.size(); ++c)
 	{
 		std::vector<kind_rgb>kind_rgb_vector;
@@ -96,13 +100,16 @@ std::vector<answer_type_y> yrange5::operator() (std::vector<std::vector<std::vec
 			{
 				ans_temp[i][j] = mother_matrix.at(c)[one_kind_rgb_vector.point.y + i][one_kind_rgb_vector.point.x + j];
 			}
+			omp_set_lock(&ol);
 			to_y5.push_back(answer_type_y{ std::move(ans_temp), 0, cv::Mat() });
+			omp_unset_lock(&ol);
 		}
 	}
 	std::sort(to_y5.begin(), to_y5.end(), [](answer_type_y a, answer_type_y b){return a.score < b.score; });
 	to_y5.resize(yrange5_show_ans * 2);
 	
 	//yrange5メインループ
+#pragma omp parallel for
 	for (int c = 0; c < to_y5.size(); ++c)
 	{
 		//重複して入っているもののうち，悪い方を{width,height}に置き換え,今使われていないものを返す
@@ -119,7 +126,7 @@ std::vector<answer_type_y> yrange5::operator() (std::vector<std::vector<std::vec
 				int const u_height = (height % 2 == 0) ? height / 2 + 1 : height / 2;
 				int const r_width = width / 2;
 				int const d_height = height / 2;
-				int const l_width = (width % 2 == 0) ? height / 2 + 1 : width / 2;
+				int const l_width = (width % 2 == 0) ? width / 2 + 1 : width / 2;
 
 				//上に見ていく
 				for (int i = 0; i < height - 1; ++i)
@@ -196,7 +203,9 @@ std::vector<answer_type_y> yrange5::operator() (std::vector<std::vector<std::vec
 				}
 				if (array_sum(sorted_matrix, 0, 0, height, width) == ((width*height - 1)*(width*height) / 2) && get_kind_num(data_, sorted_matrix, 0, 0) == width*height)
 				{
+					omp_set_lock(&ol);
 					answer.push_back(answer_type_y{ sorted_matrix, form_evaluate(data_,comp_,sorted_matrix), cv::Mat() });
+					omp_unset_lock(&ol);
 				}
 			}
 		}
@@ -215,6 +224,7 @@ std::vector<answer_type_y> yrange5::operator() (std::vector<std::vector<std::vec
 
 #ifdef _DEBUG
 //	//一枚のcv::Matにする
+//#pragma omp parallel for
 //	for (int c = 0; c < answer.size();++c)
 //	{
 //		answer.at(c).mat_image = std::move(combine_image(answer.at(c)));
