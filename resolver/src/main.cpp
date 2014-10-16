@@ -3,7 +3,7 @@
 
 // Macro: Program Settings
 #define ENABLE_NETWORK_IO 1
-#define ENABLE_SAVE_IMAGE 1
+#define ENABLE_SAVE_IMAGE 0
 
 #include <iostream>
 #include <deque>
@@ -134,19 +134,17 @@ public:
 		        }
                 
                 // YRange5
-				if (raw_data_.split_num.first > 2 || raw_data_.split_num.first > 2){
-					auto yrange5_resolve = yrange5(raw_data_, image_comp)(yrange2_.sorted_matrix());
-					if (!yrange5_resolve.empty())
-					{
-						// GUI
-						for (int y5 = yrange5_resolve.size() - 1; y5 >= 0; --y5)
-						{
-							gui_thread.push_back(
-								boost::bind(gui::make_mansort_window, split_image_, yrange5_resolve.at(y5).points, "yrange5")
-								);
-						}
-					}
-				}
+                auto yrange5_resolve = yrange5(raw_data_, image_comp)(yrange2_.sorted_matrix());
+                if (!yrange5_resolve.empty())
+		        {
+                    // GUI
+			        for (int y5 = yrange5_resolve.size() - 1; y5 >= 0; --y5)
+			        {
+                        gui_thread.push_back(
+                            boost::bind(gui::make_mansort_window, split_image_, yrange5_resolve.at(y5).points, "yrange5")
+                            );
+			        }
+                }
             });
 
         // Murakami Thread
@@ -275,11 +273,10 @@ void submit_func(question_data question, analyzer const& analyze)
     {
 #if ENABLE_NETWORK_IO
         // TODO: 前より良くなったら提出など(普通にいらないかも．提出前に目grepしてるわけだし)
-		std::cout << "Submit! Wait 5 sec" << std::endl;
         auto result = analyze.submit(answer.get());
         std::cout << "Submit Result: " << result << std::endl;
 
-	// FIXME: 汚いしセグフォする//セグフォはしなくなったらしい
+	// FIXME: 汚いしセグフォする
 	int wrong_number = std::stoi(result.substr(result.find(" ")));
 	if(wrong_number == 0)
 	{
