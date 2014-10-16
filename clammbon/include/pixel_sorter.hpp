@@ -49,7 +49,7 @@ public:
 
 private:
 
-    //2つのピクセル間の距離を2乗した値を返却．result = r^2 + g^2 + b^2
+    //2つのピクセル間の距離を返却．result = r + g + b
     int pixel_comparison(pixel_type const& lhs, pixel_type const& rhs) const
     {
         int s = 0;
@@ -72,27 +72,47 @@ private:
     }
 
     //一枚目の右端と二枚目の左端を見る関数, 一致が多いほど低いを返す
-    uint_fast64_t rl_comparison(image_type const& lhs, image_type const& rhs) const
-    {
-        return pixel_line_comparison(lhs.col(lhs.cols - 1), rhs.col(0));
-    }
+	uint_fast64_t rl_comparison(image_type const& lhs, image_type const& rhs) const
+	{
+		uint_fast64_t s = 0;
+		for (int r = 0, l = lhs.cols - 1; r < rhs.cols / 2 && s == 0; r++, l--)
+		{
+			s = pixel_line_comparison(lhs.col(l), rhs.col(r));
+		}
+		return s;
+	}
 
     //一枚目の左端と二枚目の右端を見る関数, 一致が多いほど低いを返す
-    uint_fast64_t lr_comparison(image_type const& lhs, image_type const& rhs) const
-    {
-        return pixel_line_comparison(lhs.col(0), rhs.col(rhs.cols - 1));
-    }
+	uint_fast64_t lr_comparison(image_type const& lhs, image_type const& rhs) const
+	{
+		uint_fast64_t s = 0;
+		for (int r = rhs.cols - 1, l = 0; r > rhs.cols / 2 && s == 0; l++, r--)
+		{
+			s = pixel_line_comparison(lhs.col(l), rhs.col(r));
+		}
+		return s;
+	}
 
     //一枚目の上端と二枚目の下端を見る関数, 一致が多いほど低いを返す
     uint_fast64_t ud_comparison(image_type const& lhs, image_type const& rhs) const
     {
-        return pixel_line_comparison(lhs.row(0), rhs.row(rhs.rows - 1));
-    }
+		uint_fast64_t s = 0;
+		for (int r = rhs.rows - 1, l = 0; r > rhs.rows / 2 && s == 0; l++, r--)
+		{
+			s = pixel_line_comparison(lhs.row(l), rhs.row(r));
+		}
+		return s;
+	}
 
     //一枚目の下端と二枚目の上端を見る関数, 一致が多いほど低いを返す
     uint_fast64_t du_comparison(image_type const& lhs, image_type const& rhs) const
     {
-        return pixel_line_comparison(lhs.row(rhs.rows - 1), rhs.row(0));
+		uint_fast64_t s = 0;
+		for (int r = 0,  l = lhs.rows-1; r < rhs.rows / 2 && s == 0; l--, r++)
+		{
+			s = pixel_line_comparison(lhs.row(l), rhs.row(r));
+		}
+		return s;
     }
 
 public:
