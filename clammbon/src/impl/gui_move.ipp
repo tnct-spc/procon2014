@@ -203,7 +203,9 @@ namespace impl
             for(auto const x : xrange)
             {
                 point_type const offset = {x, y};
+#ifdef _DEBUG
                 std::cout << (p1 + offset) << "<-->" << (p2 + offset) << std::endl;
+#endif
                 box_swap(p1 + offset, p2 + offset);
             }
         }
