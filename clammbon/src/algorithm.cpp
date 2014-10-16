@@ -473,13 +473,13 @@ void algorithm::impl::greedy()
         } else if (target.y == height - 1) {
             // ターゲットの真の原座標が下端の場合
 #ifdef _DEBUG
-            std::cerr << "左端" << std::endl;
+            std::cerr << "下端" << std::endl;
 #endif
-            move_to(waypoint.right().left());
+            move_to(waypoint.right().up());
             move_to(waypoint.left().up());
             move_selecting<'D', 'R'>();
 #ifdef _DEBUG
-            std::cerr << "左端done" << std::endl;
+            std::cerr << "下端done" << std::endl;
 #endif
         } else if (waypoint.x == width - 1) {
             if (get_point_by_point(waypoint.left()) == target.right()) {
