@@ -7,32 +7,7 @@
     $ git clone http://github.com/Gregwar/mongoose-cpp
     $ cd mongoose-cpp
 
-(2014-09-16時点では)正規表現周りにバグがあるので、こんな感じに修正してください
-
-    --- mongoose/Request.cpp.old	2014-09-16 04:47:54.479915558 +0900
-    +++ mongoose/Request.cpp	2014-09-16 04:48:10.325931371 +0900
-    @@ -128,7 +128,7 @@
-     
-         bool Request::match(string pattern)
-         {   
-    -        key = method + ":" + url;
-    +        string key = method + ":" + url;
-             return regex_match(key, matches, regex(pattern));
-         }   
-     #endif
-
-    --- mongoose/Request.h.old	2014-09-16 04:46:40.393843325 +0900
-    +++ mongoose/Request.h	2014-09-16 06:05:36.212643078 +0900
-    @@ -81,6 +81,9 @@
-                 string getData();
-     
-     #ifdef ENABLE_REGEX_URL
-    +        protected:
-    +            smatch matches;
-    +        public:
-                 smatch getMatches();
-                 bool match(string pattern);
-     #endif
+全体的にバギーですが、mongoose.patchを当てればだいたい直ります
 
     $ cmake -DENABLE_REGEX_URL=ON .
     $ make
