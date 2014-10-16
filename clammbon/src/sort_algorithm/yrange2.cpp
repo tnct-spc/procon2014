@@ -7,7 +7,6 @@
 #include <algorithm>
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
-#include <omp.h>
 #include <data_type.hpp>
 #include <sort_algorithm/compare.hpp>
 #include <sort_algorithm/adjacent.hpp>
@@ -93,7 +92,6 @@ cv::Mat yrange2::combine_image(answer_type_y const& answer)
 	splitter sp;//どこからか持ってきてたsplitter
 	split_image_type splitted = sp.split_image(data_);
 	cv::Mat comb_pic(cv::Size(data_.size.first, data_.size.second), CV_8UC3);
-#pragma omp parallel
 	for (int i = 0; i < data_.split_num.second; ++i){
 		for (int j = 0; j < data_.split_num.first; ++j){
 			cv::Rect roi_rect(j*one_picx, i*one_picy, one_picx, one_picy);
@@ -137,10 +135,7 @@ std::vector<answer_type_y> yrange2::operator() ()
 	answer.reserve(width*height * 2);
 	splitter sp;
 
-	omp_init_lock(&ol);
-
 	//すべてのピースから並べ始めるためのループ
-#pragma omp parallel for
 	for (int c = 0; c < width*height; ++c)
 	{
 		sorted_matrix.at(c)[height - 1][width - 1] = point_type{ c%width, c / width };
@@ -232,9 +227,7 @@ std::vector<answer_type_y> yrange2::operator() ()
 				{
 					one_answer[i][j] = sorted_matrix.at(c)[y + i][x + j];
 				}
-				omp_set_lock(&ol);
 				answer.push_back(answer_type_y{ one_answer, 0, cv::Mat() });
-				omp_unset_lock(&ol);
 			}
 		}
 	}
@@ -246,7 +239,6 @@ std::vector<answer_type_y> yrange2::operator() ()
 	answer.erase(std::unique(answer.begin(), answer.end()), answer.end());
 
 	//縦入れ替え，横入れ替え
-#pragma omp parallel for
 	for (int c = 0; c < answer.size(); ++c)
 	{
 		row_replacement(answer.at(c));
@@ -264,7 +256,6 @@ std::vector<answer_type_y> yrange2::operator() ()
 
 #ifdef _DEBUG
 //	//一枚のcv::Matにする
-//#pragma omp parallel for
 //	for (int c = 0; c < answer.size(); ++c)
 //	{
 //		answer.at(c).mat_image = std::move(combine_image(answer.at(c)));
