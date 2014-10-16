@@ -115,7 +115,7 @@ std::vector<answer_type_y> Murakami::operator() (){
 			*/
 		}
 	}catch (...){
-			//std::cerr << "Murakamiダメでした";
+		std::cerr << "ダメ_Murakami_だめ" << std::endl;
 			//std::cout << t.elapsed() << "s経過した(Murakami内で計測)" << std::endl;
 			std::vector<std::vector<point_type>>exception_array;
 			return std::vector<answer_type_y>{ { std::move(exception_array), 0, cv::Mat() } }; 
