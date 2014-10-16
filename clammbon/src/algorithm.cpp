@@ -75,10 +75,10 @@ private:
 	int form_evaluate(matrix_type const& mat);
 	point_type get_start_point(matrix_type const& mat);
 	int eval_two_piece(evaluate_set_type const& eval_set, point_type const& new_position);
-	evaluate_set_type try_u(evaluate_set_type const& eval_set);
-	evaluate_set_type try_r(evaluate_set_type const& eval_set);
-	evaluate_set_type try_d(evaluate_set_type const& eval_set);
-	evaluate_set_type try_l(evaluate_set_type const& eval_set);
+	evaluate_set_type try_u(evaluate_set_type return_set);
+	evaluate_set_type try_r(evaluate_set_type return_set);
+	evaluate_set_type try_d(evaluate_set_type return_set);
+	evaluate_set_type try_l(evaluate_set_type return_set);
 
 	std::vector<std::vector<point_type>> matrix;
 	std::unordered_set<point_type> sorted_points;
@@ -201,32 +201,29 @@ int algorithm::impl::eval_two_piece(evaluate_set_type const& eval_set, point_typ
 }
 
 
-evaluate_set_type algorithm::impl::try_u(evaluate_set_type const& eval_set)
+evaluate_set_type algorithm::impl::try_u(evaluate_set_type return_set)
 {
-	point_type const& new_position = { eval_set.position.x, eval_set.position.y - 1 };
-	evaluate_set_type return_set = eval_set;
-	return_set.score += eval_two_piece(eval_set, new_position);
+	point_type const& new_position = { return_set.position.x, return_set.position.y - 1 };
+	return_set.score += eval_two_piece(return_set, new_position);
 	std::swap(return_set.matrix[return_set.position.y][return_set.position.x], return_set.matrix[new_position.y][new_position.x]);
 	return_set.direct += "U";
 	return_set.position = new_position;
 	return std::move(return_set);
 }
 
-evaluate_set_type algorithm::impl::try_r(evaluate_set_type const& eval_set)
+evaluate_set_type algorithm::impl::try_r(evaluate_set_type return_set)
 {
-	point_type const& new_position = { eval_set.position.x + 1, eval_set.position.y };
-	evaluate_set_type return_set = eval_set;
-	return_set.score += eval_two_piece(eval_set, new_position);
+	point_type const& new_position = { return_set.position.x + 1, return_set.position.y };
+	return_set.score += eval_two_piece(return_set, new_position);
 	std::swap(return_set.matrix[return_set.position.y][return_set.position.x], return_set.matrix[new_position.y][new_position.x]);
 	return_set.direct += "R";
 	return_set.position = new_position;
 	return std::move(return_set);
 }
 
-evaluate_set_type algorithm::impl::try_d(evaluate_set_type const& eval_set)
+evaluate_set_type algorithm::impl::try_d(evaluate_set_type return_set)
 {
-	point_type const& new_position = { eval_set.position.x, eval_set.position.y + 1 };
-	evaluate_set_type return_set = eval_set;
+	point_type const& new_position = { return_set.position.x, return_set.position.y + 1 };
 	return_set.score += eval_two_piece(return_set, new_position);
 	std::swap(return_set.matrix[return_set.position.y][return_set.position.x], return_set.matrix[new_position.y][new_position.x]);
 	return_set.direct += "D";
@@ -234,11 +231,10 @@ evaluate_set_type algorithm::impl::try_d(evaluate_set_type const& eval_set)
 	return std::move(return_set);
 }
 
-evaluate_set_type algorithm::impl::try_l(evaluate_set_type const& eval_set)
+evaluate_set_type algorithm::impl::try_l(evaluate_set_type return_set)
 {
-	point_type const& new_position = { eval_set.position.x - 1, eval_set.position.y };
-	evaluate_set_type return_set = eval_set;
-	return_set.score += eval_two_piece(eval_set, new_position);
+	point_type const& new_position = { return_set.position.x - 1, return_set.position.y };
+	return_set.score += eval_two_piece(return_set, new_position);
 	std::swap(return_set.matrix[return_set.position.y][return_set.position.x], return_set.matrix[new_position.y][new_position.x]);
 	return_set.direct += "L";
 	return_set.position = new_position;
