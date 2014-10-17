@@ -45,7 +45,7 @@ public:
         std::cerr << "options: " << options << std::endl;
         std::cerr << "answer:\n" << answer << std::endl;
 
-        if(user_active[playerid]) {
+        if(user_active[playerid] && false) {
             res << "REJECTED !!\r\n";
         } else {
             user_active[playerid] = true;
@@ -62,12 +62,12 @@ public:
             std::this_thread::sleep_for(std::chrono::seconds(5));
     
             if(pcs.ok()) {
-                if(options.find("quiet") != std::string::npos)
-                    res << pcs.get_output();
-                else
+                if(options.find("verbose") != std::string::npos)
                     res << pcs.get_error() << pcs.get_output();
+                else
+                    res << pcs.get_output();
             } else
-                res << pro.get_error() << ans.get_error() << pcs.get_error();
+                res << "ERROR !!" << std::endl << pro.get_error() << ans.get_error() << pcs.get_error();
     
             user_active[playerid] = false;
         }
