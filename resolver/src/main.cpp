@@ -135,9 +135,13 @@ public:
 		        }
                 
                 // YRange5
+<<<<<<< HEAD
 				if (raw_data_.split_num.first > 3 || raw_data_.split_num.second > 3){
 					std::cout << "sepx =" << raw_data_.split_num.first << std::endl;
 					std::cout << "sepy =" << raw_data_.split_num.second << std::endl;
+=======
+				if (raw_data_.split_num.first >= 2 || raw_data_.split_num.first >= 2){
+>>>>>>> eccd04764c35124aa6a0003375f7b48e2321dc82
 					auto yrange5_resolve = yrange5(raw_data_, image_comp)(yrange2_.sorted_matrix());
 					if (!yrange5_resolve.empty())
 					{
