@@ -220,7 +220,6 @@ std::vector<answer_type_y> yrange5::operator() (std::vector<std::vector<std::vec
 //	{
 //		answer.at(c).mat_image = std::move(combine_image(answer.at(c)));
 //	}
-	std::cout << "There are " << yrange5_ans << " solutions by yrange5." << std::endl;
 	//for (auto const& one_answer : answer)
 	//{
 	//	for (int i = 0; i < one_answer.points.size(); ++i)
@@ -236,5 +235,6 @@ std::vector<answer_type_y> yrange5::operator() (std::vector<std::vector<std::vec
 	//}
 	//gui::show_image(data_, comp_, answer);
 #endif
+	std::cout << "There are " << yrange5_ans << " solutions by yrange5." << std::endl;
 	return answer;
 }
