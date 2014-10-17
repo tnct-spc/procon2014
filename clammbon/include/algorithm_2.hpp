@@ -5,6 +5,7 @@
 #include <iomanip>
 #include "data_type.hpp"
 #include <boost/container/set.hpp>
+#include <boost/timer/timer.hpp>
 #include <set>
 
 //収納配列
@@ -17,9 +18,9 @@ public:
 	//初期化
 	void setup(const int* y, const int* x);
 	//→挿入
-	void pop(int *in_cost, std::vector<int> &in_table, std::vector<int> &in_history, int *in_history_limit, int *in_oya);
+	bool pop(int *in_cost, std::vector<int> &in_table, std::vector<int> &in_history, int *in_history_limit, int *in_oya);
 	//←取出
-	void push(int *out_cost, std::vector<int> &out_table, std::vector<int> &out_history, int *out_history_limit, int *out_oya);
+	bool push(int *out_cost, std::vector<int> &out_table, std::vector<int> &out_history, int *out_history_limit, int *out_oya);
 	//親のアンサーを吐く
 	void pushanswer(int oyanum);
 private:
@@ -36,6 +37,9 @@ private:
 	std::vector<bool> LIST_OC;
 	std::vector<int> oya;
 
+	bool posover = false;
+	boost::timer::cpu_timer timer; // 時間計測
+	int push_count=0;
 	class NODE{
 	public:
 		//コンストラクタ
@@ -100,6 +104,7 @@ private:
 	bool limitter;
 	bool none;
 	bool first=true;
+	bool kirikae=false;
 
 	//順番に探索を開始する
 	void prescanning();

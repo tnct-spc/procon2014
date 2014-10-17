@@ -5,10 +5,6 @@
 #define debug//☆
 #define debug3
 
-#ifdef debug
-#include <boost/timer/timer.hpp>
-#endif
-
 #include "algorithm_2.hpp"
 
 //★双方向探索したい
@@ -37,8 +33,9 @@ void heap::setup(const int *in_y, const int *in_x){
 
 	oya.resize(1000000);
 	LIST_OC.resize(1000000);
+	timer.start();
 }
-void heap::pop(int *in_cost, std::vector<int> &in_table, std::vector<int> &in_history, int *in_history_limit, int *in_oya){
+bool heap::pop(int *in_cost, std::vector<int> &in_table, std::vector<int> &in_history, int *in_history_limit, int *in_oya){
 
 	int i;
 	int me;
@@ -61,6 +58,7 @@ void heap::pop(int *in_cost, std::vector<int> &in_table, std::vector<int> &in_hi
 	//if (size % 1000 == 0)std::cout << "1000" << std::endl;//☆デバッグ
 	//重複確認2
 	bool ok = true;
+	bool change = false;
 	int sizepos;
 	//★ここがめっちゃ重いので変える
 	auto match_pos = NODE_.find(NODE{in_table,0});//TEの第二引数は関係ない
@@ -68,6 +66,7 @@ void heap::pop(int *in_cost, std::vector<int> &in_table, std::vector<int> &in_hi
 		sizepos = match_pos->pos;
 		ok = false;
 		if (*in_cost < cost[sizepos]){
+			change = true;
 			//このノードがiのテーブルよりコストが低い
 			//★ラベルつけてあとで消したほうがいいかも？
 			if (LIST_OC[sizepos] == true){
@@ -97,7 +96,8 @@ void heap::pop(int *in_cost, std::vector<int> &in_table, std::vector<int> &in_hi
 			}
 		}
 	}
-	if (ok == true){
+	if (ok == true || posover==true){
+		change = true;
 		//親挿入
 		oya[size] = *in_oya;
 		//コスト挿入
@@ -109,7 +109,14 @@ void heap::pop(int *in_cost, std::vector<int> &in_table, std::vector<int> &in_hi
 			history[size][i] = in_history[i];
 		}
 		history_limit[size] = *in_history_limit;
-
+		/*
+		if (posover == true){
+			std::cout << std::endl;
+			for (int s = 0; s < *in_history_limit; s++){
+				std::cout << in_history[s] << ",";
+			}
+			std::cout << std::endl;
+		}*/
 		//テーブル挿入
 		for (i = 0; i < yx; i++){
 			table[size][i] = in_table[i];
@@ -140,9 +147,63 @@ void heap::pop(int *in_cost, std::vector<int> &in_table, std::vector<int> &in_hi
 		pos++;
 		size++;
 	}
+	return change;
 }
 
-void heap::push(int *out_cost, std::vector<int> &out_table, std::vector<int> &out_history, int *out_history_limit, int *out_oya){
+bool heap::push(int *out_cost, std::vector<int> &out_table, std::vector<int> &out_history, int *out_history_limit, int *out_oya){
+	push_count++;
+	int kirikae = false;
+#ifdef sulu_debug
+	std::cout << "pos=" << pos << std::endl;
+#endif
+	//std::string nowtime = timer.format();
+	//int time = (int)nowtime.To_in;
+	//std::cout << nowtime << std::endl;
+	if (pos < 0 || push_count==20000){
+		NODE_.clear();
+		push_count = 0;
+		int minimumnum=-1;
+		int minimum = -1;
+		for (int p = 0; p < size; p++){
+			if (minimumnum>cost[p] || minimum == -1){
+				minimum = p;
+				minimumnum = cost[p];
+			}
+		}
+		std::cout << "minimumnum=" << minimumnum << ", minimum=" << minimum << std::endl;
+		//for (int q = 0; q < history_limit[minimum];q++){
+		//	std::cout << history[minimum][q] << ",";
+		//}
+		//std::cout << std::endl;
+		//登録
+		pos++;
+		posover = true;
+		int change = pop(&cost[minimum], table[minimum], history[minimum], &history_limit[minimum], &oya[minimum]);
+		posover = false;
+		if (change){
+			std::cout << cost[minimum] << "  ";
+			for (int h = 0; h < history_limit[minimum]; h++){
+				std::cout << history[minimum][h] << ",";
+			}
+			std::cout << std::endl;
+		}
+		else{
+			std::cout << cost[minimum] << "  ";
+			for (int h = 0; h < history_limit[minimum]; h++){
+				std::cout << history[minimum][h] << ",";
+			}
+			std::cout << " sulu " << std::endl;
+		}
+		std::cout << "pos=" << pos << "heap=" << heaptable[0] << std::endl;
+		for (int t = 0; t < y; t++){
+			for (int y = 0; y < x; y++){
+				std::cout << table[minimum][t*x + y] << ",";
+			}
+			std::cout << std::endl;
+		}
+		system("PAUSE");
+		kirikae = true;
+	}
 	const int out = heaptable[0];
 	int i = 0;
 	int me = 0;
@@ -212,6 +273,7 @@ void heap::push(int *out_cost, std::vector<int> &out_table, std::vector<int> &ou
 
 	heaptable[me] = heaptable[pos];
 	heaptable.erase(heaptable.end() - 1);
+	return kirikae;
 }
 
 void heap::pushanswer(int oyanum){
@@ -302,8 +364,8 @@ void algorithm_2::reset(question_data const& data)
 	history.resize(10000);
 	keiro.resize(10000);
 	sub_history.resize(10000);
-	root1.resize(1024);
-	root2.resize(1024);
+	root1.resize(10000);
+	root2.resize(10000);
 
 	std::cout << "\ngoal=";
 	std::cin >> goal;
@@ -332,19 +394,22 @@ auto algorithm_2::get() -> boost::optional<return_type>
 
 	while (1){
 #ifdef debug3
+#ifdef sulu_debug
 		int h;
 		std::cin >> h;
+#endif
 #endif
 		//探索
 		algorithm_2::prescanning();
 		//取得
-		harray.push(&cost, table, history, &history_limit, &oya);
+		kirikae=harray.push(&cost, table, history, &history_limit, &oya);
+		//std::cout << "getcost=" << cost << std::endl;
 		//完成判定
 		count = 0;
 		for (i = 0; i<size; i++){
 			//if (table[i] == i) count++;
-			if (size_y / 2 - 1 <= i / size_x && size_y / 2 - 1 <= table[i] / size_x || size_y / 2 - 1 > i / size_x && size_y / 2 - 1 > table[i] / size_x){
-				if (size_x / 2 - 1 <= i % size_x && size_x / 2 - 1 <= table[i] % size_x || size_x / 2 - 1 > i % size_x && size_x / 2  - 1> table[i] % size_x){
+			if (size_y / 2 <= i / size_x && size_y / 2 <= table[i] / size_x || size_y / 2 > i / size_x && size_y / 2 > table[i] / size_x){
+				if (size_x / 2 <= i % size_x && size_x / 2 <= table[i] % size_x || size_x / 2 > i % size_x && size_x / 2 > table[i] % size_x){
 					count++;
 				}
 			}
@@ -409,7 +474,7 @@ auto algorithm_2::get() -> boost::optional<return_type>
 			harray.pushanswer(oya);
 #ifdef debug
 			int d;
-			std::cin >> d;
+			system("PAUSE");
 #endif
 		}
 	}
@@ -423,10 +488,12 @@ void algorithm_2::prescanning(){
 	//historyから特定
 	int doy=-1, dox=-1;
 	int i;
+#ifdef sulu_debug
 	for (i = 0; i < history_limit; i++){
 		std::cout << history[i] << ".";
 	}
 	std::cout << std::endl;
+#endif
 	for (i = history_limit; i > 0; i--){
 		if (history[i] < 16){
 			doy = history[i - 1];
@@ -461,13 +528,13 @@ void algorithm_2::prescanning(){
 		scanning(doy, dox, doy, dox, -1);
 		
 		if (do_exchange == false){
-			std::cout << "リミット解除！！！！" << std::endl;
+			//std::cout << "リミット解除！！！！" << std::endl;
 			limitter = false;
 			keiro_count = 0;
 			scanning(doy, dox, doy, dox, -1);
 		}
 	}
-	if (do_exchange==false && first==true){
+	if ((do_exchange == false && first == true) || kirikae == true){
 		std::cout << "iei" << std::endl;
 		limitter = true;
 		for (int y = 0; y < size_y; y++){
@@ -786,16 +853,27 @@ void algorithm_2::scanning(int y, int x, int y_before, int x_before, int URDL){
 			harray.pop(&cost, table, subhistory, &subhistory_limit);
 		}
 #else
+#endif
 #ifdef debug3
-		std::cout << cost << "  ";
-		for (int h = 0; h < sub_history_limit; h++){
-			std::cout << sub_history[h] << ",";
-		}
-		std::cout << std::endl;
 #endif
 		//登録
-		harray.pop(&cost, table, sub_history, &sub_history_limit, &oya);
-#endif
+		int change = harray.pop(&cost, table, sub_history, &sub_history_limit, &oya);
+//#ifdef sulu_debug
+		if (first == true && change){
+			std::cout << cost << "  ";
+			for (int h = 0; h < sub_history_limit; h++){
+				std::cout << sub_history[h] << ",";
+			}
+			std::cout << std::endl;
+		}
+		else if (first == true){
+			std::cout << cost << "  ";
+			for (int h = 0; h < sub_history_limit; h++){
+				std::cout << sub_history[h] << ",";
+			}
+			std::cout << " sulu "<<std::endl;
+		}
+//#endif
 		history_limit -= keiro_count;
 	}
 	//全部見終わったらtableを元通りにして返す
@@ -834,9 +912,9 @@ void algorithm_2::shorting(){
 		count++;
 		while (1){
 			if (!(count<sub_history_limit && sub_history[count] >= 16 && sub_history[count] <= 23)) break;
-			if (root1_count > 1024 * sizemaxroot1 - 1){
+			if (root1_count > 10000 * sizemaxroot1 - 1){
 				sizemaxroot1++;
-				root1.resize(1024 * sizemaxroot1);
+				root1.resize(10000 * sizemaxroot1);
 #ifdef debug
 				std::cout << ">< search.cpp root1 vector pass10,000" << std::endl;
 #endif
@@ -855,9 +933,9 @@ void algorithm_2::shorting(){
 		end++;
 		while (1){
 			if (!(end < sub_history_limit && sub_history[end] >= 16 && sub_history[end] <= 23)) break;
-			if (root2_count > 1024 * sizemaxroot2 - 1){
+			if (root2_count > 10000 * sizemaxroot2 - 1){
 				sizemaxroot2++;
-				root2.resize(1024 * sizemaxroot2);
+				root2.resize(10000 * sizemaxroot2);
 #ifdef debug
 				std::cout << ">< search.cpp root2 vector pass10,000" << std::endl;
 #endif
