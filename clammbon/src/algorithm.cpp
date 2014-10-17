@@ -250,7 +250,7 @@ void algorithm::impl::generate_next_step<'U'>(step_type step)
 {
     std::swap(step.matrix[step.selecting_cur.y][step.selecting_cur.x], step.matrix[step.selecting_cur.y - 1][step.selecting_cur.x]);
     step.selecting_cur.y -= 1;
-    std::string& actions = step.answer.list.front().actions;
+    std::string& actions = step.answer.list.back().actions;
     if (step.forward) {
         actions += 'U';
     } else {
@@ -264,7 +264,7 @@ void algorithm::impl::generate_next_step<'R'>(step_type step)
 {
     std::swap(step.matrix[step.selecting_cur.y][step.selecting_cur.x], step.matrix[step.selecting_cur.y][step.selecting_cur.x + 1]);
     step.selecting_cur.x += 1;
-    std::string& actions = step.answer.list.front().actions;
+    std::string& actions = step.answer.list.back().actions;
     if (step.forward) {
         actions += 'R';
     } else {
@@ -278,7 +278,7 @@ void algorithm::impl::generate_next_step<'D'>(step_type step)
 {
     std::swap(step.matrix[step.selecting_cur.y][step.selecting_cur.x], step.matrix[step.selecting_cur.y + 1][step.selecting_cur.x]);
     step.selecting_cur.y += 1;
-    std::string& actions = step.answer.list.front().actions;
+    std::string& actions = step.answer.list.back().actions;
     if (step.forward) {
         actions += 'D';
     } else {
@@ -292,7 +292,7 @@ void algorithm::impl::generate_next_step<'L'>(step_type step)
 {
     std::swap(step.matrix[step.selecting_cur.y][step.selecting_cur.x], step.matrix[step.selecting_cur.y][step.selecting_cur.x - 1]);
     step.selecting_cur.x -= 1;
-    std::string& actions = step.answer.list.front().actions;
+    std::string& actions = step.answer.list.back().actions;
     if (step.forward) {
         actions += 'L';
     } else {
