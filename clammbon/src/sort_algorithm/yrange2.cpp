@@ -252,14 +252,14 @@ std::vector<answer_type_y> yrange2::operator() ()
 	int const yrange2_ans = answer.size();
 	std::sort(answer.begin(), answer.end(), [](answer_type_y a, answer_type_y b){return a.score < b.score; });
 	if (answer.size() >= yrange2_show_ans) answer.resize(yrange2_show_ans);
-	if(yrange2_ans==0)std::cout<<"◆◆◆並びませんでした◆◆◆"<<std::endl;
+	
 #ifdef _DEBUG
 //	//一枚のcv::Matにする
 //	for (int c = 0; c < answer.size(); ++c)
 //	{
 //		answer.at(c).mat_image = std::move(combine_image(answer.at(c)));
 //	}
-    std::cout << "There are " << yrange2_ans << " solutions by yrange2." << std::endl;
+    
 	//for (auto const& one_answer : answer)
 	//{
 	//	for (int i = 0; i < one_answer.points.size(); ++i)
@@ -275,6 +275,8 @@ std::vector<answer_type_y> yrange2::operator() ()
 	//}
 	//gui::show_image(data_, comp_, answer);
 #endif
+	std::cout << "There are " << yrange2_ans << " solutions by yrange2." << std::endl;
+	if (yrange2_ans == 0)std::cout << "◆◆◆並びませんでした◆◆◆" << std::endl;
 	return answer;
 }
 
