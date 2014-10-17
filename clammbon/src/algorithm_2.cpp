@@ -225,6 +225,7 @@ void algorithm_2::reset(question_data const& data)
 	// コストとレート
 	cost_s = data_->cost_select;
 	cost_c = data_->cost_change;
+	cost_slimit = data_->selectable;
 
 	// テーブル
 	//tableによそから貰ってきたマトリクスを整理して挿入
@@ -252,6 +253,15 @@ void algorithm_2::reset(question_data const& data)
 	std::cin >> coukan;
 #endif
 }
+bool algorithm_2::overlimitcheck(){
+	if (OVER_LIMIT == true){
+		return false;
+	}
+	else{
+		return true;
+	}
+}
+
 auto algorithm_2::get() -> boost::optional<return_type>
 {
 	int i, count;
@@ -291,27 +301,34 @@ auto algorithm_2::get() -> boost::optional<return_type>
 				}
 			}
 			ANSWER_S /= 2;
-			for (int i = 0; i < history_limit; i++){
-				switch (history[i]){
-				case 16:
-    			case 20:
-					std::cout << ",U";
-					break;
-				case 17:
-				case 21:
-					std::cout << ",R";
-					break;
-				case 18:
-				case 22:
-					std::cout << ",D";
-					break;
-				case 19:
-				case 23:
-					std::cout << ",L";
-					break;
-				default:
-					std::cout << "," << history[i];
-                    break;
+			if (ANSWER_S > cost_slimit){
+				//最大選択回数を超えた
+				OVER_LIMIT = true;
+			}
+			else{
+				for (int i = 0; i < history_limit; i++){
+					switch (history[i]){
+					case 16:
+					case 20:
+						std::cout << ",U";
+						break;
+					case 17:
+					case 21:
+						std::cout << ",R";
+						break;
+					case 18:
+					case 22:
+						std::cout << ",D";
+						break;
+					case 19:
+					case 23:
+						std::cout << ",L";
+						break;
+					default:
+						std::cout << "," << history[i];
+						break;
+					}
+
 				}
 			}
 			std::cout << std::endl;

@@ -326,24 +326,34 @@ void submit_func(question_data question, analyzer const& analyze)
 
 	// FIXME: 汚いしセグフォする//セグフォはしなくなったらしい
 	int wrong_number = std::stoi(result.substr(result.find(" ")));
-	if(wrong_number == 0)
+	if (wrong_number == 0)
 	{
-        algo2.reset(question);
+		algo2.reset(question);
 		auto const answer = algo2.get();
-		if (answer)
-		{
+		if (algo2.overlimitcheck()){
+			if (answer)
+			{
 				result = analyze.submit(answer.get());
 				std::cout << "Submit Result: " << result << std::endl;
-			std::cout << "勝った！" << std::endl;
+				std::cout << "勝った！" << std::endl;
+			}
+		}
+		else{
+			std::cout << "algo2は答えを返しませんでした" << std::endl;
 		}
 
 		algo3.reset(question);
 		auto const answer2 = algo3.get();
-		if (answer2)
-		{
+		if (algo3.overlimitcheck()){
+			if (answer2)
+			{
 				result = analyze.submit(answer2.get());
 				std::cout << "Submit Result 2 : " << result << std::endl;
-			std::cout << "さらに勝った！" << std::endl;
+				std::cout << "さらに勝った！" << std::endl;
+			}
+		}
+		else{
+			std::cout << "algo3は答えを返しませんでした" << std::endl;
 		}
 	}
 #else
