@@ -211,7 +211,7 @@ public:
         int const cost = calc_cost(ans);
 
         char input;
-        std::cout << "Submit: Cost = " << cost << " [Y/n]";
+        std::cout << "★Submit: Cost = " << cost << " [Y/n]★";
         std::cin.get(input);
 
         if(input == '\n' || input == 'y' || input == 'Y')
