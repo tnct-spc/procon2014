@@ -62,6 +62,7 @@ public:
 	void reset(question_data const& data);
 	//Às
 	auto get()->boost::optional<return_type>;
+	bool overlimitcheck();
 private:
 
 	heap harray;
@@ -77,6 +78,7 @@ private:
 	int size_y, size_x, size;
 	int cost_s, cost_c;
 	std::vector<int> table;
+	int cost_slimit;
 	int cost;
 	int keiro_count = 0;
 	std::vector<int> history;
@@ -91,6 +93,7 @@ private:
 	std::vector<int> root2;//use shorting
 	int sizemaxroot1 = 1;//use shorting
 	int sizemaxroot2 = 1;//use shorting
+	bool OVER_LIMIT = false;
 
 
 	//‡”Ô‚É’Tõ‚ğŠJn‚·‚é
