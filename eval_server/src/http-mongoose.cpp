@@ -66,8 +66,10 @@ public:
                     res << pcs.get_error() << pcs.get_output();
                 else
                     res << pcs.get_output();
-            } else
-                res << "ERROR !!" << std::endl << pro.get_error() << ans.get_error() << pcs.get_error();
+            } else {
+                res << "ERROR";
+                std::cerr << pro.get_error() << ans.get_error() << pcs.get_error();
+            }
     
             user_active[playerid] = false;
         }
