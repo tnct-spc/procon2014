@@ -509,7 +509,7 @@ const answer_type algorithm::impl::solve()
     // Ian Parberry 氏のアルゴリズムを長方形に拡張したもの
     // とりあえず1回選択のみ
 
-    ymove();
+    if (width > 3 || height > 3) ymove();
 
     selecting = point_type{width - 1, height - 1};
     selecting_cur = current_point(selecting);
