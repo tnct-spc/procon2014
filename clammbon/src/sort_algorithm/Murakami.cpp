@@ -96,7 +96,7 @@ std::vector<answer_type_y> Murakami::operator() (){
 			block_data_ p_b;
 			p_b.block = combined_block;
 			block_list.push_back(p_b);//結合したのを入れる
-			std::cout << "***" << block_list.size() << "***" << "\r" << std::flush;
+			//std::cout << "***" << block_list.size() << "***" << "\r" << std::flush;
 
 			/*
 			for (const auto& i : block_list){
