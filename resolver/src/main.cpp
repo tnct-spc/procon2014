@@ -202,7 +202,7 @@ private:
     {
 #if ENABLE_NETWORK_IO
         // ネットワーク通信から
-        std::string const data = client_->get_problem(problem_id_).get();
+	        std::string const data = client_->get_problem(problem_id_).get();
 #if ENABLE_SAVE_IMAGE
         std::ofstream ofs((boost::format("%s/prob%02d.ppm") % dir_path_ % saved_num_++).str(), std::ios::binary);
         ofs << data;
