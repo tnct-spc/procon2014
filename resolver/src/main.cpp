@@ -293,7 +293,7 @@ void submit_func(question_data question, analyzer const& analyze)
 	if(wrong_number == 0)
 	{
         algo2.reset(question);
-		auto const answer = algo2.get(
+		auto const answer = algo2.get();
 		if (answer)
 		{
 			do{
@@ -301,7 +301,6 @@ void submit_func(question_data question, analyzer const& analyze)
 				std::cout << "Submit Result: " << result << std::endl;
 			} while (result == "ERROR");
 			std::cout << "勝った！" << std::endl;
-			}
 		}
 
 		algo3.reset(question);
@@ -313,7 +312,6 @@ void submit_func(question_data question, analyzer const& analyze)
 				std::cout << "Submit Result 2 : " << result << std::endl;
 			} while (result == "ERROR");
 			std::cout << "さらに勝った！" << std::endl;
-			}
 		}
 	}
 #else

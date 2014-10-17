@@ -317,7 +317,6 @@ auto algorithm_2::get() -> boost::optional<return_type>
 			std::cout << std::endl;
             std::cout << "選択コスト=" << cost_s << ",交換コスト=" << cost_c << std::endl;
 			std::cout << "cost=" << ANSWER_S * cost_s + ANSWER_C * cost_c << " S: " << ANSWER_S << " C: " << ANSWER_C << std::endl;
-			}
 #ifdef _DEBUG
 			//完成☆後で消したりなんたり
 			std::string result = timer.format();
