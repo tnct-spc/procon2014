@@ -136,8 +136,6 @@ public:
                 
                 // YRange5
 				if (raw_data_.split_num.first > 3 || raw_data_.split_num.second > 3){
-					std::cout << "sepx =" << raw_data_.split_num.first << std::endl;
-					std::cout << "sepy =" << raw_data_.split_num.second << std::endl;
 					auto yrange5_resolve = yrange5(raw_data_, image_comp)(yrange2_.sorted_matrix());
 					if (!yrange5_resolve.empty())
 					{
@@ -202,7 +200,7 @@ private:
     {
 #if ENABLE_NETWORK_IO
         // ネットワーク通信から
-        std::string const data = client_->get_problem(problem_id_).get();
+	        std::string const data = client_->get_problem(problem_id_).get();
 #if ENABLE_SAVE_IMAGE
         std::ofstream ofs((boost::format("%s/prob%02d.ppm") % dir_path_ % saved_num_++).str(), std::ios::binary);
         ofs << data;
@@ -299,7 +297,8 @@ void submit_func(question_data question, analyzer const& analyze)
 			do{
 				result = analyze.submit(answer.get());
 				std::cout << "Submit Result: " << result << std::endl;
-			} while (result == "ERROR");
+			}
+			while(result == "ERROR");
 			std::cout << "勝った！" << std::endl;
 		}
 
@@ -310,7 +309,8 @@ void submit_func(question_data question, analyzer const& analyze)
 			do{
 				result = analyze.submit(answer2.get());
 				std::cout << "Submit Result 2 : " << result << std::endl;
-			} while (result == "ERROR");
+			}
+			while(result == "ERROR");
 			std::cout << "さらに勝った！" << std::endl;
 		}
 	}
