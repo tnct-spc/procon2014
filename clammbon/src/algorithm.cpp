@@ -1,14 +1,25 @@
-﻿#include <algorithm>
+#include <algorithm>
 #include <cassert>
 #include <iostream>
 #include <iterator>
 #include <unordered_map>
+#include <queue>
 #include <boost/bind.hpp>
 #include <boost/coroutine/all.hpp>
 #include <boost/coroutine/coroutine.hpp>
 #include <boost/function.hpp>
 #include <boost/noncopyable.hpp>
 #include "algorithm.hpp"
+
+typedef std::vector<std::vector<point_type>> matrix_type;
+struct evaluate_set_type
+{
+    matrix_type matrix;
+    point_type position;//場所
+    point_type content;
+    int score;
+    std::string direct;
+};
 
 // class definition {{{1
 class algorithm::impl : boost::noncopyable
@@ -52,6 +63,16 @@ private:
     void print(std::vector<std::vector<point_type>> const& mat) const;
     void print(answer_type const& answer) const;
     void print(step_type const& step) const;
+
+    // yoshikawa
+    void ymove();
+    int form_evaluate(matrix_type const& mat);
+    point_type get_start_point(matrix_type const& mat);
+    int eval_two_piece(evaluate_set_type const& eval_set, point_type const& new_position);
+    evaluate_set_type try_u(evaluate_set_type return_set);
+    evaluate_set_type try_r(evaluate_set_type return_set);
+    evaluate_set_type try_d(evaluate_set_type return_set);
+    evaluate_set_type try_l(evaluate_set_type return_set);
 
     static constexpr int BFS_MAX_SIZE = 3;
 
@@ -111,14 +132,189 @@ void algorithm::impl::reset(question_data const& data)
 {
     data_ = data.clone();
     co_   = boost::coroutines::coroutine<return_type>::pull_type(
-                boost::bind(&impl::process, this, _1)
-                );
+            boost::bind(&impl::process, this, _1)
+            );
 }
 
 void algorithm::impl::process(boost::coroutines::coroutine<return_type>::push_type& yield)
 {
     // 訳ありで転送するだけの関数
     (*this)(yield);
+}
+
+// yoshikawa {{{1
+int algorithm::impl::form_evaluate(matrix_type const& mat)
+{
+    int s = 0;
+    for (int i = 0; i < mat.size(); ++i)
+    {
+        for (int j = 0; j < mat.at(0).size(); ++j)
+        {
+            s += mat[i][j].manhattan({ j, i });
+        }
+    }
+    return s;
+}
+
+point_type algorithm::impl::get_start_point(matrix_type const& mat)
+{
+    int max_val = 0;
+    point_type max_point;//実態
+    point_type position;
+
+    for (int i = 0; i < mat.size(); ++i)
+    {
+        for (int j = 0; j < mat.at(0).size(); ++j)
+        {
+            int temp = mat[i][j].manhattan({ j, i });
+            if (temp > max_val)
+            {
+                max_val = temp;
+                max_point = point_type{ j, i };
+                position = point_type{ mat[i][j].x, mat[i][j].y };
+            }
+        }
+    }
+    return position;
+}
+
+int algorithm::impl::eval_two_piece(evaluate_set_type const& eval_set, point_type const& new_position)
+{
+    int s = 0;
+    point_type const& content_a = eval_set.matrix[eval_set.position.y][eval_set.position.x];
+    //aの新しい場所からの距離
+    s += content_a.manhattan(new_position);
+    //aの古い場所からの距離
+    s -= content_a.manhattan(eval_set.position);
+    point_type const& content_b = eval_set.matrix[new_position.y][new_position.x];
+    //bの新しい場所からの距離
+    s += content_b.manhattan(eval_set.position);
+    //bの古い場所からの距離
+    s -= content_b.manhattan(new_position);
+
+    assert(s == -2 || s == 0 || s == 2);
+    return s;
+}
+
+
+evaluate_set_type algorithm::impl::try_u(evaluate_set_type return_set)
+{
+    point_type const& new_position = { return_set.position.x, return_set.position.y - 1 };
+    return_set.score += eval_two_piece(return_set, new_position);
+    std::swap(return_set.matrix[return_set.position.y][return_set.position.x], return_set.matrix[new_position.y][new_position.x]);
+    return_set.direct += "U";
+    return_set.position = new_position;
+    return std::move(return_set);
+}
+
+evaluate_set_type algorithm::impl::try_r(evaluate_set_type return_set)
+{
+    point_type const& new_position = { return_set.position.x + 1, return_set.position.y };
+    return_set.score += eval_two_piece(return_set, new_position);
+    std::swap(return_set.matrix[return_set.position.y][return_set.position.x], return_set.matrix[new_position.y][new_position.x]);
+    return_set.direct += "R";
+    return_set.position = new_position;
+    return std::move(return_set);
+}
+
+evaluate_set_type algorithm::impl::try_d(evaluate_set_type return_set)
+{
+    point_type const& new_position = { return_set.position.x, return_set.position.y + 1 };
+    return_set.score += eval_two_piece(return_set, new_position);
+    std::swap(return_set.matrix[return_set.position.y][return_set.position.x], return_set.matrix[new_position.y][new_position.x]);
+    return_set.direct += "D";
+    return_set.position = new_position;
+    return std::move(return_set);
+}
+
+evaluate_set_type algorithm::impl::try_l(evaluate_set_type return_set)
+{
+    point_type const& new_position = { return_set.position.x - 1, return_set.position.y };
+    return_set.score += eval_two_piece(return_set, new_position);
+    std::swap(return_set.matrix[return_set.position.y][return_set.position.x], return_set.matrix[new_position.y][new_position.x]);
+    return_set.direct += "L";
+    return_set.position = new_position;
+    return std::move(return_set);
+}
+
+void algorithm::impl::ymove()
+{
+    std::cout << "ymove start" << std::endl;
+
+    int const width = matrix.at(0).size();
+    int const height = matrix.size();
+
+    std::queue<evaluate_set_type> que;
+    std::vector<evaluate_set_type> children;
+    children.reserve(900);
+
+    point_type const start_position = get_start_point(matrix);
+    evaluate_set_type start = evaluate_set_type{ matrix, start_position, matrix[start_position.y][start_position.x], form_evaluate(start.matrix), " " };
+    evaluate_set_type best = start;
+    int depth = 0;
+    
+    que.push(start);
+
+    //std::cout << "select piece position = " << start.position << std::endl;
+    //std::cout << "select piece content = " << start.content << std::endl;
+
+    while (que.size() > 0 && depth++ < 100)
+    {
+        //std::cout << "depth = " << depth++ << " score = " << best.score << " que size = " << que.size() << std::endl;
+        while (que.size() > 0)
+        {
+            auto const node = que.front();
+            que.pop();
+
+            if (best.score > node.score) best = node;
+
+            if (node.position.y != 0 && node.direct.back() != 'D')
+            {
+                auto child = try_u(node);
+                if (child.score <= node.score)
+                {
+                    children.push_back(std::move(child));
+                }
+            }
+            if (node.position.x != width - 1 && node.direct.back() != 'L')
+            {
+                auto child = try_r(node);
+                if (child.score <= node.score)
+                {
+                    children.push_back(std::move(child));
+                }
+            }
+            if (node.position.y != height - 1 && node.direct.back() != 'U')
+            {
+                auto child = try_d(node);
+                if (child.score <= node.score)
+                {
+                    children.push_back(std::move(child));
+                }
+            }
+            if (node.position.x != 0 && node.direct.back() != 'R')
+            {
+                auto child = try_l(node);
+                if (child.score <= node.score)
+                {
+                    children.push_back(std::move(child));
+                }
+            }
+        }
+        
+        std::sort(children.begin(), children.end(), [](evaluate_set_type a, evaluate_set_type b){return a.score < b.score; });
+
+        for (int i = 0; i < children.size() && i < 100; ++i)
+        {
+            que.push(children.at(i));
+        }
+        children.clear();
+    }
+
+    matrix = best.matrix;
+    answer.list.push_back({ start_position, best.direct.substr(1) });
+
+    std::cout << "ymove done." << std::endl;
 }
 
 // implements {{{1
@@ -158,13 +354,6 @@ void algorithm::impl::operator() (boost::coroutines::coroutine<return_type>::pus
     // ソート済み断片画像
     std::unordered_set<point_type> sorted_points;
 
-    // 移動に用いる断片画像の原座標
-    // 右下を選んでおけば間違いない
-    selecting = point_type{width - 1, height - 1};
-    selecting_cur = current_point(selecting);
-
-    answer.list.push_back(answer_atom{selecting_cur, std::string()});
-
     // GO
 #ifdef _DEBUG
     print(matrix);
@@ -179,7 +368,7 @@ void algorithm::impl::move_selecting<'U'>()
     assert(selecting_cur.y > sorting_row);
     std::swap(matrix[selecting_cur.y][selecting_cur.x], matrix[selecting_cur.y - 1][selecting_cur.x]);
     --selecting_cur.y;
-    answer.list.back().actions.push_back('U');
+    answer.list.front().actions.push_back('U');
 #ifdef _DEBUG
     std::cerr << "U" << std::endl;
     print(matrix);
@@ -192,7 +381,7 @@ void algorithm::impl::move_selecting<'R'>()
     assert(selecting_cur.x < width - 1);
     std::swap(matrix[selecting_cur.y][selecting_cur.x], matrix[selecting_cur.y][selecting_cur.x + 1]);
     ++selecting_cur.x;
-    answer.list.back().actions.push_back('R');
+    answer.list.front().actions.push_back('R');
 #ifdef _DEBUG
     std::cerr << "R" << std::endl;
     print(matrix);
@@ -205,7 +394,7 @@ void algorithm::impl::move_selecting<'D'>()
     assert(selecting_cur.y < height - 1);
     std::swap(matrix[selecting_cur.y][selecting_cur.x], matrix[selecting_cur.y + 1][selecting_cur.x]);
     ++selecting_cur.y;
-    answer.list.back().actions.push_back('D');
+    answer.list.front().actions.push_back('D');
 #ifdef _DEBUG
     std::cerr << "D" << std::endl;
     print(matrix);
@@ -218,7 +407,7 @@ void algorithm::impl::move_selecting<'L'>()
     assert(selecting_cur.x > sorting_col);
     std::swap(matrix[selecting_cur.y][selecting_cur.x], matrix[selecting_cur.y][selecting_cur.x - 1]);
     --selecting_cur.x;
-    answer.list.back().actions.push_back('L');
+    answer.list.front().actions.push_back('L');
 #ifdef _DEBUG
     std::cerr << "L" << std::endl;
     print(matrix);
@@ -249,7 +438,7 @@ void algorithm::impl::generate_next_step<'U'>(step_type step)
 {
     std::swap(step.matrix[step.selecting_cur.y][step.selecting_cur.x], step.matrix[step.selecting_cur.y - 1][step.selecting_cur.x]);
     step.selecting_cur.y -= 1;
-    std::string& actions = step.answer.list.back().actions;
+    std::string& actions = step.answer.list.front().actions;
     if (step.forward) {
         actions += 'U';
     } else {
@@ -263,7 +452,7 @@ void algorithm::impl::generate_next_step<'R'>(step_type step)
 {
     std::swap(step.matrix[step.selecting_cur.y][step.selecting_cur.x], step.matrix[step.selecting_cur.y][step.selecting_cur.x + 1]);
     step.selecting_cur.x += 1;
-    std::string& actions = step.answer.list.back().actions;
+    std::string& actions = step.answer.list.front().actions;
     if (step.forward) {
         actions += 'R';
     } else {
@@ -277,7 +466,7 @@ void algorithm::impl::generate_next_step<'D'>(step_type step)
 {
     std::swap(step.matrix[step.selecting_cur.y][step.selecting_cur.x], step.matrix[step.selecting_cur.y + 1][step.selecting_cur.x]);
     step.selecting_cur.y += 1;
-    std::string& actions = step.answer.list.back().actions;
+    std::string& actions = step.answer.list.front().actions;
     if (step.forward) {
         actions += 'D';
     } else {
@@ -291,7 +480,7 @@ void algorithm::impl::generate_next_step<'L'>(step_type step)
 {
     std::swap(step.matrix[step.selecting_cur.y][step.selecting_cur.x], step.matrix[step.selecting_cur.y][step.selecting_cur.x - 1]);
     step.selecting_cur.x -= 1;
-    std::string& actions = step.answer.list.back().actions;
+    std::string& actions = step.answer.list.front().actions;
     if (step.forward) {
         actions += 'L';
     } else {
@@ -320,6 +509,12 @@ const answer_type algorithm::impl::solve()
     // Ian Parberry 氏のアルゴリズムを長方形に拡張したもの
     // とりあえず1回選択のみ
 
+    if (width > 3 || height > 3) ymove();
+
+    selecting = point_type{width - 1, height - 1};
+    selecting_cur = current_point(selecting);
+    answer.list.push_back(answer_atom{selecting_cur, std::string()});
+
     for (;;) {
         // 貪欲法を適用
         greedy();
@@ -327,7 +522,7 @@ const answer_type algorithm::impl::solve()
         // 残りが bfs_width x bfs_height の場合は Brute-Force
         if (height - sorting_row <= bfs_height + 1 && width - sorting_col <= bfs_width + 1) {
 #ifdef _DEBUG
-            std::cerr << "start brute_force solving" << std::endl;
+            std::cout << "start brute_force solving" << std::endl;
 #endif
             brute_force();
             break;
@@ -891,50 +1086,6 @@ bool algorithm::impl::is_finished(std::vector<std::vector<point_type>> const& ma
 point_type algorithm::impl::get_point_by_point(point_type const& point) const
 {
     return matrix[point.y][point.x];
-}
-
-// must_chagne_select {{{2
-bool algorithm::impl::must_chagne_select(step_type const& step) const
-{
-    // 偶置換, 奇置換の判定を行い, 奇置換であれば true を返す
-    // http://www.aji.sakura.ne.jp/algorithm/slide_goal.html
-
-    int change = 0;
-    std::vector<point_type> linear_matrix;
-    std::vector<point_type> original_linear_matrix;
-
-    // step.matrix の右下 bfs_width x bfs_height 部分を 1 列にする
-    std::vector<point_type> row;
-    row = step.matrix[height - bfs_height];
-    std::copy(row.end() - 3, row.end(), std::back_inserter(linear_matrix));
-    row = step.matrix[height - bfs_height + 1];
-    std::copy(row.end() - 3, row.end(), std::back_inserter(linear_matrix));
-    std::reverse(linear_matrix.end() - 3, linear_matrix.end());
-    row = step.matrix[height - bfs_height + 2];
-    std::copy(row.end() - 3, row.end(), std::back_inserter(linear_matrix));
-    linear_matrix.erase(std::remove(linear_matrix.begin(), linear_matrix.end(), step.matrix[step.selecting_cur.y][step.selecting_cur.x]), linear_matrix.end());
-
-    for (int x = width - bfs_width; x < width; ++x) {
-        original_linear_matrix.push_back(point_type{x, height - bfs_height});
-    }
-    for (int x = width - 1; x >= width - bfs_width; --x) {
-        original_linear_matrix.push_back(point_type{x, height - bfs_height + 1});
-    }
-    for (int x = width - bfs_width; x < width; ++x) {
-        original_linear_matrix.push_back(point_type{x, height - bfs_height + 2});
-    }
-    original_linear_matrix.erase(std::remove(original_linear_matrix.begin(), original_linear_matrix.end(), step.matrix[step.selecting_cur.y][step.selecting_cur.x]), original_linear_matrix.end());
-
-    // original_linear_matrix の配置になるように linear_matrix を並び替える
-    for (int i = 0; i < linear_matrix.size(); ++i) {
-        if (linear_matrix[i] != original_linear_matrix[i]) {
-            change += std::distance(linear_matrix.begin(), std::find(linear_matrix.begin(), linear_matrix.end(), original_linear_matrix[i])) - i;
-            linear_matrix.erase(std::remove(linear_matrix.begin(), linear_matrix.end(), original_linear_matrix[i]), linear_matrix.end());
-            linear_matrix.insert(linear_matrix.begin() + i, original_linear_matrix[i]);
-        }
-    }
-
-    return change % 2 == 1;
 }
 
 // print {{{2
