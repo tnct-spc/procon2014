@@ -135,13 +135,9 @@ public:
 		        }
                 
                 // YRange5
-<<<<<<< HEAD
 				if (raw_data_.split_num.first > 3 || raw_data_.split_num.second > 3){
 					std::cout << "sepx =" << raw_data_.split_num.first << std::endl;
 					std::cout << "sepy =" << raw_data_.split_num.second << std::endl;
-=======
-				if (raw_data_.split_num.first >= 2 || raw_data_.split_num.first >= 2){
->>>>>>> eccd04764c35124aa6a0003375f7b48e2321dc82
 					auto yrange5_resolve = yrange5(raw_data_, image_comp)(yrange2_.sorted_matrix());
 					if (!yrange5_resolve.empty())
 					{
@@ -297,33 +293,28 @@ void submit_func(question_data question, analyzer const& analyze)
 	if(wrong_number == 0)
 	{
         algo2.reset(question);
-		auto const answer = algo2.get();
-		if (algo2.overlimitcheck()){
-			if (answer)
-			{
-				do{
-					result = analyze.submit(answer.get());
-					std::cout << "Submit Result: " << result << std::endl;
-				} while (result == "ERROR");
-				std::cout << "勝った！" << std::endl;
+		auto const answer = algo2.get(
+		if (answer)
+		{
+			do{
+				result = analyze.submit(answer.get());
+				std::cout << "Submit Result: " << result << std::endl;
+			} while (result == "ERROR");
+			std::cout << "勝った！" << std::endl;
 			}
-		}
-		else{
-			std::cout << "algo2は答えを返しませんでした" << std::endl;
 		}
 
 		algo3.reset(question);
 		auto const answer2 = algo3.get();
-		//if (algo3.overlimitcheck()){
-			if (answer2)
-			{
-				do{
-					result = analyze.submit(answer2.get());
-					std::cout << "Submit Result 2 : " << result << std::endl;
-				} while (result == "ERROR");
-				std::cout << "さらに勝った！" << std::endl;
+		if (answer2)
+		{
+			do{
+				result = analyze.submit(answer2.get());
+				std::cout << "Submit Result 2 : " << result << std::endl;
+			} while (result == "ERROR");
+			std::cout << "さらに勝った！" << std::endl;
 			}
-		//}
+		}
 	}
 #else
         test_tool::emulator emu(question);

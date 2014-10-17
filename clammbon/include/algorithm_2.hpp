@@ -79,6 +79,7 @@ private:
 	int cost_s, cost_c;
 	int cost_slimit;
 	std::vector<int> table;
+	int cost_slimit;
 	int cost;
 	int keiro_count = 0;
 	std::vector<int> history;
