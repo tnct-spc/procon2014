@@ -100,7 +100,7 @@ namespace network
 
     std::future<std::string> client::get_problem(int const problem_id)
     {
-        auto const url = (boost::format("http://%s%sprob%02d.ppm") % server_host_ % problem_path_ % problem_id).str();
+        auto const url = (boost::format("http://%s" + problem_path_) % server_host_ % problem_id).str();
 
         return std::async(
             std::launch::async,

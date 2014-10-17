@@ -35,7 +35,7 @@ namespace network
     public:
         client(
             std::string const& server_host = std::getenv("SERVHOST") ? std::getenv("SERVHOST") : "127.0.0.1",
-            std::string const& problem_path = "/problem/",
+            std::string const& problem_path = "/problem/prob%02d.ppm",
             std::string const& submit_path = "/SubmitAnswer"
             );
         virtual ~client() = default;

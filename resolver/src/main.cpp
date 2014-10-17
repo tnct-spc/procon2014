@@ -63,14 +63,14 @@ class analyzer : boost::noncopyable
 {
 public:
     explicit analyzer(
-        std::string const& server_addr,
+        boost::shared_ptr<network::client> const& network_client,
         int const problem_id, std::string const& player_id,
         bool const is_auto, bool const is_blur
 #if ENABLE_SAVE_IMAGE
         ,std::string const& dir_path = "./saved_image"
 #endif
         )
-        : client_(server_addr), problem_id_(problem_id), player_id_(player_id)
+        : client_(network_client), problem_id_(problem_id), player_id_(player_id)
         , is_auto_(is_auto), is_blur_(is_blur)
 #if ENABLE_SAVE_IMAGE
         , dir_path_(dir_path), saved_num_(0)
@@ -191,7 +191,7 @@ public:
 
     std::string submit(answer_type const& ans) const
     {
-        auto submit_result = client_.submit(problem_id_, player_id_, ans);
+        auto submit_result = client_->submit(problem_id_, player_id_, ans);
         return submit_result.get();
     }
 
@@ -200,7 +200,7 @@ private:
     {
 #if ENABLE_NETWORK_IO
         // ネットワーク通信から
-        std::string const data = client_.get_problem(problem_id_).get();
+        std::string const data = client_->get_problem(problem_id_).get();
 #if ENABLE_SAVE_IMAGE
         std::ofstream ofs((boost::format("%s/prob%02d.ppm") % dir_path_ % saved_num_++).str(), std::ios::binary);
         ofs << data;
@@ -255,7 +255,7 @@ private:
     split_image_type  split_image_;
 	split_image_type  split_image_gaussianblur;
 
-    mutable network::client client_;
+    mutable boost::shared_ptr<network::client> client_;
     pixel_sorter<yrange5> sorter_;
 	pixel_sorter<yrange2> sorter_dx;
 
@@ -332,6 +332,7 @@ int main(int const argc, char const* argv[])
     bool        is_auto;
     bool        is_blur;
 #if ENABLE_SAVE_IMAGE
+    std::string url_format;
     std::string save_dir;
 #endif
 
@@ -347,6 +348,7 @@ int main(int const argc, char const* argv[])
             ("save_dir"  , po::value<std::string>(&save_dir)   , "(require)set image dir to save")
 #endif
 #if ENABLE_NETWORK_IO
+            ("prob_format,f", po::value<std::string>(&url_format)->default_value("/problem/prob%02d.ppm"), "set problem format(ex. /problem/prob%02d.ppm)")
             ("server,s"  , po::value<std::string>(&server_addr), "(require)set server ip address")
             ("problem,p" , po::value<int>(&problemid)          , "(require)set problem_id")
 #endif
@@ -375,11 +377,13 @@ int main(int const argc, char const* argv[])
         std::exit(-1);
     }
 
+    auto             network_client = boost::make_shared<network::client>(server_addr, url_format/*, submit_path*/);
+
 #if ENABLE_SAVE_IMAGE
     if(save_dir.empty()) save_dir = "./saved_image";
-    analyzer         analyze(server_addr, problemid, token, is_auto, is_blur, save_dir);
+    analyzer         analyze(network_client, problemid, token, is_auto, is_blur, save_dir);
 #else
-    analyzer         analyze(server_addr, problemid, token, is_auto, is_blur);
+    analyzer         analyze(network_client, problemid, token, is_auto, is_blur);
 #endif
     position_manager manager;
 
