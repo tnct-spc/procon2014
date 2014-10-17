@@ -51,6 +51,7 @@ private:
     bool must_chagne_select(step_type const& step) const;
     void add_step(step_type& step);
     point_type get_point_by_point(point_type const& point) const;
+    void shorten_answer();
 
     template <char T>
     void move_selecting();
@@ -368,7 +369,7 @@ void algorithm::impl::move_selecting<'U'>()
     assert(selecting_cur.y > sorting_row);
     std::swap(matrix[selecting_cur.y][selecting_cur.x], matrix[selecting_cur.y - 1][selecting_cur.x]);
     --selecting_cur.y;
-    answer.list.front().actions.push_back('U');
+    answer.list.back().actions.push_back('U');
 #ifdef _DEBUG
     std::cerr << "U" << std::endl;
     print(matrix);
@@ -381,7 +382,7 @@ void algorithm::impl::move_selecting<'R'>()
     assert(selecting_cur.x < width - 1);
     std::swap(matrix[selecting_cur.y][selecting_cur.x], matrix[selecting_cur.y][selecting_cur.x + 1]);
     ++selecting_cur.x;
-    answer.list.front().actions.push_back('R');
+    answer.list.back().actions.push_back('R');
 #ifdef _DEBUG
     std::cerr << "R" << std::endl;
     print(matrix);
@@ -394,7 +395,7 @@ void algorithm::impl::move_selecting<'D'>()
     assert(selecting_cur.y < height - 1);
     std::swap(matrix[selecting_cur.y][selecting_cur.x], matrix[selecting_cur.y + 1][selecting_cur.x]);
     ++selecting_cur.y;
-    answer.list.front().actions.push_back('D');
+    answer.list.back().actions.push_back('D');
 #ifdef _DEBUG
     std::cerr << "D" << std::endl;
     print(matrix);
@@ -407,7 +408,7 @@ void algorithm::impl::move_selecting<'L'>()
     assert(selecting_cur.x > sorting_col);
     std::swap(matrix[selecting_cur.y][selecting_cur.x], matrix[selecting_cur.y][selecting_cur.x - 1]);
     --selecting_cur.x;
-    answer.list.front().actions.push_back('L');
+    answer.list.back().actions.push_back('L');
 #ifdef _DEBUG
     std::cerr << "L" << std::endl;
     print(matrix);
@@ -536,6 +537,8 @@ const answer_type algorithm::impl::solve()
             ++sorting_col;
         }
     }
+
+    shorten_answer();
 
 #ifdef _DEBUG
     print(answer);
@@ -1086,6 +1089,33 @@ bool algorithm::impl::is_finished(std::vector<std::vector<point_type>> const& ma
 point_type algorithm::impl::get_point_by_point(point_type const& point) const
 {
     return matrix[point.y][point.x];
+}
+
+// }}}
+void algorithm::impl::shorten_answer()
+{
+    std::string::size_type pos;
+    for (auto& atom : answer.list) {
+        while (
+            atom.actions.find("UD") != std::string::npos ||
+            atom.actions.find("DU") != std::string::npos ||
+            atom.actions.find("LR") != std::string::npos ||
+            atom.actions.find("RL") != std::string::npos
+        ) {
+            while ((pos = atom.actions.find("UD")) != std::string::npos) {
+                atom.actions.erase(pos, 2);
+            }
+            while ((pos = atom.actions.find("DU")) != std::string::npos) {
+                atom.actions.erase(pos, 2);
+            }
+            while ((pos = atom.actions.find("LR")) != std::string::npos) {
+                atom.actions.erase(pos, 2);
+            }
+            while ((pos = atom.actions.find("RL")) != std::string::npos) {
+                atom.actions.erase(pos, 2);
+            }
+        }
+    }
 }
 
 // print {{{2
