@@ -292,27 +292,32 @@ void submit_func(question_data question, analyzer const& analyze)
 	{
         algo2.reset(question);
 		auto const answer = algo2.get();
-		if (answer)
-		{
-			do{
-				result = analyze.submit(answer.get());
-				std::cout << "Submit Result: " << result << std::endl;
+		if (algo2.overlimitcheck()){
+			if (answer)
+			{
+				do{
+					result = analyze.submit(answer.get());
+					std::cout << "Submit Result: " << result << std::endl;
+				} while (result == "ERROR");
+				std::cout << "勝った！" << std::endl;
 			}
-			while(result == "ERROR");
-			std::cout << "勝った！" << std::endl;
+		}
+		else{
+			std::cout << "algo2は答えを返しませんでした" << std::endl;
 		}
 
 		algo3.reset(question);
 		auto const answer2 = algo3.get();
-		if (answer2)
-		{
-			do{
-				result = analyze.submit(answer2.get());
-				std::cout << "Submit Result 2 : " << result << std::endl;
+		//if (algo3.overlimitcheck()){
+			if (answer2)
+			{
+				do{
+					result = analyze.submit(answer2.get());
+					std::cout << "Submit Result 2 : " << result << std::endl;
+				} while (result == "ERROR");
+				std::cout << "さらに勝った！" << std::endl;
 			}
-			while(result == "ERROR");
-			std::cout << "さらに勝った！" << std::endl;
-		}
+		//}
 	}
 #else
         test_tool::emulator emu(question);
