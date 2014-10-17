@@ -10,6 +10,8 @@
 #include <boost/noncopyable.hpp>
 #include <boost/optional.hpp>
 #include <boost/program_options.hpp>
+#include <boost/timer/timer.hpp>
+#include <boost/range/algorithm.hpp>
 #include "data_type.hpp"
 #include "pixel_sorter.hpp"
 #include "ppm_reader.hpp"
@@ -191,10 +193,36 @@ public:
         gui_thread.wait_all_window();
     }
 
+    int calc_cost(answer_type const& ans) const
+    {
+        int cost = (timer_.elapsed().wall / 1000000000) * 100;
+        cost += ans.list.size() * data_.cost_select;
+        boost::for_each(
+            ans.list,
+            [&,this](answer_atom const& move)
+            {
+                cost += move.actions.size() * data_.cost_change;
+            });
+ 
+        return cost;
+    }
+
     std::string submit(answer_type const& ans) const
     {
-        auto submit_result = client_->submit(problem_id_, player_id_, ans);
-        return submit_result.get();
+        std::lock_guard<std::mutex> lock(submit_mutex_);
+        int const cost = calc_cost(ans);
+
+        char input;
+        std::cout << "Submit: Cost = " << cost << " [Y/n]";
+        std::cin.get(input);
+
+        if(input == '\n' || input == 'y' || input == 'Y')
+        {
+            auto submit_result = client_->submit(problem_id_, player_id_, ans);
+            return submit_result.get();
+        }
+
+        return std::string();
     }
 
 private:
@@ -203,6 +231,7 @@ private:
 #if ENABLE_NETWORK_IO
         // ネットワーク通信から
         std::string const data = client_->get_problem(problem_id_).get();
+        timer_.start();
 #if ENABLE_SAVE_IMAGE
         std::ofstream ofs((boost::format("%s/prob%02d.ppm") % dir_path_ % saved_num_++).str(), std::ios::binary);
         ofs << data;
@@ -212,6 +241,7 @@ private:
 #else
         // ファイルから
         std::string const path("prob01.ppm");
+        timer_.start();
         return ppm_reader().from_file(path);
 #endif
     }
@@ -261,6 +291,10 @@ private:
     pixel_sorter<yrange5> sorter_;
 	pixel_sorter<yrange2> sorter_dx;
 
+    // 送信用mutex
+    mutable boost::timer::cpu_timer timer_;
+    mutable std::mutex submit_mutex_;
+
 #if ENABLE_SAVE_IMAGE
     mutable std::string dir_path_;
     mutable int         saved_num_;
@@ -282,11 +316,15 @@ void submit_func(question_data question, analyzer const& analyze)
 		std::cout << "Submit! Wait 5 sec" << std::endl;
 
         std::string result;
-        do{
-            result = analyze.submit(answer.get());
-            std::cout << "Submit Result: " << result << std::endl;
+
+        result = analyze.submit(answer.get());
+        std::cout << "Submit Result: " << result << std::endl;
+
+        if(result.find("ACCEPTED") == std::string::npos)
+        {
+            std::cout << "Submit Result is not \"ACCEPTED\"" << std::endl;
+            return;
         }
-        while(result == "ERROR");
 
 	// FIXME: 汚いしセグフォする//セグフォはしなくなったらしい
 	int wrong_number = std::stoi(result.substr(result.find(" ")));
@@ -296,10 +334,8 @@ void submit_func(question_data question, analyzer const& analyze)
 		auto const answer = algo2.get();
 		if (answer)
 		{
-			do{
 				result = analyze.submit(answer.get());
 				std::cout << "Submit Result: " << result << std::endl;
-			} while (result == "ERROR");
 			std::cout << "勝った！" << std::endl;
 		}
 
@@ -307,10 +343,8 @@ void submit_func(question_data question, analyzer const& analyze)
 		auto const answer2 = algo3.get();
 		if (answer2)
 		{
-			do{
 				result = analyze.submit(answer2.get());
 				std::cout << "Submit Result 2 : " << result << std::endl;
-			} while (result == "ERROR");
 			std::cout << "さらに勝った！" << std::endl;
 		}
 	}
