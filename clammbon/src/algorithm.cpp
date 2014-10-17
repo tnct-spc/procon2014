@@ -179,7 +179,7 @@ void algorithm::impl::move_selecting<'U'>()
     assert(selecting_cur.y > sorting_row);
     std::swap(matrix[selecting_cur.y][selecting_cur.x], matrix[selecting_cur.y - 1][selecting_cur.x]);
     --selecting_cur.y;
-    answer.list.front().actions.push_back('U');
+    answer.list.back().actions.push_back('U');
 #ifdef _DEBUG
     std::cerr << "U" << std::endl;
     print(matrix);
@@ -192,7 +192,7 @@ void algorithm::impl::move_selecting<'R'>()
     assert(selecting_cur.x < width - 1);
     std::swap(matrix[selecting_cur.y][selecting_cur.x], matrix[selecting_cur.y][selecting_cur.x + 1]);
     ++selecting_cur.x;
-    answer.list.front().actions.push_back('R');
+    answer.list.back().actions.push_back('R');
 #ifdef _DEBUG
     std::cerr << "R" << std::endl;
     print(matrix);
@@ -205,7 +205,7 @@ void algorithm::impl::move_selecting<'D'>()
     assert(selecting_cur.y < height - 1);
     std::swap(matrix[selecting_cur.y][selecting_cur.x], matrix[selecting_cur.y + 1][selecting_cur.x]);
     ++selecting_cur.y;
-    answer.list.front().actions.push_back('D');
+    answer.list.back().actions.push_back('D');
 #ifdef _DEBUG
     std::cerr << "D" << std::endl;
     print(matrix);
@@ -218,7 +218,7 @@ void algorithm::impl::move_selecting<'L'>()
     assert(selecting_cur.x > sorting_col);
     std::swap(matrix[selecting_cur.y][selecting_cur.x], matrix[selecting_cur.y][selecting_cur.x - 1]);
     --selecting_cur.x;
-    answer.list.front().actions.push_back('L');
+    answer.list.back().actions.push_back('L');
 #ifdef _DEBUG
     std::cerr << "L" << std::endl;
     print(matrix);
