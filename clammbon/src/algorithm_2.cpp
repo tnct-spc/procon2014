@@ -43,9 +43,7 @@ void heap::pop(int *in_cost, std::vector<int> &in_table, std::vector<int> &in_hi
 		table.resize(1000000 * sizemaxcount, std::vector<int>(yx));
 		heaptable.resize(1000000 * sizemaxcount);
 		LIST_OC.resize(1000000 * sizemaxcount);
-#ifdef _DEBUG
 		std::cout << ">< heap.cpp vector pass1,000,000" << std::endl;
-#endif
 	}
 	//重複確認2
 	bool ok = true;
