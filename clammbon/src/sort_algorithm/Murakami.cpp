@@ -23,6 +23,7 @@ std::vector<answer_type_y> Murakami::operator() (){
 	auto const width = data_.split_num.first;
 	auto const height = data_.split_num.second;
 	//sort_compare();//sorted_comparation作成
+	/*
 	#ifdef _OPENMP
 	//OpenMPを使ったコード
 	std::cout << "use openMP" << std::endl;
@@ -30,6 +31,7 @@ std::vector<answer_type_y> Murakami::operator() (){
 	//OpenMPを使わない場合のコード
 	std::cout << "no use openMP" << std::endl;
 	#endif
+	*/
 	make_sorted_comparation();
 	//boost::timer t;
 	std::vector<block_data_> block_list(height * width);
@@ -118,7 +120,13 @@ std::vector<answer_type_y> Murakami::operator() (){
 		std::cerr << "ダメ_Murakami_だめ" << std::endl;
 			//std::cout << t.elapsed() << "s経過した(Murakami内で計測)" << std::endl;
 			std::vector<std::vector<point_type>>exception_array;
+			std::vector<block_type> temp_array;
+			for (auto hoge : block_list){
+				temp_array.push_back(hoge.block);
+			}
+			exception_array = std::move(force_combine_block(temp_array));
 			return std::vector<answer_type_y>{ { std::move(exception_array), 0, cv::Mat() } }; 
+
 		}
 		//std::cout << t.elapsed() << "s経過した(Murakami内で計測)" << std::endl;
 		/*デバッグ表示
@@ -496,18 +504,56 @@ Murakami::block_type Murakami::combine_block(const block_combination& block_comb
 	return return_combined_block;
 
 }
-/*
+
 Murakami::block_type Murakami::force_combine_block(std::vector<Murakami::block_type>& block_list){
 	auto max_block_it = std::_Max_element(block_list.begin(), block_list.end(), [](const block_type& a, const block_type& b){
-		return(a.size() + a[0].size() > b.size() + b[0].size());
+		return(a.size() + a[0].size() < b.size() + b[0].size());
 	});
-	auto pick_up_without_it[&block_list](const block_type )
-	auto const pick_up_without_it[&block_list]
+	block_type max_block = (*max_block_it);
+
+	boost::remove_erase_if(block_list, [&max_block](block_type it){//block_listから結合する前のブロックを消す
+		return (it == max_block);
+	});
+
+	std::for_each(
+		max_block.begin(), max_block.end(),
+		[this](std::vector<point_type>& elem)
+		{
+			elem.resize(data_.split_num.first, point_type{ -1, -1 });
+		});
+
+	max_block.resize(data_.split_num.second, std::vector<point_type>(data_.split_num.first, point_type{-1,-1}));
+
+	for (auto &i : max_block){
+		for (auto &j : i){
+			if (j.x == -1 || j.y == -1){
+				for (auto &list_i : block_list){
+					for (auto &list_j : list_i){
+						for (auto &list_k : list_j){
+							if (list_k.x != -1 || list_k.y != -1){
+								j = list_k;
+								list_k.x = -1;
+								list_k.y = -1;
+								goto KIRISAME_MARISA;
+							}
+						}
+					}
+				}
+			}
+		KIRISAME_MARISA:;
+		}
+	}
+
+	return max_block;
+	/*
+	auto pick_up_without_it = [&block_list](const block_type){
+		
+	};
 	for (auto i : (*max_block_it)){
 		for (auto j : i){
 			if (!(j.x == -1) || !(j.y == -1))continue;
 			pick_up_without_it(max_block_it);
 		}
 	}
+	*/
 }
-*/
