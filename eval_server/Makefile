@@ -23,7 +23,7 @@ all: $(PROG)
 -include $(DEPS)
 
 clammbon :
-	cd ../clammbon; buildtype=$(buildtype) make
+	cd ../clammbon; buildtype=$(buildtype) $(MAKE)
 
 $(PROG) : $(OBJS) clammbon
 	@if [ ! -e `dirname $@` ]; then mkdir -p `dirname $@`; fi

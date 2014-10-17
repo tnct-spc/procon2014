@@ -40,6 +40,7 @@ private:
     bool must_chagne_select(step_type const& step) const;
     void add_step(step_type& step);
     point_type get_point_by_point(point_type const& point) const;
+    void shorten_answer();
 
     template <char T>
     void move_selecting();
@@ -249,7 +250,7 @@ void algorithm::impl::generate_next_step<'U'>(step_type step)
 {
     std::swap(step.matrix[step.selecting_cur.y][step.selecting_cur.x], step.matrix[step.selecting_cur.y - 1][step.selecting_cur.x]);
     step.selecting_cur.y -= 1;
-    std::string& actions = step.answer.list.back().actions;
+    std::string& actions = step.answer.list.front().actions;
     if (step.forward) {
         actions += 'U';
     } else {
@@ -263,7 +264,7 @@ void algorithm::impl::generate_next_step<'R'>(step_type step)
 {
     std::swap(step.matrix[step.selecting_cur.y][step.selecting_cur.x], step.matrix[step.selecting_cur.y][step.selecting_cur.x + 1]);
     step.selecting_cur.x += 1;
-    std::string& actions = step.answer.list.back().actions;
+    std::string& actions = step.answer.list.front().actions;
     if (step.forward) {
         actions += 'R';
     } else {
@@ -277,7 +278,7 @@ void algorithm::impl::generate_next_step<'D'>(step_type step)
 {
     std::swap(step.matrix[step.selecting_cur.y][step.selecting_cur.x], step.matrix[step.selecting_cur.y + 1][step.selecting_cur.x]);
     step.selecting_cur.y += 1;
-    std::string& actions = step.answer.list.back().actions;
+    std::string& actions = step.answer.list.front().actions;
     if (step.forward) {
         actions += 'D';
     } else {
@@ -291,7 +292,7 @@ void algorithm::impl::generate_next_step<'L'>(step_type step)
 {
     std::swap(step.matrix[step.selecting_cur.y][step.selecting_cur.x], step.matrix[step.selecting_cur.y][step.selecting_cur.x - 1]);
     step.selecting_cur.x -= 1;
-    std::string& actions = step.answer.list.back().actions;
+    std::string& actions = step.answer.list.front().actions;
     if (step.forward) {
         actions += 'L';
     } else {
@@ -341,6 +342,8 @@ const answer_type algorithm::impl::solve()
             ++sorting_col;
         }
     }
+
+    shorten_answer();
 
 #ifdef _DEBUG
     print(answer);
@@ -893,48 +896,31 @@ point_type algorithm::impl::get_point_by_point(point_type const& point) const
     return matrix[point.y][point.x];
 }
 
-// must_chagne_select {{{2
-bool algorithm::impl::must_chagne_select(step_type const& step) const
+// }}}
+void algorithm::impl::shorten_answer()
 {
-    // 偶置換, 奇置換の判定を行い, 奇置換であれば true を返す
-    // http://www.aji.sakura.ne.jp/algorithm/slide_goal.html
-
-    int change = 0;
-    std::vector<point_type> linear_matrix;
-    std::vector<point_type> original_linear_matrix;
-
-    // step.matrix の右下 bfs_width x bfs_height 部分を 1 列にする
-    std::vector<point_type> row;
-    row = step.matrix[height - bfs_height];
-    std::copy(row.end() - 3, row.end(), std::back_inserter(linear_matrix));
-    row = step.matrix[height - bfs_height + 1];
-    std::copy(row.end() - 3, row.end(), std::back_inserter(linear_matrix));
-    std::reverse(linear_matrix.end() - 3, linear_matrix.end());
-    row = step.matrix[height - bfs_height + 2];
-    std::copy(row.end() - 3, row.end(), std::back_inserter(linear_matrix));
-    linear_matrix.erase(std::remove(linear_matrix.begin(), linear_matrix.end(), step.matrix[step.selecting_cur.y][step.selecting_cur.x]), linear_matrix.end());
-
-    for (int x = width - bfs_width; x < width; ++x) {
-        original_linear_matrix.push_back(point_type{x, height - bfs_height});
-    }
-    for (int x = width - 1; x >= width - bfs_width; --x) {
-        original_linear_matrix.push_back(point_type{x, height - bfs_height + 1});
-    }
-    for (int x = width - bfs_width; x < width; ++x) {
-        original_linear_matrix.push_back(point_type{x, height - bfs_height + 2});
-    }
-    original_linear_matrix.erase(std::remove(original_linear_matrix.begin(), original_linear_matrix.end(), step.matrix[step.selecting_cur.y][step.selecting_cur.x]), original_linear_matrix.end());
-
-    // original_linear_matrix の配置になるように linear_matrix を並び替える
-    for (int i = 0; i < linear_matrix.size(); ++i) {
-        if (linear_matrix[i] != original_linear_matrix[i]) {
-            change += std::distance(linear_matrix.begin(), std::find(linear_matrix.begin(), linear_matrix.end(), original_linear_matrix[i])) - i;
-            linear_matrix.erase(std::remove(linear_matrix.begin(), linear_matrix.end(), original_linear_matrix[i]), linear_matrix.end());
-            linear_matrix.insert(linear_matrix.begin() + i, original_linear_matrix[i]);
+    std::string::size_type pos;
+    for (auto& atom : answer.list) {
+        while (
+            atom.actions.find("UD") != std::string::npos ||
+            atom.actions.find("DU") != std::string::npos ||
+            atom.actions.find("LR") != std::string::npos ||
+            atom.actions.find("RL") != std::string::npos
+        ) {
+            while ((pos = atom.actions.find("UD")) != std::string::npos) {
+                atom.actions.erase(pos, 2);
+            }
+            while ((pos = atom.actions.find("DU")) != std::string::npos) {
+                atom.actions.erase(pos, 2);
+            }
+            while ((pos = atom.actions.find("LR")) != std::string::npos) {
+                atom.actions.erase(pos, 2);
+            }
+            while ((pos = atom.actions.find("RL")) != std::string::npos) {
+                atom.actions.erase(pos, 2);
+            }
         }
     }
-
-    return change % 2 == 1;
 }
 
 // print {{{2
