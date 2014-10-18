@@ -163,7 +163,9 @@ void algorithm::impl::operator() (boost::coroutines::coroutine<return_type>::pus
     std::unordered_set<point_type> sorted_points;
 
     // GO
+#ifdef _DEBUG
     print(matrix);
+#endif
     yield(solve());
 }
 
@@ -343,7 +345,9 @@ const answer_type algorithm::impl::solve()
 
     shorten_answer();
 
+#ifdef _DEBUG
     print(answer);
+#endif
     return answer;
 }
 
