@@ -312,19 +312,28 @@ void truncater::impl::operator() (boost::coroutines::coroutine<return_type>::pus
     height = data_->size.second;
     selectable = data_->selectable;
 
-    if ((width > 3 || height > 3) && selectable >= 3) ymove();
+    point_type last_select;
+
+    if ((width > 3 || height > 3) && selectable >= 3) {
+        last_select = ymove();
+    }
 
     auto qdata = question_data(
         data_->problem_id,
         data_->player_id,
         data_->size,
         data_->selectable,
-        data_->cost_change,
+        data_->cost_select,
         data_->cost_change,
         std::move(matrix)
     );
     algo.reset(std::move(qdata));
     answer_type subsequent_answer = *algo.get();
-    std::copy(subsequent_answer.list.begin(), subsequent_answer.list.end(), std::back_inserter(answer.list));
+
+    if (last_select == {width - 1, height - 1}) {
+        answer.list.front().actions = subsequent_answer.list.back().actions + answer.list.front().actions;
+    } else {
+        std::copy(subsequent_answer.list.begin(), subsequent_answer.list.end(), std::back_inserter(answer.list));
+    }
     yield(std::move(answer));
 }
