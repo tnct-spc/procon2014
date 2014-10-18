@@ -60,7 +60,6 @@ bool heap::pop(int *in_cost, std::vector<int> &in_table, std::vector<int> &in_hi
 	bool ok = true;
 	bool change = false;
 	int sizepos;
-	//š‚±‚±‚ª‚ß‚Á‚¿‚ád‚¢‚Ì‚Å•Ï‚¦‚é
 	auto match_pos = NODE_.find(NODE{in_table,0});//TE‚Ì‘æ“ñˆø”‚ÍŠÖŒW‚È‚¢
 	if (match_pos != NODE_.end()){ //ƒe[ƒuƒ‹‚ªˆê’v‚µ‚½
 		sizepos = match_pos->pos;
@@ -107,6 +106,7 @@ bool heap::pop(int *in_cost, std::vector<int> &in_table, std::vector<int> &in_hi
 		history[size].resize(*in_history_limit);
 		for (i = 0; i < *in_history_limit; i++){
 			history[size][i] = in_history[i];
+
 		}
 		history_limit[size] = *in_history_limit;
 		/*
@@ -153,6 +153,7 @@ bool heap::pop(int *in_cost, std::vector<int> &in_table, std::vector<int> &in_hi
 bool heap::push(int *out_cost, std::vector<int> &out_table, std::vector<int> &out_history, int *out_history_limit, int *out_oya){
 	push_count++;
 	int kirikae = false;
+	int out;
 #ifdef sulu_debug
 	std::cout << "pos=" << pos << std::endl;
 #endif
@@ -194,7 +195,7 @@ bool heap::push(int *out_cost, std::vector<int> &out_table, std::vector<int> &ou
 			}
 			std::cout << " sulu " << std::endl;
 		}
-		std::cout << "pos=" << pos << "heap=" << heaptable[0] << std::endl;
+		std::cout << "pos=" << pos << "heap=" << heaptable[0] <<"history_limit = "<< history_limit[minimum] << std::endl;
 		for (int t = 0; t < y; t++){
 			for (int y = 0; y < x; y++){
 				std::cout << table[minimum][t*x + y] << ",";
@@ -203,8 +204,11 @@ bool heap::push(int *out_cost, std::vector<int> &out_table, std::vector<int> &ou
 		}
 		system("PAUSE");
 		kirikae = true;
+		out = minimum;
 	}
-	const int out = heaptable[0];
+	else{
+		out = heaptable[0];
+	}
 	int i = 0;
 	int me = 0;
 	int bottom = 0;
@@ -366,13 +370,6 @@ void algorithm_2::reset(question_data const& data)
 	sub_history.resize(10000);
 	root1.resize(10000);
 	root2.resize(10000);
-
-	std::cout << "\ngoal=";
-	std::cin >> goal;
-	std::cout << "sentaku=";
-	std::cin >> sentaku;
-	std::cout << "oukan=";
-	std::cin >> coukan;
 }
 
 auto algorithm_2::get() -> boost::optional<return_type>
@@ -535,7 +532,6 @@ void algorithm_2::prescanning(){
 		}
 	}
 	if ((do_exchange == false && first == true) || kirikae == true){
-		std::cout << "iei" << std::endl;
 		limitter = true;
 		for (int y = 0; y < size_y; y++){
 			for (int x = 0; x < size_x; x++){
@@ -859,20 +855,6 @@ void algorithm_2::scanning(int y, int x, int y_before, int x_before, int URDL){
 		//“o˜^
 		int change = harray.pop(&cost, table, sub_history, &sub_history_limit, &oya);
 //#ifdef sulu_debug
-		if (first == true && change){
-			std::cout << cost << "  ";
-			for (int h = 0; h < sub_history_limit; h++){
-				std::cout << sub_history[h] << ",";
-			}
-			std::cout << std::endl;
-		}
-		else if (first == true){
-			std::cout << cost << "  ";
-			for (int h = 0; h < sub_history_limit; h++){
-				std::cout << sub_history[h] << ",";
-			}
-			std::cout << " sulu "<<std::endl;
-		}
 //#endif
 		history_limit -= keiro_count;
 	}

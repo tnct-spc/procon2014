@@ -75,9 +75,9 @@ private:
 	//std::vector<std::vector<uint8_t>> start_distance;
 	//std::vector<std::vector<uint8_t>> goal_distance;
 
-	int goal = 10;
-	int sentaku = 10;
-	int coukan = 10;
+	int goal = 1;
+	int sentaku = 0;
+	int coukan = 0;
 	//1,1,1		ƒm[ƒ}ƒ‹
 	//10,5,3	‘I‘ğ‚ª’Z‚¢‚Ì‚ğì‚ê‚½
 	//10 8 4
