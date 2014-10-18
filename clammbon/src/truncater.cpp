@@ -5,6 +5,7 @@
 #include <unordered_map>
 #include <queue>
 #include <deque>
+#include <random>
 #include <boost/bind.hpp>
 #include <boost/coroutine/all.hpp>
 #include <boost/coroutine/coroutine.hpp>
@@ -218,7 +219,7 @@ void truncater::impl::ymove()
     //std::cout << "select piece position = " << start.position << std::endl;
     //std::cout << "select piece content = " << start.content << std::endl;
     
-    auto P = [](auto e, auto ne, double T) {
+    auto P = [](int e, int ne, double T) {
         if( ne < e ) {
             return 1.0;
         } else {
@@ -232,7 +233,7 @@ void truncater::impl::ymove()
     std::uniform_real_distribution<double> prob_dist(0.0, 1.0);
     auto prob = [&]{return prob_dist(mt);};
     
-    auto is_transition = [&](auto s, auto ns) {
+    auto is_transition = [&](int s, int ns) {
         return prob() < P(s, ns, T);
     };
 
