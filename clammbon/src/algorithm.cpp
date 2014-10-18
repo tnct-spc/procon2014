@@ -167,7 +167,9 @@ void algorithm::impl::operator() (boost::coroutines::coroutine<return_type>::pus
     answer.list.push_back(answer_atom{selecting_cur, std::string()});
 
     // GO
+#ifdef _DEBUG
     print(matrix);
+#endif
     yield(solve());
 }
 
@@ -343,7 +345,9 @@ const answer_type algorithm::impl::solve()
 
     shorten_answer();
 
+#ifdef _DEBUG
     print(answer);
+#endif
     return answer;
 }
 
