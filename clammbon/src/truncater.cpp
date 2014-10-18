@@ -280,7 +280,6 @@ void truncater::impl::ymove()
 // operator() {{{1
 void truncater::impl::operator() (boost::coroutines::coroutine<return_type>::push_type& yield)
 {
-    std::cout << "TRUNCATE!" << std::endl;
     algorithm algo;
     matrix = data_->block;
     width = data_->size.first;
@@ -299,6 +298,7 @@ void truncater::impl::operator() (boost::coroutines::coroutine<return_type>::pus
         std::move(matrix)
     );
     algo.reset(std::move(qdata));
-    auto answer = algo.get();
-    yield(*answer);
+    answer_type subsequent_answer = *algo.get();
+    std::copy(subsequent_answer.list.begin(), subsequent_answer.list.end(), std::back_inserter(answer.list));
+    yield(std::move(answer));
 }
