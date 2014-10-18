@@ -896,7 +896,7 @@ point_type algorithm::impl::get_point_by_point(point_type const& point) const
     return matrix[point.y][point.x];
 }
 
-// }}}
+// shorten_answer {{{2
 void algorithm::impl::shorten_answer()
 {
     std::string::size_type pos;
