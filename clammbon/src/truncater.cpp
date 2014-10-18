@@ -4,6 +4,7 @@
 #include <iterator>
 #include <unordered_map>
 #include <queue>
+#include <deque>
 #include <boost/bind.hpp>
 #include <boost/coroutine/all.hpp>
 #include <boost/coroutine/coroutine.hpp>
@@ -110,7 +111,7 @@ int truncater::impl::form_evaluate(matrix_type const& mat)
     {
         for (int j = 0; j < mat.at(0).size(); ++j)
         {
-            s += mat[i][j].manhattan({ j, i });
+            s += mat[i][j].manhattan_pow({ j, i });
         }
     }
     return s;
@@ -126,7 +127,7 @@ point_type truncater::impl::get_start_point(matrix_type const& mat)
     {
         for (int j = 0; j < mat.at(0).size(); ++j)
         {
-            int temp = mat[i][j].manhattan({ j, i });
+            int temp = mat[i][j].manhattan_pow({ j, i });
             if (temp > max_val)
             {
                 max_val = temp;
@@ -143,16 +144,16 @@ int truncater::impl::eval_two_piece(evaluate_set_type const& eval_set, point_typ
     int s = 0;
     point_type const& content_a = eval_set.matrix[eval_set.position.y][eval_set.position.x];
     //aの新しい場所からの距離
-    s += content_a.manhattan(new_position);
+    s += content_a.manhattan_pow(new_position);
     //aの古い場所からの距離
-    s -= content_a.manhattan(eval_set.position);
+    s -= content_a.manhattan_pow(eval_set.position);
     point_type const& content_b = eval_set.matrix[new_position.y][new_position.x];
     //bの新しい場所からの距離
-    s += content_b.manhattan(eval_set.position);
+    s += content_b.manhattan_pow(eval_set.position);
     //bの古い場所からの距離
-    s -= content_b.manhattan(new_position);
+    s -= content_b.manhattan_pow(new_position);
 
-    assert(s == -2 || s == 0 || s == 2);
+    //assert(s == -2 || s == 0 || s == 2);
     return s;
 }
 
@@ -211,16 +212,33 @@ void truncater::impl::ymove()
     point_type const start_position = get_start_point(matrix);
     evaluate_set_type start = evaluate_set_type{ matrix, start_position, matrix[start_position.y][start_position.x], form_evaluate(start.matrix), " " };
     evaluate_set_type best = start;
-    int depth = 0;
     
     que.push(start);
 
     //std::cout << "select piece position = " << start.position << std::endl;
     //std::cout << "select piece content = " << start.content << std::endl;
+    
+    auto P = [](auto e, auto ne, double T) {
+        if( ne < e ) {
+            return 1.0;
+        } else {
+            return std::exp((e - ne)/T);
+        }
+    };
+    double T = 1000.0;
+    
+    std::random_device sec_rng;
+    std::mt19937 mt(sec_rng());
+    std::uniform_real_distribution<double> prob_dist(0.0, 1.0);
+    auto prob = [&]{return prob_dist(mt);};
+    
+    auto is_transition = [&](auto s, auto ns) {
+        return prob() < P(s, ns, T);
+    };
 
-    while (que.size() > 0 && depth++ < 100)
+    while (que.size() > 0 && T > 1.0)
     {
-        //std::cout << "depth = " << depth++ << " score = " << best.score << " que size = " << que.size() << std::endl;
+        //std::cout << "T = " << T << ", score = " << best.score << " que size = " << que.size() << std::endl;
         while (que.size() > 0)
         {
             auto const node = que.front();
@@ -231,7 +249,8 @@ void truncater::impl::ymove()
             if (node.position.y != 0 && node.direct.back() != 'D')
             {
                 auto child = try_u(node);
-                if (child.score <= node.score)
+                //if (child.score <= node.score)
+                if (is_transition(node.score, child.score))
                 {
                     children.push_back(std::move(child));
                 }
@@ -239,7 +258,8 @@ void truncater::impl::ymove()
             if (node.position.x != width - 1 && node.direct.back() != 'L')
             {
                 auto child = try_r(node);
-                if (child.score <= node.score)
+                //if (child.score <= node.score)
+                if (is_transition(node.score, child.score))
                 {
                     children.push_back(std::move(child));
                 }
@@ -247,7 +267,8 @@ void truncater::impl::ymove()
             if (node.position.y != height - 1 && node.direct.back() != 'U')
             {
                 auto child = try_d(node);
-                if (child.score <= node.score)
+                //if (child.score <= node.score)
+                if (is_transition(node.score, child.score))
                 {
                     children.push_back(std::move(child));
                 }
@@ -255,7 +276,8 @@ void truncater::impl::ymove()
             if (node.position.x != 0 && node.direct.back() != 'R')
             {
                 auto child = try_l(node);
-                if (child.score <= node.score)
+                //if (child.score <= node.score)
+                if (is_transition(node.score, child.score))
                 {
                     children.push_back(std::move(child));
                 }
@@ -268,7 +290,10 @@ void truncater::impl::ymove()
         {
             que.push(children.at(i));
         }
+        
         children.clear();
+        
+        T *= 0.95;
     }
 
     matrix = best.matrix;

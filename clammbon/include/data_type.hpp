@@ -54,6 +54,11 @@ struct point_type
 	{
 		return std::abs(this->x - other.x) + std::abs(this->y - other.y);
 	}
+	inline int manhattan_pow(point_type const& other) const
+	{
+		return std::pow(std::abs(this->x - other.x) + std::abs(this->y - other.y), 2.0);
+	}
+
 	template<class T = double>
 	inline T euclid(point_type const& other) const
 	{
