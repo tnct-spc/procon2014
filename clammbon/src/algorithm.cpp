@@ -4,6 +4,7 @@
 #include <iterator>
 #include <unordered_map>
 #include <queue>
+#include <deque>
 #include <boost/bind.hpp>
 #include <boost/coroutine/all.hpp>
 #include <boost/coroutine/coroutine.hpp>
@@ -252,7 +253,6 @@ void algorithm::impl::ymove()
     point_type const start_position = get_start_point(matrix);
     evaluate_set_type start = evaluate_set_type{ matrix, start_position, matrix[start_position.y][start_position.x], form_evaluate(start.matrix), " " };
     evaluate_set_type best = start;
-    int depth = 0;
     
     que.push(start);
 
@@ -277,9 +277,9 @@ void algorithm::impl::ymove()
         return prob() < P(s, ns, T);
     };
 
-    while (que.size() > 0 && depth++ < 100)
+    while (que.size() > 0 && T > 1.0)
     {
-        //std::cout << "depth = " << depth << " score = " << best.score << " que size = " << que.size() << std::endl;
+        //std::cout << "T = " << T << ", score = " << best.score << " que size = " << que.size() << std::endl;
         while (que.size() > 0)
         {
             auto const node = que.front();
@@ -331,7 +331,10 @@ void algorithm::impl::ymove()
         {
             que.push(children.at(i));
         }
+        
         children.clear();
+        
+        T *= 0.95;
     }
 
     matrix = best.matrix;
