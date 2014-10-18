@@ -279,7 +279,7 @@ void algorithm::impl::ymove()
 
     while (que.size() > 0 && depth++ < 100)
     {
-        std::cout << "depth = " << depth++ << " score = " << best.score << " que size = " << que.size() << std::endl;
+        //std::cout << "depth = " << depth << " score = " << best.score << " que size = " << que.size() << std::endl;
         while (que.size() > 0)
         {
             auto const node = que.front();
