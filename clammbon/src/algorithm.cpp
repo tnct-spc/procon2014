@@ -88,6 +88,7 @@ private:
     int height;
     int cost_select;
     int cost_change;
+    int selectable;
     int score_select;
     int score_change;
     int sorting_row;
@@ -342,6 +343,7 @@ void algorithm::impl::operator() (boost::coroutines::coroutine<return_type>::pus
     // コストとレート
     cost_select = data_->cost_select;
     cost_change = data_->cost_change;
+    selectable = data_->selectable;
 
     bfs_width = std::min(width, BFS_MAX_SIZE);
     bfs_height = std::min(height, BFS_MAX_SIZE);
@@ -509,7 +511,7 @@ const answer_type algorithm::impl::solve()
     // Ian Parberry 氏のアルゴリズムを長方形に拡張したもの
     // とりあえず1回選択のみ
 
-    if (width > 3 || height > 3) ymove();
+    if ((width > 3 || height > 3) && selectable >= 3) ymove();
 
     selecting = point_type{width - 1, height - 1};
     selecting_cur = current_point(selecting);
