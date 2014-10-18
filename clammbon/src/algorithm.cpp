@@ -138,7 +138,7 @@ void algorithm::impl::operator() (boost::coroutines::coroutine<return_type>::pus
     //
 
     // 画像
-    matrix = data_->block;
+    matrix = std::move(data_->block);
 
     // 幅と高さ
     width = data_->size.first;
@@ -523,8 +523,6 @@ void algorithm::impl::greedy()
 #endif
             }
         }
-
-        sorted_points.insert(target);
     }
 }
 
@@ -883,7 +881,7 @@ bool algorithm::impl::is_finished(std::vector<std::vector<point_type>> const& ma
 {
     for (int y = 0; y < height; ++y) {
         for (int x = 0; x < width; ++x) {
-            if (!(mat[y][x] == point_type{x, y})) {
+            if (mat[y][x] != point_type{x, y}) {
                 return false;
             }
         }
