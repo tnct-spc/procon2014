@@ -52,7 +52,7 @@ struct point_type
 
 	inline int manhattan(point_type const& other) const
 	{
-		return std::abs(this->x - other.x) + std::abs(this->y - other.y);
+		return std::pow(std::abs(this->x - other.x) + std::abs(this->y - other.y), 2.0);
 	}
 	template<class T = double>
 	inline T euclid(point_type const& other) const
