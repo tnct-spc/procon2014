@@ -343,10 +343,7 @@ const answer_type algorithm::impl::solve()
 
     shorten_answer();
 
-#ifdef _DEBUG
     print(answer);
-#endif
-
     return answer;
 }
 
