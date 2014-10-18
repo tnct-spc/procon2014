@@ -3,7 +3,7 @@
 
 // Macro: Program Settings
 #define ENABLE_NETWORK_IO 1
-#define ENABLE_SAVE_IMAGE 1
+#define ENABLE_SAVE_IMAGE 0
 
 #include <iostream>
 #include <deque>
@@ -75,7 +75,7 @@ public:
         : client_(network_client), problem_id_(problem_id), player_id_(player_id)
         , is_auto_(is_auto), is_blur_(is_blur), is_first_(false)
 #if ENABLE_SAVE_IMAGE
-        , dir_path_(dir_path), saved_num_(0)
+        , dir_path_(dir_path)
 #endif
     {
     }
@@ -239,7 +239,7 @@ private:
         std::string const data = client_->get_problem(problem_id_).get();
         timer_.start();
 #if ENABLE_SAVE_IMAGE
-        std::ofstream ofs((boost::format("%s/prob%02d.ppm") % dir_path_ % saved_num_++).str(), std::ios::binary);
+        std::ofstream ofs((boost::format("%s/prob%02d.ppm") % dir_path_ % problem_id_).str(), std::ios::binary);
         ofs << data;
         ofs.close();
 #endif
@@ -304,7 +304,6 @@ private:
 
 #if ENABLE_SAVE_IMAGE
     mutable std::string dir_path_;
-    mutable int         saved_num_;
 #endif
 };
 
