@@ -1,4 +1,4 @@
-#include <algorithm>
+﻿#include <algorithm>
 #include <cassert>
 #include <iostream>
 #include <iterator>
@@ -140,7 +140,7 @@ void algorithm::impl::operator() (boost::coroutines::coroutine<return_type>::pus
     //
 
     // 画像
-    matrix = data_->block;
+    matrix = std::move(data_->block);
 
     // 幅と高さ
     width = data_->size.first;
@@ -163,9 +163,7 @@ void algorithm::impl::operator() (boost::coroutines::coroutine<return_type>::pus
     std::unordered_set<point_type> sorted_points;
 
     // GO
-#ifdef _DEBUG
     print(matrix);
-#endif
     yield(solve());
 }
 
@@ -345,10 +343,7 @@ const answer_type algorithm::impl::solve()
 
     shorten_answer();
 
-#ifdef _DEBUG
     print(answer);
-#endif
-
     return answer;
 }
 
@@ -523,8 +518,6 @@ void algorithm::impl::greedy()
 #endif
             }
         }
-
-        sorted_points.insert(target);
     }
 }
 
@@ -543,7 +536,7 @@ void algorithm::impl::brute_force()
     }
 
     for (int y = height - bfs_height; y < height; ++y) for (int x = width - bfs_width; x < width; ++x) {
-        step_type goal_step = {false, {{{{x, y}, ""}}}, matrix[y][x], {x, y}, goal_matrix};
+        step_type goal_step = {false, {{{{x, y}, ""}}}, goal_matrix[y][x], {x, y}, goal_matrix};
         open.push(std::move(goal_step));
     }
 
@@ -554,27 +547,30 @@ void algorithm::impl::brute_force()
         step_type current = std::move(open.front());
         open.pop();
 
-        if (visited.count(current.matrix)) {
-            if (visited.at(current.matrix).forward != current.forward) {
-                step_type* backward_p;
-                step_type* forward_p;
-                if (visited.at(current.matrix).forward) {
-                    forward_p = &visited.at(current.matrix);
-                    backward_p = &current;
-                } else {
-                    forward_p = &current;
-                    backward_p = &visited.at(current.matrix);
-                }
-                step_type& forward = *forward_p;
-                step_type& backward = *backward_p;
-
-                backward.answer.list.front().position = backward.selecting_cur;
-                forward.answer.list.push_back(std::move(backward.answer.list.front()));
-
-                answer = std::move(forward.answer);
-                finished = true;
-                break;
+        if (visited.count(current.matrix) && visited.at(current.matrix).forward != current.forward) {
+            step_type* backward_p;
+            step_type* forward_p;
+            if (visited.at(current.matrix).forward) {
+                forward_p = &visited.at(current.matrix);
+                backward_p = &current;
+            } else {
+                forward_p = &current;
+                backward_p = &visited.at(current.matrix);
             }
+            step_type& forward = *forward_p;
+            step_type& backward = *backward_p;
+
+            if (backward.selecting == forward.selecting) {
+                std::cout << "forward " << forward.selecting << std::endl << forward.answer.serialize() << std::endl << "backward " << backward.selecting << std::endl << backward.answer.serialize() << std::endl;
+                forward.answer.list.back().actions += backward.answer.list.back().actions;
+            } else {
+                backward.answer.list.back().position = backward.selecting_cur;
+                forward.answer.list.push_back(std::move(backward.answer.list.back()));
+            }
+
+            answer = std::move(forward.answer);
+            finished = true;
+            break;
         }
 
         if (current.selecting_cur.x == width - bfs_width) {
@@ -883,7 +879,7 @@ bool algorithm::impl::is_finished(std::vector<std::vector<point_type>> const& ma
 {
     for (int y = 0; y < height; ++y) {
         for (int x = 0; x < width; ++x) {
-            if (!(mat[y][x] == point_type{x, y})) {
+            if (mat[y][x] != point_type{x, y}) {
                 return false;
             }
         }
@@ -896,7 +892,7 @@ point_type algorithm::impl::get_point_by_point(point_type const& point) const
     return matrix[point.y][point.x];
 }
 
-// }}}
+// shorten_answer {{{2
 void algorithm::impl::shorten_answer()
 {
     std::string::size_type pos;
