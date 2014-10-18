@@ -17,6 +17,7 @@
 #include "ppm_reader.hpp"
 #include "splitter.hpp"
 #include "algorithm.hpp"
+#include "truncater.hpp"
 #include "algorithm_2.hpp"
 #include "charles.hpp"
 #include "gui.hpp"
