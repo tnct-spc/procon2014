@@ -258,6 +258,16 @@ struct answer_type
 
 		return std::move(answer_string);
 	}
+
+	int get_score(int cost_select, int cost_change)
+	{
+		int score = 0;
+		score += list.size() * cost_select;
+		for (auto const& atom : list) {
+			score += atom.actions.size() * cost_change;
+		}
+		return score;
+	}
 };
 
 struct step_type {
