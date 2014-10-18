@@ -66,6 +66,9 @@
     <ClCompile Include="src\charles.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
+    <ClCompile Include="src\truncater.cpp">
+      <Filter>ソース ファイル\sort_algorithm</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\gui.hpp">
@@ -114,6 +117,9 @@
       <Filter>ヘッダー ファイル\sort_algorithm</Filter>
     </ClInclude>
     <ClInclude Include="include\charles.hpp">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="include\truncater.hpp">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>

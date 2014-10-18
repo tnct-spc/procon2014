@@ -164,6 +164,7 @@
     <ClCompile Include="src\sort_algorithm\yrange5.cpp" />
     <ClCompile Include="src\splitter.cpp" />
     <ClCompile Include="src\test_tool.cpp" />
+    <ClCompile Include="src\truncater.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\algorithm_2.hpp" />
@@ -182,6 +183,7 @@
     <ClInclude Include="include\sort_algorithm\yrange5.hpp" />
     <ClInclude Include="include\splitter.hpp" />
     <ClInclude Include="include\test_tool.hpp" />
+    <ClInclude Include="include\truncater.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="src\impl\gui_move.ipp" />
