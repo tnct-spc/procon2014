@@ -73,7 +73,7 @@ public:
 #endif
         )
         : client_(network_client), problem_id_(problem_id), player_id_(player_id)
-        , is_auto_(is_auto), is_blur_(is_blur)
+        , is_auto_(is_auto), is_blur_(is_blur), is_first_(false)
 #if ENABLE_SAVE_IMAGE
         , dir_path_(dir_path), saved_num_(0)
 #endif
@@ -124,6 +124,7 @@ public:
                     {
                         auto clone = data_.clone();
                         clone.block = yrange2_resolve[0].points;
+			is_first_ = true;
                         manager.add(convert_block(clone));
                     }
 
@@ -210,6 +211,13 @@ public:
         std::lock_guard<std::mutex> lock(submit_mutex_);
         int const cost = calc_cost(ans);
 
+	if(is_first_)
+	{
+            is_first_ = false;
+            auto submit_result = client_->submit(problem_id_, player_id_, ans);
+            return submit_result.get();
+	}
+	
         char input;
         std::cout << "★Submit: Cost = " << cost << " [Y/n]★";
         std::cin.get(input);
@@ -292,6 +300,7 @@ private:
     // 送信用mutex
     mutable boost::timer::cpu_timer timer_;
     mutable std::mutex submit_mutex_;
+    mutable bool is_first_;    
 
 #if ENABLE_SAVE_IMAGE
     mutable std::string dir_path_;
@@ -373,8 +382,8 @@ int main(int const argc, char const* argv[])
     auto const  token = "3935105806";
     bool        is_auto;
     bool        is_blur;
-#if ENABLE_SAVE_IMAGE
     std::string url_format;
+#if ENABLE_SAVE_IMAGE
     std::string save_dir;
 #endif
 
