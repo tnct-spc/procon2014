@@ -7,6 +7,7 @@
 
 #include <iostream>
 #include <deque>
+#include <utility>
 #include <boost/noncopyable.hpp>
 #include <boost/optional.hpp>
 #include <boost/program_options.hpp>
@@ -37,18 +38,20 @@ public:
     virtual ~position_manager() = default;
 
     template<class T>
-    void add(T && pos)
+    void add(T && pos, bool const auto__ = false)
     {
         std::lock_guard<std::mutex> lock(mutex_);
         items_.push_back(std::forward<T>(pos));
+        auto_.push_back(auto__);
     }
 
-    position_type get()
+    std::pair<position_type,bool> get()
     {
         std::lock_guard<std::mutex> lock(mutex_);
-        auto res = items_.front();
+        auto res = items_.front(); auto res_b = auto_.front();
         items_.pop_front();
-        return res;
+        auto_.pop_front();
+        return std::make_pair(res, res_b);
     }
 
     bool empty()
@@ -59,6 +62,7 @@ public:
 private:
     std::mutex mutex_;
     std::deque<position_type> items_;
+    std::deque<bool>          auto_;
 };
 
 class analyzer : boost::noncopyable
@@ -73,7 +77,7 @@ public:
 #endif
         )
         : client_(network_client), problem_id_(problem_id), player_id_(player_id)
-        , is_auto_(is_auto), is_blur_(is_blur), is_first_(false)
+        , is_auto_(is_auto), is_blur_(is_blur)
 #if ENABLE_SAVE_IMAGE
         , dir_path_(dir_path)
 #endif
@@ -122,10 +126,12 @@ public:
                     // Shoot
                     if(is_auto_)
                     {
+                        is_auto_ = false;
+
+                        std::cout << "Yrange2 Auto" << std::endl;
                         auto clone = data_.clone();
                         clone.block = yrange2_resolve[0].points;
-			is_first_ = true;
-                        manager.add(convert_block(clone));
+                        manager.add(convert_block(clone), true);
                     }
 
                     // GUI
@@ -142,6 +148,17 @@ public:
 					auto yrange5_resolve = yrange5(raw_data_, image_comp)(yrange2_.sorted_matrix());
 					if (!yrange5_resolve.empty())
 					{
+						// Shoot
+						if(is_auto_)
+						{
+							is_auto_ = false;
+
+                            std::cout << "Yrange5 Auto" << std::endl;
+							auto clone = data_.clone();
+							clone.block = yrange5_resolve[0].points;
+							manager.add(convert_block(clone), true);
+						}
+
 						// GUI
 						for (int y5 = yrange5_resolve.size() - 1; y5 >= 0; --y5)
 						{
@@ -158,10 +175,22 @@ public:
             [&]()
             {
                 // Murakami
-			std::cout << "村上モード" << std::endl;
+		    	std::cout << "村上モード" << std::endl;
                 auto murakami_resolve = murakami_()[0].points;
 				std::vector<std::vector<point_type>> murakami_dx_resolve, murakami_w_resolve, murakami_dx_w_resolve;
-				if (!murakami_resolve.empty())gui_thread.push_back(boost::bind(gui::make_mansort_window, split_image_, murakami_resolve, "Murakami"));
+				if (!murakami_resolve.empty())
+				{
+					if(is_auto_)
+					{
+						is_auto_ = false;
+
+                        std::cout << "Murakami Auto" << std::endl;
+						auto clone = data_.clone();
+						clone.block = murakami_resolve;
+						manager.add(convert_block(clone), true);
+					}
+					gui_thread.push_back(boost::bind(gui::make_mansort_window, split_image_, murakami_resolve, "Murakami"));
+                }
 				if (murakami_resolve.empty()){
 					std::cout << "デラックス村上モード" << std::endl;
 					Murakami murakami_dx(raw_data_, image_comp_dx, true);
@@ -206,14 +235,13 @@ public:
         return cost;
     }
 
-    std::string submit(answer_type const& ans) const
+    std::string submit(answer_type const& ans, bool is_auto = false) const
     {
         std::lock_guard<std::mutex> lock(submit_mutex_);
         int const cost = calc_cost(ans);
 
-	if(is_first_)
+	if(is_auto)
 	{
-            is_first_ = false;
             auto submit_result = client_->submit(problem_id_, player_id_, ans);
             return submit_result.get();
 	}
@@ -285,7 +313,7 @@ private:
 
     int const problem_id_;
     std::string const player_id_;
-    bool const is_auto_;
+    bool is_auto_;
     bool const is_blur_;
 
     question_raw_data raw_data_;
@@ -300,14 +328,13 @@ private:
     // 送信用mutex
     mutable boost::timer::cpu_timer timer_;
     mutable std::mutex submit_mutex_;
-    mutable bool is_first_;    
 
 #if ENABLE_SAVE_IMAGE
     mutable std::string dir_path_;
 #endif
 };
 
-void submit_func(question_data question, analyzer const& analyze)
+void submit_func(question_data question, analyzer const& analyze, bool is_auto)
 {
     algorithm algo;
     algorithm_2 algo2;
@@ -323,7 +350,7 @@ void submit_func(question_data question, analyzer const& analyze)
 
         std::string result;
 
-        result = analyze.submit(answer.get());
+        result = analyze.submit(answer.get(), is_auto);
         std::cout << "Submit Result: " << result << std::endl;
 
         if(result.find("ACCEPTED") == std::string::npos)
@@ -448,7 +475,7 @@ int main(int const argc, char const* argv[])
 
             // 手順探索部
             submit_threads.create_thread(
-                boost::bind(submit_func, question, boost::ref(analyze))
+                boost::bind(submit_func, question.first, boost::ref(analyze), question.second)
                 );
         }
     }
