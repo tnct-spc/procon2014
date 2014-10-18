@@ -18,6 +18,7 @@
 #include "ppm_reader.hpp"
 #include "splitter.hpp"
 #include "algorithm.hpp"
+#include "truncater.hpp"
 #include "algorithm_2.hpp"
 #include "charles.hpp"
 #include "gui.hpp"
@@ -337,11 +338,40 @@ private:
 void submit_func(question_data question, analyzer const& analyze, bool is_auto)
 {
     algorithm algo;
+    truncater talgo;
+
     algorithm_2 algo2;
 	charles algo3;
-    algo.reset(question);
 
-    auto const answer = algo.get();
+    boost::optional<answer_type> algo_answer;
+    boost::optional<answer_type> talgo_answer;
+    boost::optional<answer_type> answer;
+
+    auto algo_thread = boost::thread(
+        [&algo, &algo_answer, &question]() {
+            algo.reset(question);
+            algo_answer = algo.get();
+        }
+    );
+
+    auto talgo_thread = boost::thread(
+        [&talgo, &talgo_answer, &question]() {
+            talgo.reset(question);
+            talgo_answer = talgo.get();
+        }
+    );
+
+    algo_thread.join();
+    talgo_thread.join();
+
+    int algo_score = algo_answer->get_score(question.cost_select, question.cost_change);
+    int talgo_score = talgo_answer->get_score(question.cost_select, question.cost_change);
+    if (algo_score < talgo_score) {
+        answer = algo_answer;
+    } else {
+        answer = talgo_answer;
+    }
+
     if(answer) // 解が見つかった
     {
 #if ENABLE_NETWORK_IO
