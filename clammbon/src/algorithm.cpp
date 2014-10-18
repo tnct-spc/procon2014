@@ -151,7 +151,7 @@ int algorithm::impl::form_evaluate(matrix_type const& mat)
     {
         for (int j = 0; j < mat.at(0).size(); ++j)
         {
-            s += mat[i][j].manhattan({ j, i });
+            s += mat[i][j].manhattan_pow({ j, i });
         }
     }
     return s;
@@ -167,7 +167,7 @@ point_type algorithm::impl::get_start_point(matrix_type const& mat)
     {
         for (int j = 0; j < mat.at(0).size(); ++j)
         {
-            int temp = mat[i][j].manhattan({ j, i });
+            int temp = mat[i][j].manhattan_pow({ j, i });
             if (temp > max_val)
             {
                 max_val = temp;
@@ -184,16 +184,16 @@ int algorithm::impl::eval_two_piece(evaluate_set_type const& eval_set, point_typ
     int s = 0;
     point_type const& content_a = eval_set.matrix[eval_set.position.y][eval_set.position.x];
     //aの新しい場所からの距離
-    s += content_a.manhattan(new_position);
+    s += content_a.manhattan_pow(new_position);
     //aの古い場所からの距離
-    s -= content_a.manhattan(eval_set.position);
+    s -= content_a.manhattan_pow(eval_set.position);
     point_type const& content_b = eval_set.matrix[new_position.y][new_position.x];
     //bの新しい場所からの距離
-    s += content_b.manhattan(eval_set.position);
+    s += content_b.manhattan_pow(eval_set.position);
     //bの古い場所からの距離
-    s -= content_b.manhattan(new_position);
+    s -= content_b.manhattan_pow(new_position);
 
-    assert(s == -2 || s == 0 || s == 2);
+    //assert(s == -2 || s == 0 || s == 2);
     return s;
 }
 
