@@ -561,7 +561,6 @@ void algorithm::impl::brute_force()
             step_type& backward = *backward_p;
 
             if (backward.selecting == forward.selecting) {
-                std::cout << "forward " << forward.selecting << std::endl << forward.answer.serialize() << std::endl << "backward " << backward.selecting << std::endl << backward.answer.serialize() << std::endl;
                 forward.answer.list.back().actions += backward.answer.list.back().actions;
             } else {
                 backward.answer.list.back().position = backward.selecting_cur;
