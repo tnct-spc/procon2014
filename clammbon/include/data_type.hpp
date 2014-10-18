@@ -54,6 +54,11 @@ struct point_type
 	{
 		return std::abs(this->x - other.x) + std::abs(this->y - other.y);
 	}
+	inline int manhattan_pow(point_type const& other) const
+	{
+		return std::pow(std::abs(this->x - other.x) + std::abs(this->y - other.y), 2.0);
+	}
+
 	template<class T = double>
 	inline T euclid(point_type const& other) const
 	{
@@ -120,16 +125,16 @@ struct point_type
 
 	friend std::size_t hash_value(point_type const& point)
 	{
-		std::size_t seed = 0;
-		boost::hash_combine(seed, point.x);
-		boost::hash_combine(seed, point.y);
-		return seed;
+		std::size_t result = 0;
+		boost::hash_combine(result, point.x);
+		boost::hash_combine(result, point.y);
+		return result;
 	}
 };
 
-typedef cv::Vec3b                            pixel_type;
-typedef std::vector<uint8_t>                 unfold_image_type;
-typedef cv::Mat_<cv::Vec3b>                  image_type;
+typedef cv::Vec3b					pixel_type;
+typedef std::vector<uint8_t>				unfold_image_type;
+typedef cv::Mat_<cv::Vec3b>				image_type;
 
 // [i][j]の位置に分割された画像(cv::Mat_<cv::Vec3b>)が入っている．
 typedef std::vector<std::vector<image_type>> split_image_type;
@@ -258,16 +263,28 @@ struct answer_type
 
 		return std::move(answer_string);
 	}
+
+	int get_score(int cost_select, int cost_change)
+	{
+		int score = 0;
+		score += list.size() * cost_select;
+		for (auto const& atom : list) {
+			score += atom.actions.size() * cost_change;
+		}
+		return score;
+	}
 };
 
 struct step_type {
+	bool forward;
 	answer_type answer;
+	point_type selecting;
 	point_type selecting_cur;
 	std::vector<std::vector<point_type>> matrix;
 
 	friend bool operator== (step_type const& lhs, step_type const& rhs)
 	{
-		return lhs.matrix == rhs.matrix;
+		return lhs.forward == rhs.forward && lhs.selecting == rhs.selecting && lhs.matrix == rhs.matrix;
 	}
 };
 
@@ -318,26 +335,38 @@ struct point_score{
 namespace std
 {
 	template <>
-	struct hash<step_type>
+	struct hash<point_type>
 	{
-		std::size_t operator() (step_type const& step) const
+		std::size_t operator() (point_type const& point) const
 		{
-			std::size_t result;
-			for (auto row : step.matrix) {
-				for (auto point : row) {
-					boost::hash_combine(result, point);
-				}
+			return hash_value(point);
+		}
+	};
+
+	template<>
+	struct hash<std::vector<std::vector<point_type>>>
+	{
+		std::size_t operator() (std::vector<std::vector<point_type>> const& matrix) const
+		{
+			std::size_t result = 0;
+			boost::hash_combine(result, matrix.size());
+			for (auto const& row : matrix) for (auto const& point : row) {
+				boost::hash_combine(result, point);
 			}
 			return result;
 		}
 	};
 
 	template <>
-	struct hash<point_type>
+	struct hash<step_type>
 	{
-		std::size_t operator() (point_type const& point) const
+		std::size_t operator() (step_type const& step) const
 		{
-			return hash_value(point);
+			std::size_t result = 0;
+			boost::hash_combine(result, step.forward);
+			boost::hash_combine(result, step.selecting);
+			boost::hash_combine(result, step.matrix);
+			return result;
 		}
 	};
 }

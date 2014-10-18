@@ -70,16 +70,22 @@ namespace network
 
     std::string client::http_request(std::string const url, std::string const request_body)
     {
-        client_type::request request(url);
-        request << boost::network::header("Connection", "close")
-                << boost::network::header("Content-Type", "application/x-www-form-urlencoded")
-                << boost::network::header("Content-Length", std::to_string(request_body.size()))
-                << boost::network::header("User-Agent", "Is the order a clammbon?")
-                << boost::network::body(request_body);
-        
-        client_type::response response = http_client_.post(request);
-        std::string response_body = body(response);
-        return response_body;
+        while(true)
+        {
+            client_type::request request(url);
+            request << boost::network::header("Connection", "close")
+                    << boost::network::header("Content-Type", "application/x-www-form-urlencoded")
+                    << boost::network::header("Content-Length", std::to_string(request_body.size()))
+                    << boost::network::header("User-Agent", "Is the order a clammbon?")
+                    << boost::network::body(request_body);
+
+            client_type::response response = http_client_.post(request);
+            if(status(response) == 200)
+            {
+                std::string response_body = body(response);
+                return response_body;
+            }
+        }
     }
 
     client::client(
@@ -94,7 +100,7 @@ namespace network
 
     std::future<std::string> client::get_problem(int const problem_id)
     {
-        auto const url = (boost::format("http://%s%sprob%02d.ppm") % server_host_ % problem_path_ % problem_id).str();
+        auto const url = (boost::format("http://%s" + problem_path_) % server_host_ % problem_id).str();
 
         return std::async(
             std::launch::async,
@@ -106,7 +112,7 @@ namespace network
     {
         std::unordered_map<std::string, std::string> content_list;
         content_list["playerid"] = player_id;
-        content_list["problemid"] = std::to_string(problem_id);
+        content_list["problemid"] = (boost::format("%02d") % problem_id).str();
         content_list["answer"] = answer;
 
         auto const url  = (boost::format("http://%s%s") % server_host_ % submit_path_).str();

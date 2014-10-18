@@ -23,7 +23,7 @@ all: $(PROG)
 -include $(DEPS)
 
 clammbon :
-	cd ../clammbon; buildtype=$(buildtype) make
+	cd ../clammbon; buildtype=$(buildtype) $(MAKE)
 
 $(PROG) : $(OBJS) clammbon
 	@if [ ! -e `dirname $@` ]; then mkdir -p `dirname $@`; fi
@@ -41,7 +41,7 @@ distclean:
 
 install:
 	mkdir -p $(RESDEST)
-	cp -r res problem_set $(RESDEST)
+	cp -ru res problem_set $(RESDEST)
 	install $(PROG) $(DEST)
 
 # vim:set tabstop=4 noexpandtab

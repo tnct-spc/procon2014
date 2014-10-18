@@ -110,6 +110,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_WINSOCK_DEPRECATED_NO_WARNINGS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <OpenMPSupport>true</OpenMPSupport>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -140,6 +141,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_WINSOCK_DEPRECATED_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <OpenMPSupport>true</OpenMPSupport>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -150,6 +152,7 @@
   <ItemGroup>
     <ClCompile Include="src\algorithm.cpp" />
     <ClCompile Include="src\algorithm_2.cpp" />
+    <ClCompile Include="src\charles.cpp" />
     <ClCompile Include="src\gui.cpp" />
     <ClCompile Include="src\network.cpp" />
     <ClCompile Include="src\ppm_reader.cpp" />
@@ -161,9 +164,11 @@
     <ClCompile Include="src\sort_algorithm\yrange5.cpp" />
     <ClCompile Include="src\splitter.cpp" />
     <ClCompile Include="src\test_tool.cpp" />
+    <ClCompile Include="src\truncater.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\algorithm_2.hpp" />
+    <ClInclude Include="include\charles.hpp" />
     <ClInclude Include="include\gui.hpp" />
     <ClInclude Include="include\algorithm.hpp" />
     <ClInclude Include="include\data_type.hpp" />
@@ -178,6 +183,7 @@
     <ClInclude Include="include\sort_algorithm\yrange5.hpp" />
     <ClInclude Include="include\splitter.hpp" />
     <ClInclude Include="include\test_tool.hpp" />
+    <ClInclude Include="include\truncater.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="src\impl\gui_move.ipp" />

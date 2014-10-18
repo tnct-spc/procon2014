@@ -1,18 +1,15 @@
-//#define NDEBUG
-#include <algorithm>
+﻿#include <algorithm>
 #include <cassert>
 #include <iostream>
 #include <iterator>
+#include <unordered_map>
+#include <queue>
 #include <boost/bind.hpp>
 #include <boost/coroutine/all.hpp>
 #include <boost/coroutine/coroutine.hpp>
 #include <boost/function.hpp>
 #include <boost/noncopyable.hpp>
 #include "algorithm.hpp"
-
-// 幅優先探索に切り換えるタイミング
-// 2 にすると速い
-#define BFS_NUM 3
 
 // class definition {{{1
 class algorithm::impl : boost::noncopyable
@@ -36,13 +33,15 @@ private:
     const answer_type solve();
     void greedy();
     void brute_force();
-    void print() const;
     const point_type current_point(point_type const& point) const;
     bool is_sorted(point_type const& point) const;
     bool is_finished(std::vector<std::vector<point_type>> const& mat) const;
     void move_target(point_type const& target, char const& direction);
     void move_to(point_type const& to);
-    bool must_chagne_select(std::vector<std::vector<point_type>> const& mat, point_type const& select) const;
+    bool must_chagne_select(step_type const& step) const;
+    void add_step(step_type& step);
+    point_type get_point_by_point(point_type const& point) const;
+    void shorten_answer();
 
     template <char T>
     void move_selecting();
@@ -50,7 +49,13 @@ private:
     void move_selecting();
 
     template <char T>
-    void add_step();
+    void generate_next_step(step_type step);
+
+    void print(std::vector<std::vector<point_type>> const& mat) const;
+    void print(answer_type const& answer) const;
+    void print(step_type const& step) const;
+
+    static constexpr int BFS_MAX_SIZE = 3;
 
     std::vector<std::vector<point_type>> matrix;
     std::unordered_set<point_type> sorted_points;
@@ -59,15 +64,18 @@ private:
     point_type selecting_cur;
     std::queue<step_type> open;
     std::unordered_set<step_type> closed;
-    step_type current;
+    std::unordered_map<std::vector<std::vector<point_type>>, step_type> visited;
     int width;
     int height;
     int cost_select;
     int cost_change;
+    int selectable;
     int score_select;
     int score_change;
-    int sorted_row;
-    int sorted_col;
+    int sorting_row;
+    int sorting_col;
+    int bfs_height;
+    int bfs_width;
 };
 
 // interfaces for Boost.Coroutine {{{1
@@ -106,8 +114,8 @@ void algorithm::impl::reset(question_data const& data)
 {
     data_ = data.clone();
     co_   = boost::coroutines::coroutine<return_type>::pull_type(
-                boost::bind(&impl::process, this, _1)
-                );
+            boost::bind(&impl::process, this, _1)
+            );
 }
 
 void algorithm::impl::process(boost::coroutines::coroutine<return_type>::push_type& yield)
@@ -141,43 +149,37 @@ void algorithm::impl::operator() (boost::coroutines::coroutine<return_type>::pus
     // コストとレート
     cost_select = data_->cost_select;
     cost_change = data_->cost_change;
+    selectable = data_->selectable;
+
+    bfs_width = std::min(width, BFS_MAX_SIZE);
+    bfs_height = std::min(height, BFS_MAX_SIZE);
 
     // ソート済み行及び列
     // この値の行及び列を含む内側部分を操作する
-    sorted_row = 0;
-    sorted_col = 0;
+    sorting_row = 0;
+    sorting_col = 0;
 
     // ソート済み断片画像
     std::unordered_set<point_type> sorted_points;
 
-    // 移動に用いる断片画像の原座標
-    // 右下を選んでおけば間違いない
-    selecting = point_type{width - 1, height - 1};
-    selecting_cur = current_point(selecting);
-
-    answer.list.push_back(answer_atom{selecting_cur, std::string()});
-
     // GO
-#ifndef NDEBUG
-    print();
+#ifdef _DEBUG
+    print(matrix);
 #endif
-    try {
-        yield(solve());
-    } catch (std::runtime_error const& e) {
-        std::cerr << "Couldn't solve the problem." << std::endl;
-    }
+    yield(solve());
 }
 
 // move_selecting {{{2
 template <>
 void algorithm::impl::move_selecting<'U'>()
 {
-    assert(selecting_cur.y > sorted_row);
+    assert(selecting_cur.y > sorting_row);
     std::swap(matrix[selecting_cur.y][selecting_cur.x], matrix[selecting_cur.y - 1][selecting_cur.x]);
     --selecting_cur.y;
     answer.list.back().actions.push_back('U');
-#ifndef NDEBUG
-    print();
+#ifdef _DEBUG
+    std::cerr << "U" << std::endl;
+    print(matrix);
 #endif
 }
 
@@ -188,8 +190,9 @@ void algorithm::impl::move_selecting<'R'>()
     std::swap(matrix[selecting_cur.y][selecting_cur.x], matrix[selecting_cur.y][selecting_cur.x + 1]);
     ++selecting_cur.x;
     answer.list.back().actions.push_back('R');
-#ifndef NDEBUG
-    print();
+#ifdef _DEBUG
+    std::cerr << "R" << std::endl;
+    print(matrix);
 #endif
 }
 
@@ -200,20 +203,22 @@ void algorithm::impl::move_selecting<'D'>()
     std::swap(matrix[selecting_cur.y][selecting_cur.x], matrix[selecting_cur.y + 1][selecting_cur.x]);
     ++selecting_cur.y;
     answer.list.back().actions.push_back('D');
-#ifndef NDEBUG
-    print();
+#ifdef _DEBUG
+    std::cerr << "D" << std::endl;
+    print(matrix);
 #endif
 }
 
 template <>
 void algorithm::impl::move_selecting<'L'>()
 {
-    assert(selecting_cur.x > sorted_col);
+    assert(selecting_cur.x > sorting_col);
     std::swap(matrix[selecting_cur.y][selecting_cur.x], matrix[selecting_cur.y][selecting_cur.x - 1]);
     --selecting_cur.x;
     answer.list.back().actions.push_back('L');
-#ifndef NDEBUG
-    print();
+#ifdef _DEBUG
+    std::cerr << "L" << std::endl;
+    print(matrix);
 #endif
 }
 
@@ -225,52 +230,71 @@ void algorithm::impl::move_selecting()
 }
 
 // add_step {{{2
-template <>
-void algorithm::impl::add_step<'U'>()
+void algorithm::impl::add_step(step_type& step)
 {
-    step_type step = current;
+    if (!visited.count(step.matrix)) {
+        visited[step.matrix] = step;
+    }
+    if (!closed.count(step)) {
+        open.push(std::move(step));
+    }
+}
+
+// generate_next_step {{{2
+template <>
+void algorithm::impl::generate_next_step<'U'>(step_type step)
+{
     std::swap(step.matrix[step.selecting_cur.y][step.selecting_cur.x], step.matrix[step.selecting_cur.y - 1][step.selecting_cur.x]);
     step.selecting_cur.y -= 1;
-    step.answer.list.back().actions.push_back('U');
-    if (!closed.count(step)) {
-        open.push(step);
+    std::string& actions = step.answer.list.back().actions;
+    if (step.forward) {
+        actions += 'U';
+    } else {
+        actions = 'D' + actions;
     }
+    add_step(step);
 }
 
 template <>
-void algorithm::impl::add_step<'R'>()
+void algorithm::impl::generate_next_step<'R'>(step_type step)
 {
-    step_type step = current;
     std::swap(step.matrix[step.selecting_cur.y][step.selecting_cur.x], step.matrix[step.selecting_cur.y][step.selecting_cur.x + 1]);
     step.selecting_cur.x += 1;
-    step.answer.list.back().actions.push_back('R');
-    if (!closed.count(step)) {
-        open.push(step);
+    std::string& actions = step.answer.list.back().actions;
+    if (step.forward) {
+        actions += 'R';
+    } else {
+        actions = 'L' + actions;
     }
+    add_step(step);
 }
 
 template <>
-void algorithm::impl::add_step<'D'>()
+void algorithm::impl::generate_next_step<'D'>(step_type step)
 {
-    step_type step = current;
     std::swap(step.matrix[step.selecting_cur.y][step.selecting_cur.x], step.matrix[step.selecting_cur.y + 1][step.selecting_cur.x]);
     step.selecting_cur.y += 1;
-    step.answer.list.back().actions.push_back('D');
-    if (!closed.count(step)) {
-        open.push(step);
+    std::string& actions = step.answer.list.back().actions;
+    if (step.forward) {
+        actions += 'D';
+    } else {
+        actions = 'U' + actions;
     }
+    add_step(step);
 }
 
 template <>
-void algorithm::impl::add_step<'L'>()
+void algorithm::impl::generate_next_step<'L'>(step_type step)
 {
-    step_type step = current;
     std::swap(step.matrix[step.selecting_cur.y][step.selecting_cur.x], step.matrix[step.selecting_cur.y][step.selecting_cur.x - 1]);
     step.selecting_cur.x -= 1;
-    step.answer.list.back().actions.push_back('L');
-    if (!closed.count(step)) {
-        open.push(step);
+    std::string& actions = step.answer.list.back().actions;
+    if (step.forward) {
+        actions += 'L';
+    } else {
+        actions = 'R' + actions;
     }
+    add_step(step);
 }
 
 // current_point {{{2
@@ -293,25 +317,37 @@ const answer_type algorithm::impl::solve()
     // Ian Parberry 氏のアルゴリズムを長方形に拡張したもの
     // とりあえず1回選択のみ
 
+    selecting = point_type{width - 1, height - 1};
+    selecting_cur = current_point(selecting);
+    answer.list.push_back(answer_atom{selecting_cur, std::string()});
+
     for (;;) {
-        // 残りが BFS_NUM x BFS_NUM の場合は Brute-Force
-        if (height - sorted_row <= BFS_NUM && width - sorted_col <= BFS_NUM) {
+        // 貪欲法を適用
+        greedy();
+
+        // 残りが bfs_width x bfs_height の場合は Brute-Force
+        if (height - sorting_row <= bfs_height + 1 && width - sorting_col <= bfs_width + 1) {
+#ifdef _DEBUG
+            std::cout << "start brute_force solving" << std::endl;
+#endif
             brute_force();
             break;
         }
 
-        // 貪欲法を適用
-        greedy();
-
-        // ソート済みマーク
-        // ここで同時に縮めなければ長方形でも動くはず
-        if (height - sorted_row > BFS_NUM) {
-            ++sorted_row;
+        // ソート対象の行と列を内側にしてゆく
+        if (height - sorting_row > bfs_height + 1) {
+            ++sorting_row;
         }
-        if (width - sorted_col > BFS_NUM) {
-            ++sorted_col;
+        if (width - sorting_col > bfs_width + 1) {
+            ++sorting_col;
         }
     }
+
+    shorten_answer();
+
+#ifdef _DEBUG
+    print(answer);
+#endif
 
     return answer;
 }
@@ -324,11 +360,15 @@ void algorithm::impl::greedy()
     // ターゲットをキューに入れる
     // 中身は原座標
     std::vector<point_type> target_queue;
-    for (int i = sorted_col; i < width; ++i) {
-        target_queue.push_back(point_type{i, sorted_row});
+    if (height - sorting_row > bfs_height) {
+        for (int i = sorting_col; i < width; ++i) {
+            target_queue.push_back(point_type{i, sorting_row});
+        }
     }
-    for (int i = sorted_row + 1; i < height; ++i) {
-        target_queue.push_back(point_type{sorted_col, i});
+    if (width - sorting_col > bfs_width) {
+        for (int i = sorting_row; i < height; ++i) {
+            target_queue.push_back(point_type{sorting_col, i});
+        }
     }
 
     // カウンタ
@@ -338,11 +378,13 @@ void algorithm::impl::greedy()
     point_type waypoint;
 
     for (point_type const& target : target_queue) {
+#ifdef _DEBUG
+        std::cerr << "loop " << target << std::endl;
+#endif
         // 端の部分の処理
-        if (sorted_points.count(target)) {
+        if (is_sorted(target)) {
             continue;
-        }
-        if (target.x == width - 2 || target.y == height - 1) {
+        } else if (target.x == width - 2 || target.y == height - 1) {
             // ターゲットが右から2番目の断片画像のとき
             // ターゲットが下から1番目の断片画像のとき
             waypoint = target.right();
@@ -417,36 +459,71 @@ void algorithm::impl::greedy()
             } while (current_point(target).direction(waypoint) == AllDirection::Left);
         }
 
+        sorted_points.insert(target);
+
         // 端の部分の処理
         if (target.x == width - 1) {
             // ターゲットの真の原座標が右端の場合
-            if (!(selecting_cur == waypoint.up().left())) {
-                if (selecting_cur == waypoint.down()) {
-                    // selecting が仮の原座標の直下にいる場合
-                    move_selecting<'L', 'U'>();
-                }
-                move_selecting<'U'>();
-            }
+#ifdef _DEBUG
+            std::cerr << "右端" << std::endl;
+#endif
+            move_to(waypoint.down().left());
+            move_to(waypoint.up().left());
             move_selecting<'R', 'D'>();
+#ifdef _DEBUG
+            std::cerr << "右端done" << std::endl;
+#endif
         } else if (target.y == height - 1) {
             // ターゲットの真の原座標が下端の場合
-            if (!(selecting_cur == waypoint.left().up())) {
-                if (selecting_cur == waypoint.right()) {
-                    // selecting が仮の原座標の直右にいる場合
-                    move_selecting<'U', 'L'>();
-                }
-                move_selecting<'L'>();
-            }
+#ifdef _DEBUG
+            std::cerr << "下端" << std::endl;
+#endif
+            move_to(waypoint.right().up());
+            move_to(waypoint.left().up());
             move_selecting<'D', 'R'>();
-        } else if (selecting_cur.x > 1 && selecting_cur.y > 1) {
-            if (target.x == width - 2 && matrix[selecting_cur.y - 1][selecting_cur.x - 1] == target.right()) {
-                move_selecting<'L', 'U', 'R', 'D', 'L', 'D', 'R', 'U', 'U', 'L', 'D', 'R', 'D'>();
-            } else if (target.y == height - 2 && matrix[selecting_cur.y - 1][selecting_cur.x - 1] == target.down()) {
-                move_selecting<'U', 'L', 'D', 'R', 'U', 'R', 'D', 'L', 'L', 'U', 'R', 'D', 'R'>();
+#ifdef _DEBUG
+            std::cerr << "下端done" << std::endl;
+#endif
+        } else if (waypoint.x == width - 1) {
+            if (get_point_by_point(waypoint.left()) == target.right()) {
+#ifdef _DEBUG
+                std::cerr << "SPECIAL CASE 1 START" << std::endl;
+#endif
+                move_to(waypoint.left().down());
+                move_selecting<'U', 'R', 'D', 'L', 'D', 'R', 'U', 'U', 'L', 'D', 'R', 'D'>();
+#ifdef _DEBUG
+                std::cerr << "SPECIAL CASE 1 END" << std::endl;
+#endif
+            } else if (selecting_cur.x == width - 2 && selecting_cur.y == sorting_row && get_point_by_point(waypoint.left().down()) == target.right()) {
+#ifdef _DEBUG
+                std::cerr << "SPECIAL CASE 2 START" << std::endl;
+#endif
+                move_selecting<'R', 'D', 'L', 'D', 'R', 'U', 'U', 'L', 'D', 'R', 'D'>();
+#ifdef _DEBUG
+                std::cerr << "SPECIAL CASE 2 END" << std::endl;
+#endif
+            }
+        } else if (waypoint.y == height - 1) {
+            if (get_point_by_point(waypoint.up()) == target.down()) {
+#ifdef _DEBUG
+                std::cerr << "SPECIAL CASE 3 START" << std::endl;
+#endif
+                move_to(waypoint.up().right());
+                move_selecting<'L', 'D', 'R', 'U', 'R', 'D', 'L', 'L', 'U', 'R', 'D', 'R'>();
+#ifdef _DEBUG
+                std::cerr << "SPECIAL CASE 3 END" << std::endl;
+#endif
+            } else if (selecting_cur.y == height - 2 && selecting_cur.x == sorting_col && get_point_by_point(waypoint.up().right()) == target.down()) {
+#ifdef _DEBUG
+                std::cerr << "SPECIAL CASE 4 START" << std::endl;
+#endif
+                move_selecting<'D', 'R', 'U', 'R', 'D', 'L', 'L', 'U', 'R', 'D', 'R'>();
+#ifdef _DEBUG
+                std::cerr << "SPECIAL CASE 4 END" << std::endl;
+#endif
             }
         }
 
-        // ソート済みとする
         sorted_points.insert(target);
     }
 }
@@ -455,75 +532,69 @@ void algorithm::impl::greedy()
 void algorithm::impl::brute_force()
 {
     // Brute-Force Algorithm
+    // 双方向探索
 
-    // 選択画像を変更するかどうか判定
+    step_type first_step = {true, answer, matrix[selecting_cur.y][selecting_cur.x], selecting_cur, matrix};
+    open.push(std::move(first_step));
 
-    // 根ノードをキューに追加
-    open.push(step_type{answer, selecting_cur, matrix});
+    auto goal_matrix = matrix;
+    for (int y = height - bfs_height; y < height; ++y) for (int x = width - bfs_width; x < width; ++x) {
+        goal_matrix[y][x] = {x, y};
+    }
+
+    for (int y = height - bfs_height; y < height; ++y) for (int x = width - bfs_width; x < width; ++x) {
+        step_type goal_step = {false, {{{{x, y}, ""}}}, matrix[y][x], {x, y}, goal_matrix};
+        open.push(std::move(goal_step));
+    }
 
     // 解答発見フラグ
     bool finished = false;
 
     while (open.size() > 0) {
-        current = open.front();
+        step_type current = std::move(open.front());
         open.pop();
-        if (is_finished(current.matrix)) {
-            // 終了
-            answer = current.answer;
-            finished = true;
-            break;
+
+        if (visited.count(current.matrix)) {
+            if (visited.at(current.matrix).forward != current.forward) {
+                step_type* backward_p;
+                step_type* forward_p;
+                if (visited.at(current.matrix).forward) {
+                    forward_p = &visited.at(current.matrix);
+                    backward_p = &current;
+                } else {
+                    forward_p = &current;
+                    backward_p = &visited.at(current.matrix);
+                }
+                step_type& forward = *forward_p;
+                step_type& backward = *backward_p;
+
+                backward.answer.list.front().position = backward.selecting_cur;
+                forward.answer.list.push_back(std::move(backward.answer.list.front()));
+
+                answer = std::move(forward.answer);
+                finished = true;
+                break;
+            }
         }
 
-        if (current.selecting_cur.y == height - BFS_NUM) {
-            if (current.selecting_cur.x == width - BFS_NUM) {
-                // 右と下
-                add_step<'R'>();
-                add_step<'D'>();
-            } else if (current.selecting_cur.x == width - 1) {
-                // 左と下
-                add_step<'L'>();
-                add_step<'D'>();
-            } else {
-                // 左右下
-                add_step<'L'>();
-                add_step<'R'>();
-                add_step<'D'>();
-            }
-        } else if (current.selecting_cur.y == height - 1) {
-            if (current.selecting_cur.x == width - BFS_NUM) {
-                // 右と上
-                add_step<'R'>();
-                add_step<'U'>();
-            } else if (current.selecting_cur.x == width - 1) {
-                // 左と上
-                add_step<'L'>();
-                add_step<'U'>();
-            } else {
-                // 左右上
-                add_step<'L'>();
-                add_step<'R'>();
-                add_step<'U'>();
-            }
+        if (current.selecting_cur.x == width - bfs_width) {
+            generate_next_step<'R'>(current);
+        } else if (current.selecting_cur.x == width - 1) {
+            generate_next_step<'L'>(current);
         } else {
-            if (current.selecting_cur.x == width - BFS_NUM) {
-                // 右上下
-                add_step<'R'>();
-                add_step<'U'>();
-                add_step<'D'>();
-            } else if (current.selecting_cur.x == width - 1) {
-                // 左上下
-                add_step<'L'>();
-                add_step<'U'>();
-                add_step<'D'>();
-            } else {
-                // 四方
-                add_step<'U'>();
-                add_step<'R'>();
-                add_step<'D'>();
-                add_step<'L'>();
-            }
+            generate_next_step<'L'>(current);
+            generate_next_step<'R'>(current);
         }
-        closed.insert(current);
+
+        if (current.selecting_cur.y == height - bfs_height) {
+            generate_next_step<'D'>(current);
+        } else if (current.selecting_cur.y == height - 1) {
+            generate_next_step<'U'>(current);
+        } else {
+            generate_next_step<'D'>(current);
+            generate_next_step<'U'>(current);
+        }
+        closed.insert(std::move(current));
     }
 
     if (!finished) {
@@ -595,7 +666,7 @@ void algorithm::impl::move_target(point_type const& target, char const& directio
         } else if (selecting_cur.direction(target_cur) == AllDirection::Left) {
             move_to(target_cur.right());
         } else {
-            throw std::runtime_error("多分ここに入ることはありえないと思う");
+            throw std::runtime_error("多分ここに入ることはありえないと思う1");
         }
     }
 
@@ -621,7 +692,7 @@ void algorithm::impl::move_target(point_type const& target, char const& directio
                 move_selecting<'U', 'L', 'D'>();
             }
         } else {
-            throw std::runtime_error("多分ここに入ることはありえないと思う");
+            throw std::runtime_error("多分ここに入ることはありえないと思う2");
         }
     } else if (direction == 'R') {
         if (selecting_cur.up() == target_cur) {
@@ -645,7 +716,7 @@ void algorithm::impl::move_target(point_type const& target, char const& directio
         } else if (selecting_cur.left() == target_cur) {
             move_selecting<'L'>();
         } else {
-            throw std::runtime_error("多分ここに入ることはありえないと思う");
+            throw std::runtime_error("多分ここに入ることはありえないと思う3");
         }
     } else if (direction == 'D') {
         if (selecting_cur.up() == target_cur) {
@@ -669,7 +740,7 @@ void algorithm::impl::move_target(point_type const& target, char const& directio
                 move_selecting<'D', 'L', 'U'>();
             }
         } else {
-            throw std::runtime_error("多分ここに入ることはありえないと思う");
+            throw std::runtime_error("多分ここに入ることはありえないと思う4");
         }
     } else if (direction == 'L') {
         if (selecting_cur.up() == target_cur) {
@@ -693,7 +764,7 @@ void algorithm::impl::move_target(point_type const& target, char const& directio
                 move_selecting<'D', 'L', 'L', 'U', 'R'>();
             }
         } else {
-            throw std::runtime_error("多分ここに入ることはありえないと思う");
+            throw std::runtime_error("多分ここに入ることはありえないと思う5");
         }
     }
 }
@@ -715,20 +786,21 @@ void algorithm::impl::move_to(point_type const& to)
             move_selecting<'U'>();
         }
     } else if (direction == AllDirection::UpperRight) {
-        tmp = selecting_cur.up();
+        // 右が優先
+        tmp = selecting_cur.right();
         if (is_sorted(matrix[tmp.y][tmp.x])) {
-            for (int i = diff.x; i > 0; --i) {
-                move_selecting<'R'>();
-            }
             for (int i = diff.y; i < 0; ++i) {
                 move_selecting<'U'>();
+            }
+            for (int i = diff.x; i > 0; --i) {
+                move_selecting<'R'>();
             }
         } else {
-            for (int i = diff.y; i < 0; ++i) {
-                move_selecting<'U'>();
-            }
             for (int i = diff.x; i > 0; --i) {
                 move_selecting<'R'>();
+            }
+            for (int i = diff.y; i < 0; ++i) {
+                move_selecting<'U'>();
             }
         }
     } else if (direction == AllDirection::Right) {
@@ -737,6 +809,7 @@ void algorithm::impl::move_to(point_type const& to)
         }
     } else if (direction == AllDirection::DownerRight) {
         tmp = selecting_cur.down();
+        // どっち先でもよし
         if (is_sorted(matrix[tmp.y][tmp.x])) {
             for (int i = diff.x; i > 0; --i) {
                 move_selecting<'R'>();
@@ -757,6 +830,7 @@ void algorithm::impl::move_to(point_type const& to)
             move_selecting<'D'>();
         }
     } else if (direction == AllDirection::DownerLeft) {
+        // 下が優先
         tmp = selecting_cur.down();
         if (is_sorted(matrix[tmp.y][tmp.x])) {
             for (int i = diff.x; i < 0; ++i) {
@@ -778,6 +852,7 @@ void algorithm::impl::move_to(point_type const& to)
             move_selecting<'L'>();
         }
     } else if (direction == AllDirection::UpperLeft) {
+        // どっち先でもよし
         tmp = selecting_cur.up();
         if (is_sorted(matrix[tmp.y][tmp.x])) {
             for (int i = diff.x; i < 0; ++i) {
@@ -794,8 +869,6 @@ void algorithm::impl::move_to(point_type const& to)
                 move_selecting<'L'>();
             }
         }
-    } else {
-        throw std::runtime_error("多分ここに入ることはありえないと思う");
     }
 }
 
@@ -818,66 +891,60 @@ bool algorithm::impl::is_finished(std::vector<std::vector<point_type>> const& ma
     return true;
 }
 
-// must_chagne_select {{{2
-bool algorithm::impl::must_chagne_select(std::vector<std::vector<point_type>> const& mat, point_type const& select) const
+point_type algorithm::impl::get_point_by_point(point_type const& point) const
 {
-    // 偶置換, 奇置換の判定を行い, 奇置換ならば true を返す
-    // http://www.aji.sakura.ne.jp/algorithm/slide_goal.html
+    return matrix[point.y][point.x];
+}
 
-    int change = 0;
-    std::vector<point_type> linear_matrix;
-    std::vector<point_type> original_linear_matrix;
-
-    // mat の中身を 1 列にする
-    int x = mat.size() % 2 == 0 ? mat.front().size() : -1;
-    for (int y = 0; y < mat.size(); ++y) {
-        if (x == -1) {
-            for (++x; x < mat[y].size(); ++x) {
-                if (mat[y][x] != select) {
-                    linear_matrix.push_back(mat[y][x]);
-                }
-                if (point_type{x, y} != select) {
-                    original_linear_matrix.push_back(point_type{x, y});
-                }
+// }}}
+void algorithm::impl::shorten_answer()
+{
+    std::string::size_type pos;
+    for (auto& atom : answer.list) {
+        while (
+            atom.actions.find("UD") != std::string::npos ||
+            atom.actions.find("DU") != std::string::npos ||
+            atom.actions.find("LR") != std::string::npos ||
+            atom.actions.find("RL") != std::string::npos
+        ) {
+            while ((pos = atom.actions.find("UD")) != std::string::npos) {
+                atom.actions.erase(pos, 2);
             }
-        } else {
-            for (--x; x >= 0; --x) {
-                if (mat[y][x] != select) {
-                    linear_matrix.push_back(mat[y][x]);
-                }
-                if (point_type{x, y} != select) {
-                    original_linear_matrix.push_back(point_type{x, y});
-                }
+            while ((pos = atom.actions.find("DU")) != std::string::npos) {
+                atom.actions.erase(pos, 2);
+            }
+            while ((pos = atom.actions.find("LR")) != std::string::npos) {
+                atom.actions.erase(pos, 2);
+            }
+            while ((pos = atom.actions.find("RL")) != std::string::npos) {
+                atom.actions.erase(pos, 2);
             }
         }
     }
-
-    // original_linear_matrix の配置になるように linear_matrix を並び替え
-    for (int i = 0; i < linear_matrix.size(); ++i) {
-        if (linear_matrix[i] != original_linear_matrix[i]) {
-            change += std::distance(original_linear_matrix.begin(), std::find(original_linear_matrix.begin(), original_linear_matrix.end(), linear_matrix[i])) - i;
-            linear_matrix.erase(std::remove(linear_matrix.begin(), linear_matrix.end(), original_linear_matrix[i]), linear_matrix.end());
-            linear_matrix.insert(linear_matrix.begin() + i, original_linear_matrix[i]);
-        }
-    }
-
-    return change % 2 == 1;
 }
 
 // print {{{2
-void algorithm::impl::print() const
+void algorithm::impl::print(std::vector<std::vector<point_type>> const& mat) const
 {
-    // 具合をいい感じに表示
-    std::cout << std::endl;
-    std::cout << "-----------------------------------------------" << std::endl;
-    std::cout << std::endl;
-    for (std::vector<point_type> const& row : matrix) {
-        for (point_type const& tile : row) {
-            std::cout << boost::format("%1$02X ") % tile.num();
+    for (std::vector<point_type> const& row : mat) {
+        for (point_type const& point : row) {
+            std::cerr << boost::format("%1$02X ") % point.num();
         }
-        std::cout << std::endl;
+        std::cerr << std::endl;
     }
-    //std::cin.ignore();
+    std::cerr << std::endl;
+}
+
+void algorithm::impl::print(answer_type const& answer) const
+{
+    std::cerr << answer.serialize() << std::endl;
+    std::cerr << std::endl;
+}
+
+void algorithm::impl::print(step_type const& step) const
+{
+    print(step.matrix);
+    print(step.answer);
 }
 
 // vim: set ts=4 sw=4 et fdm=marker:
