@@ -40,7 +40,7 @@ private:
     boost::optional<question_data> data_;
     boost::coroutines::coroutine<return_type>::pull_type co_;
 
-    void ymove();
+    point_type ymove();
     int form_evaluate(matrix_type const& mat);
     point_type get_start_point(matrix_type const& mat);
     int eval_two_piece(evaluate_set_type const& eval_set, point_type const& new_position);
@@ -197,20 +197,28 @@ evaluate_set_type truncater::impl::try_l(evaluate_set_type return_set)
     return std::move(return_set);
 }
 
-void truncater::impl::ymove()
+point_type truncater::impl::ymove()
 {
     std::cout << "ymove start" << std::endl;
-
-    int const width = matrix.at(0).size();
-    int const height = matrix.size();
 
     std::queue<evaluate_set_type> que;
     std::vector<evaluate_set_type> children;
     children.reserve(900);
 
-    point_type const start_position = get_start_point(matrix);
-    evaluate_set_type start = evaluate_set_type{ matrix, start_position, matrix[start_position.y][start_position.x], form_evaluate(start.matrix), " " };
-    evaluate_set_type best = start;
+	point_type start_position;
+
+	if (selectable == 2)
+	{
+		start_position = point_type{ width - 1, height - 1 };
+	}
+	else
+	{
+		start_position = get_start_point(matrix);
+	}
+    
+	evaluate_set_type start = evaluate_set_type{ matrix, start_position, matrix[start_position.y][start_position.x], form_evaluate(start.matrix), " " };
+	evaluate_set_type best = start;
+    
     int depth = 0;
     
     que.push(start);
@@ -275,6 +283,8 @@ void truncater::impl::ymove()
     answer.list.push_back({ start_position, best.direct.substr(1) });
 
     std::cout << "ymove done." << std::endl;
+
+	return best.content;
 }
 
 // operator() {{{1
