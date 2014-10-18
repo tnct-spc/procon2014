@@ -258,10 +258,28 @@ void algorithm::impl::ymove()
 
     //std::cout << "select piece position = " << start.position << std::endl;
     //std::cout << "select piece content = " << start.content << std::endl;
+    
+    auto P = [](auto e, auto ne, double T) {
+        if( ne < e ) {
+            return 1.0;
+        } else {
+            return std::exp((e - ne)/T);
+        }
+    };
+    double T = 1000.0;
+    
+    std::random_device sec_rng;
+    std::mt19937 mt(sec_rng());
+    std::uniform_real_distribution<double> prob_dist(0.0, 1.0);
+    auto prob = [&]{return prob_dist(mt);};
+    
+    auto is_transition = [&](auto s, auto ns) {
+        return prob() < P(s, ns, T);
+    };
 
     while (que.size() > 0 && depth++ < 100)
     {
-        //std::cout << "depth = " << depth++ << " score = " << best.score << " que size = " << que.size() << std::endl;
+        std::cout << "depth = " << depth++ << " score = " << best.score << " que size = " << que.size() << std::endl;
         while (que.size() > 0)
         {
             auto const node = que.front();
@@ -272,7 +290,8 @@ void algorithm::impl::ymove()
             if (node.position.y != 0 && node.direct.back() != 'D')
             {
                 auto child = try_u(node);
-                if (child.score <= node.score)
+                //if (child.score <= node.score)
+                if (is_transition(node.score, child.score))
                 {
                     children.push_back(std::move(child));
                 }
@@ -280,7 +299,8 @@ void algorithm::impl::ymove()
             if (node.position.x != width - 1 && node.direct.back() != 'L')
             {
                 auto child = try_r(node);
-                if (child.score <= node.score)
+                //if (child.score <= node.score)
+                if (is_transition(node.score, child.score))
                 {
                     children.push_back(std::move(child));
                 }
@@ -288,7 +308,8 @@ void algorithm::impl::ymove()
             if (node.position.y != height - 1 && node.direct.back() != 'U')
             {
                 auto child = try_d(node);
-                if (child.score <= node.score)
+                //if (child.score <= node.score)
+                if (is_transition(node.score, child.score))
                 {
                     children.push_back(std::move(child));
                 }
@@ -296,7 +317,8 @@ void algorithm::impl::ymove()
             if (node.position.x != 0 && node.direct.back() != 'R')
             {
                 auto child = try_l(node);
-                if (child.score <= node.score)
+                //if (child.score <= node.score)
+                if (is_transition(node.score, child.score))
                 {
                     children.push_back(std::move(child));
                 }
