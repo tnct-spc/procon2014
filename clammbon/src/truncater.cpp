@@ -42,7 +42,7 @@ private:
     boost::optional<question_data> data_;
     boost::coroutines::coroutine<return_type>::pull_type co_;
 
-    point_type ymove();
+    point_type ymove(int c);
     int form_evaluate(matrix_type const& mat);
     point_type get_start_point(matrix_type const& mat);
 	point_type get_content_point(matrix_type const& mat, point_type content);
@@ -208,7 +208,7 @@ evaluate_set_type truncater::impl::try_l(evaluate_set_type return_set)
     return std::move(return_set);
 }
 
-point_type truncater::impl::ymove()
+point_type truncater::impl::ymove(int c)
 {
     std::cout << "ymove start" << std::endl;
 
@@ -218,7 +218,7 @@ point_type truncater::impl::ymove()
 
 	point_type start_position;
 
-	if (selectable == 2)
+	if (c == 2)
 	{
 		start_position = get_content_point(matrix, point_type{ width - 1, height - 1 });
 	}
@@ -335,7 +335,10 @@ void truncater::impl::operator() (boost::coroutines::coroutine<return_type>::pus
     point_type last_select;
 
     if ((width > 3 || height > 3) && selectable >= 3) {
-        last_select = ymove();
+		for (int c = selectable; c > 1; ++c)
+        {
+            last_select = ymove(c);
+        }
     }
 
     auto qdata = question_data(
