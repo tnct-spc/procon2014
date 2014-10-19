@@ -319,7 +319,7 @@ void truncater::impl::operator() (boost::coroutines::coroutine<return_type>::pus
         data_->player_id,
         data_->size,
         data_->selectable,
-        data_->cost_change,
+        data_->cost_select,
         data_->cost_change,
         std::move(matrix)
     );
