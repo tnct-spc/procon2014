@@ -329,6 +329,9 @@ point_type truncater::impl::ymove()
 
     std::cout << "ymove done." << std::endl;
 
+	std::cout << "best.content = " << best.content << std::endl;
+	std::cout << "best.position= " << best.position << std::endl;
+
 	return best.content;
 }
 
