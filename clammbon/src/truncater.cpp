@@ -143,10 +143,15 @@ point_type truncater::impl::get_start_point(matrix_type const& mat)
 
 point_type truncater::impl::get_content_point(matrix_type const& mat, point_type content)
 {
-	for (int i = 0; i < mat.size(); ++i)for (int j = 0; j < mat.at(0).size(); ++j)
-	{
-		if (mat[i][j] == content)return point_type{ j, i };
+	// point を原座標として持つ断片画像の現在の座標を返す
+	for (int y = 0; y < height; ++y) {
+		auto p = std::find(matrix[y].begin(), matrix[y].end(), content);
+		if (p == matrix[y].end()) {
+			continue;
+		}
+		return point_type{ static_cast<int>(std::distance(matrix[y].begin(), p)), y };
 	}
+	throw std::runtime_error("No Tile " + content.str());
 }
 
 int truncater::impl::eval_two_piece(evaluate_set_type const& eval_set, point_type const& new_position)
