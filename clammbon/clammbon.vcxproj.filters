@@ -63,6 +63,12 @@
     <ClCompile Include="src\algorithm_2.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
+    <ClCompile Include="src\charles.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="src\truncater.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\gui.hpp">
@@ -104,10 +110,16 @@
     <ClInclude Include="include\sort_algorithm\yrange5.hpp">
       <Filter>ヘッダー ファイル\sort_algorithm</Filter>
     </ClInclude>
-    <ClInclude Include="include\sort_algorithm\Murakami.hpp">
+    <ClInclude Include="include\algorithm_2.hpp">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="include\algorithm_2.hpp">
+    <ClInclude Include="include\sort_algorithm\Murakami.hpp">
+      <Filter>ヘッダー ファイル\sort_algorithm</Filter>
+    </ClInclude>
+    <ClInclude Include="include\charles.hpp">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="include\truncater.hpp">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>

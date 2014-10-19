@@ -52,10 +52,11 @@ private:
 	int_fast64_t eval_piece(const point_type&, const point_type&, direction);
 	int_fast64_t eval_comp_(const point_type&, const point_type&, direction);
 	block_type combine_block(const block_combination&);
+	block_type force_combine_block(std::vector<block_type>&);
 	void make_sorted_comparation();
 	typedef point_type block_size_type;
 public:
-	Murakami(question_raw_data const& data, compared_type const& comp);
+	Murakami(question_raw_data const& data, compared_type const& comp,bool const w_mode);
 	virtual ~Murakami() = default;
 	std::vector<answer_type_y> operator() ();
 };

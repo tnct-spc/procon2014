@@ -54,6 +54,11 @@ struct point_type
 	{
 		return std::abs(this->x - other.x) + std::abs(this->y - other.y);
 	}
+	inline int manhattan_pow(point_type const& other) const
+	{
+		return std::pow(std::abs(this->x - other.x) + std::abs(this->y - other.y), 2.0);
+	}
+
 	template<class T = double>
 	inline T euclid(point_type const& other) const
 	{
@@ -120,16 +125,16 @@ struct point_type
 
 	friend std::size_t hash_value(point_type const& point)
 	{
-		std::size_t seed = 0;
-		boost::hash_combine(seed, point.x);
-		boost::hash_combine(seed, point.y);
-		return seed;
+		std::size_t result = 0;
+		boost::hash_combine(result, point.x);
+		boost::hash_combine(result, point.y);
+		return result;
 	}
 };
 
-typedef cv::Vec3b                            pixel_type;
-typedef std::vector<uint8_t>                 unfold_image_type;
-typedef cv::Mat_<cv::Vec3b>                  image_type;
+typedef cv::Vec3b					pixel_type;
+typedef std::vector<uint8_t>				unfold_image_type;
+typedef cv::Mat_<cv::Vec3b>				image_type;
 
 // [i][j]の位置に分割された画像(cv::Mat_<cv::Vec3b>)が入っている．
 typedef std::vector<std::vector<image_type>> split_image_type;
@@ -258,10 +263,20 @@ struct answer_type
 
 		return std::move(answer_string);
 	}
+
+	int get_score(int cost_select, int cost_change)
+	{
+		int score = 0;
+		score += list.size() * cost_select;
+		for (auto const& atom : list) {
+			score += atom.actions.size() * cost_change;
+		}
+		return score;
+	}
 };
 
 struct step_type {
-	bool direction;
+	bool forward;
 	answer_type answer;
 	point_type selecting;
 	point_type selecting_cur;
@@ -269,7 +284,7 @@ struct step_type {
 
 	friend bool operator== (step_type const& lhs, step_type const& rhs)
 	{
-		return lhs.direction == rhs.direction && lhs.selecting == rhs.selecting && lhs.matrix == rhs.matrix;
+		return lhs.forward == rhs.forward && lhs.selecting == rhs.selecting && lhs.matrix == rhs.matrix;
 	}
 };
 
@@ -348,7 +363,7 @@ namespace std
 		std::size_t operator() (step_type const& step) const
 		{
 			std::size_t result = 0;
-			boost::hash_combine(result, step.direction);
+			boost::hash_combine(result, step.forward);
 			boost::hash_combine(result, step.selecting);
 			boost::hash_combine(result, step.matrix);
 			return result;

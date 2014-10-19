@@ -12,15 +12,18 @@ private:
     question_raw_data const& data_;
     compared_type const& comp_;
     adjacent_type const adjacent_data_;
+    std::vector<std::vector<std::vector<point_type>>> sorted_matrix_;
 
     // 2値座標系式から1値座標系式に変えながら和
     // 指定した範囲の配列の和を返す
     int array_sum(return_type const& array_, int const x, int const y, int const height, int const width) const;
 
-	//縦入れ替え
-	void column_replacement(answer_type_y& answer);
-	//横入れ替え
+	//縦列単位で入れ替え
+	void column_replacement(answer_type_y & answer);
+
+	//横列単位で入れ替え
 	void row_replacement(answer_type_y& answer);
+
 	//cv::Matの塊にする
 	cv::Mat combine_image(answer_type_y const& answer);
 	
@@ -30,6 +33,7 @@ public:
     virtual ~yrange2() = default;
 
     std::vector<answer_type_y> operator() ();
+    std::vector<std::vector<std::vector<point_type>>> const& sorted_matrix();
 };
 
 #endif

@@ -12,6 +12,12 @@ public:
     //イメージ分割関数
     split_image_type split_image(question_raw_data const& raw) const;
 
+	//ぼかした分割画像
+	split_image_type split_image_gaussianblur(split_image_type split_pixels) const;
+
+	//cv::arcLength用グレースケールで読み込んでエッジ検出してmatにかためて返す関数
+	cv::Mat combine_grey(question_raw_data const& raw, std::vector<std::vector<point_type>> const& matrix)const;
+
     //イメージ合成関数(それぞれのパーツが同じ大きさであると仮定する)
     image_type join_image(split_image_type const& source) const;
 
