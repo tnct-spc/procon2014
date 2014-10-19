@@ -45,6 +45,7 @@ private:
     point_type ymove();
     int form_evaluate(matrix_type const& mat);
     point_type get_start_point(matrix_type const& mat);
+	point_type get_content_point(matrix_type const& mat, point_type content);
     int eval_two_piece(evaluate_set_type const& eval_set, point_type const& new_position);
     evaluate_set_type try_u(evaluate_set_type return_set);
     evaluate_set_type try_r(evaluate_set_type return_set);
@@ -140,6 +141,14 @@ point_type truncater::impl::get_start_point(matrix_type const& mat)
     return position;
 }
 
+point_type truncater::impl::get_content_point(matrix_type const& mat, point_type content)
+{
+	for (int i = 0; i < mat.size(); ++i)for (int j = 0; j < mat.at(0).size(); ++j)
+	{
+		if (mat[i][j] == content)return point_type{ j, i };
+	}
+}
+
 int truncater::impl::eval_two_piece(evaluate_set_type const& eval_set, point_type const& new_position)
 {
     int s = 0;
@@ -211,7 +220,7 @@ point_type truncater::impl::ymove()
 
 	if (selectable == 2)
 	{
-		start_position = point_type{ width - 1, height - 1 };
+		start_position = get_content_point(matrix, point_type{ width - 1, height - 1 });
 	}
 	else
 	{
