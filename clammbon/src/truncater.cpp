@@ -226,6 +226,10 @@ point_type truncater::impl::ymove()
 	if (selectable == 2)
 	{
 		start_position = get_content_point(matrix, point_type{ width - 1, height - 1 });
+		if (matrix[start_position.y][start_position.x] != point_type{ width - 1, height - 1 })
+		{
+			throw std::runtime_error("俺が悪かった\n");
+		}
 	}
 	else
 	{
