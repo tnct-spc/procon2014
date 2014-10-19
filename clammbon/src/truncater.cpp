@@ -341,7 +341,7 @@ void truncater::impl::operator() (boost::coroutines::coroutine<return_type>::pus
     algo.reset(std::move(qdata));
     answer_type subsequent_answer = *algo.get();
 
-    if (last_select == {width - 1, height - 1}) {
+    if (last_select == point_type{width - 1, height - 1}) {
         answer.list.front().actions = subsequent_answer.list.back().actions + answer.list.front().actions;
     } else {
     std::copy(subsequent_answer.list.begin(), subsequent_answer.list.end(), std::back_inserter(answer.list));
