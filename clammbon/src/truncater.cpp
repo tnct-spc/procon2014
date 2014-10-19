@@ -243,8 +243,8 @@ point_type truncater::impl::ymove()
     
     que.push(start);
 
-    //std::cout << "select piece position = " << start.position << std::endl;
-    //std::cout << "select piece content = " << start.content << std::endl;
+    std::cout << "select piece position = " << start.position << std::endl;
+    std::cout << "select piece content = " << start.content << std::endl;
 
     auto P = [](int e, int ne, double T) {
         if( ne < e ) {
