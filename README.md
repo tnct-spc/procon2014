@@ -1,7 +1,85 @@
-﻿procon2014
+ご注文はクラムボンですか？
 =================
+## 東京高専競技部門
 
+第25回 全国高等専門学校プログラミングコンテスト(一関大会)の競技部門で実際に使用されたソースコード．
+
+##順位
+###25th-procon
+6位
+
+###NAPROCK2014
+9位
+
+
+##開発環境など
+マルチプラットフォームアプリケーションなので，いずれのOSでも実行可能です．  
+実行は以下の環境をサポートしています．
+
+* Windows
+  * Visual C++ Compiler Nov 2013 CTP
+* (Arch|Gentoo) Linux
+  * clang 3.6
+  * gcc 4.9.1
+
+多くの外部ライブラリを利用していますが，以下のライブラリをコンパイラがinclude/link可能になっていれば問題ありません．  
+なお，[環境構築について詳しく](#環境構築について詳しく)は，環境構築を一から行う方法について言及してあります．
+
+* Boost C++ Libraries 1.56.0
+* FLTK(Fast, Light Toolkit) 1.3.2
+* cpp-netlib 0.11.0
+* Gregwar/mongoose-cpp `Hash:2051bc380ae3fcf7fc3b9ace8700b25a79981a52`
+    * eval_server(自作プロコンサーバ)のコンパイルのみに必要．
+      導入しなければコンパイル時にエラーが出るだけで，コア・プログラム(`./clammbon/`と`./bin/release/procon`)の動作には影響無し 
+    * 当Repositoryのルートに配置してある，***mongoose.patchを適用する必要有***
+
+
+##実行方法
+WindowsのVCなら，何も考えずにF5で実行できます．  
+引数の設定はVCのデバッガ引数あたりを使っても問題ないです．引数については，Linuxと共通です．  
+パスの設定は必要ですが，実は環境変数を，目を瞑って[環境変数について(Windowsのみ)](#環境変数について(Windowsのみ))のように設定すると……
+
+
+Linuxなら，
+```bash
+$ make -j9
+$ ./bin/release/procon -s 127.0.0.1 -p 01
+```
+によって，127.0.0.1の80番に開いているサーバに，`/problem/prob01.ppm`の請求をできます．  
+引数`-a`をつけると，一番最初に原画像を推測できたアルゴリズムが自動的にOneShotします．
+
+
+その他の詳しい引数については，引数無しで`procon`を実行すると表示されますので，ご確認ください．
+
+
+##ディレクトリ構造
+
+| パス              | 説明 |
+|:------------------|:-----|
+| ./README.md       | 本READMEファイル |
+| ./makefile        | 統合makefile |
+| ./makefile.in     | 各makefileの共通設定 |
+| ./mongoose.patch  | mongoose-cppに対する追加パッチ |
+| ./procon2014.sln  | Visual Studio 2013 ソリューションファイル |
+| ./bin/            | 実行ファイル出力先 |
+| ./bin/release/    | リリースビルド出力先 |
+| ./bin/debug/      | デバッグビルド出力先 |
+| ./clammbon/       | 共通基盤，solverの実装本体をまとめたライブラリ |
+| ./eval\_position/ | 問題画像から原画像を推測するアルゴリズムの検証コード |
+| ./eval\_movement/ | 並び替え(パズドラ)アルゴリズムの検証コード |
+| ./eval\_server/   | 公式サーバじゃない自作問題サーバ |
+| ./lib/            | clammbonライブラリのビルド先(.aや.lib) |
+| ./prob_maker/     | 問題作成プログラム |
+| ./resolver/       | 所謂solverで，clammbonの各処理を分散させたりする***本体*** |
+| ./test/           | テスタ．通信テストぐらいか |
+
+/clammbon，/eval\_\*，/resolverディレクトリの中には./src，./includeディレクトリがあり，
+それぞれ.cppファイル，.h{,pp}ファイルが入る．
+
+
+##環境構築について詳しく
 ####環境変数について(Windowsのみ)
+-------------------
 Windowsで環境変数を利用したincludeパス/libraryパスの設定に対応しました．
 ***Visual Studioの「VC++ ディレクトリ」は事情があるとき以外は弄らないこと．***
 
@@ -159,31 +237,9 @@ $ make install
 の好きな方を実行．
 
 
-
-####ディレクトリ構造
+#### Gregwar/mongoose-cpp
 ----------------
-* /
-    * bin/
-    * lib/
-    * clammbon/
-    * eval\_movement/
-    * eval\_position/
-    * resolver/
-    * question/
-        * *.ppm
-        * *.ans
-    * makefile
-    * makefile.in
-    * procon2014.sln
+詳しくは，`./eval_server/README.md`を参照．
+なお，本Repositoryのルートにあるパッチを当ててください．
 
-/binにmakeされた実行ファイルが乗る．  
-/libはclammbonディレクトリよりmakeされた.a(.lib)が乗る．  
-/clammbonは共通ヘッダ，もしくは共通ライブラリにすべきものが乗る．  
-/eval\_position/は画像から元画像を求めるアルゴリズムの検証コード置き場  
-/eval\_movement/は並び替えアルゴリズムの検証コード置き場  
-/resolver/は実際に使用するプログラムの開発現場．  
-/question/は問題ファイルとその配置の正解ファイル置き場．拡張子.ansに変えたものが正解配置記録ファイル．  
-
-/clammbon，/eval\_\*，/resolverディレクトリの中には./src，./includeディレクトリがあり，
-それぞれ.cppファイル，.h{,pp}ファイルが入る．
 
