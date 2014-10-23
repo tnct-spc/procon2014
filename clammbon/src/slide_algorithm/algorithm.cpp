@@ -7,7 +7,7 @@
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
 #include <boost/noncopyable.hpp>
-#include "algorithm.hpp"
+#include "slide_algorithm/algorithm.hpp"
 
 // class definition {{{1
 class algorithm::impl : boost::noncopyable
@@ -73,6 +73,10 @@ private:
     int bfs_height;
     int bfs_width;
 };
+
+#if defined(__GNUC__)
+constexpr int algorithm::impl::BFS_MAX_SIZE;
+#endif
 
 // interfaces for pointer to implementation idiom {{{1
 algorithm::algorithm()

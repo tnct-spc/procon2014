@@ -3,7 +3,7 @@ include ../makefile.in
 OUTDIR := ../bin/$(buildtype)
 TARGET = eval_movement
 
-SRCS := src/main.cpp
+SRCS := $(wildcard src/*.cpp)
 PROG := $(OUTDIR)/$(TARGET)
 OBJS := $(SRCS:src/%.cpp=obj/$(buildtype)/%.o)
 DEPS := $(SRCS:src/%.cpp=obj/$(buildtype)/%.d)
@@ -11,7 +11,7 @@ DEPS := $(SRCS:src/%.cpp=obj/$(buildtype)/%.d)
 CXXFLAGS +=
 CPPFLAGS +=
 LDFLAGS  +=
-LIBS     += -lboost_system -lboost_coroutine
+LIBS     +=
 
 .PHONY: all clean distclean
 

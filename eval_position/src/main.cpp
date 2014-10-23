@@ -11,9 +11,9 @@
 #include "ppm_reader.hpp"
 #include "image_comparator.hpp"
 #include "splitter.hpp"
-#include "sort_algorithm/yrange2.hpp"
-#include "sort_algorithm/yrange5.hpp"
-#include "sort_algorithm/Murakami.hpp"
+#include "image_algorithm/yrange2.hpp"
+#include "image_algorithm/yrange5.hpp"
+#include "image_algorithm/Murakami.hpp"
 
 namespace fs = boost::filesystem;
 namespace qi = boost::spirit::qi;

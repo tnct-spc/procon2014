@@ -17,18 +17,18 @@
 #include "image_comparator.hpp"
 #include "ppm_reader.hpp"
 #include "splitter.hpp"
-#include "algorithm.hpp"
-#include "truncater.hpp"
-#include "algorithm_2.hpp"
-#include "charles.hpp"
+#include "slide_algorithm/algorithm.hpp"
+#include "slide_algorithm/algorithm_2.hpp"
+#include "slide_algorithm/truncater.hpp"
+#include "slide_algorithm/charles.hpp"
 #include "gui.hpp"
 #include "network.hpp"
 #include "test_tool.hpp"
 
-#include <sort_algorithm/yrange2.hpp>
-#include <sort_algorithm/yrange5.hpp>
-#include <sort_algorithm/genetic.hpp>
-#include <sort_algorithm/Murakami.hpp>
+#include <image_algorithm/yrange2.hpp>
+#include <image_algorithm/yrange5.hpp>
+#include <image_algorithm/genetic.hpp>
+#include <image_algorithm/Murakami.hpp>
 
 class position_manager : boost::noncopyable
 {
@@ -435,7 +435,7 @@ int main(int const argc, char const* argv[])
 {
     std::string server_addr;
 	int         problemid = 0;
-    auto const  token = "3935105806";
+    auto const  token = "1";//"3935105806";
     bool        is_auto;
     bool        is_blur;
     std::string url_format;

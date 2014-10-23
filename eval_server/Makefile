@@ -3,7 +3,7 @@ include ../makefile.in
 OUTDIR :=../bin/$(buildtype)
 TARGET := pcserver
 
-SRCS := src/answer.cpp src/problem.cpp src/server.cpp src/tools.cpp src/http-mongoose.cpp src/test_tool.cpp
+SRCS := $(wildcard src/*.cpp)
 PROG := $(OUTDIR)/$(TARGET)
 OBJS := $(SRCS:src/%.cpp=obj/$(buildtype)/%.o)
 DEPS := $(SRCS:src/%.cpp=obj/$(buildtype)/%.d)

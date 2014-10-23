@@ -1,7 +1,7 @@
 ﻿#include <iostream>
 #include <fstream>
 #include <random>
-#include "algorithm.hpp"
+#include "slide_algorithm/algorithm.hpp"
 #include "data_type.hpp"
 #include "test_tool.hpp"
 

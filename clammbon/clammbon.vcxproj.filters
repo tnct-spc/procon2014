@@ -16,17 +16,20 @@
     <Filter Include="ソース ファイル\impl">
       <UniqueIdentifier>{a16b8b1f-cdf6-4628-a278-d099e32c1a80}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ソース ファイル\sort_algorithm">
+    <Filter Include="ヘッダー ファイル\image_algorithm">
+      <UniqueIdentifier>{6c6a079a-82af-4a32-acb9-04d66535bf21}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\image_algorithm">
       <UniqueIdentifier>{3a7c30cc-d9a5-4955-8d4d-117cd5971c91}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ヘッダー ファイル\sort_algorithm">
-      <UniqueIdentifier>{6c6a079a-82af-4a32-acb9-04d66535bf21}</UniqueIdentifier>
+    <Filter Include="ソース ファイル\slide_algorithm">
+      <UniqueIdentifier>{5a38df82-5058-4d3a-8b70-e883606ec6e4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\slide_algorithm">
+      <UniqueIdentifier>{e6caae86-1ff6-4843-aeef-2e7a5978ff4b}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\algorithm.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="src\splitter.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
@@ -36,38 +39,41 @@
     <ClCompile Include="src\gui.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\sort_algorithm\adjacent.cpp">
-      <Filter>ソース ファイル\sort_algorithm</Filter>
-    </ClCompile>
-    <ClCompile Include="src\sort_algorithm\yrange2.cpp">
-      <Filter>ソース ファイル\sort_algorithm</Filter>
-    </ClCompile>
-    <ClCompile Include="src\sort_algorithm\genetic.cpp">
-      <Filter>ソース ファイル\sort_algorithm</Filter>
-    </ClCompile>
-    <ClCompile Include="src\sort_algorithm\compare.cpp">
-      <Filter>ソース ファイル\sort_algorithm</Filter>
-    </ClCompile>
     <ClCompile Include="src\test_tool.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="src\network.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\sort_algorithm\yrange5.cpp">
-      <Filter>ソース ファイル\sort_algorithm</Filter>
+    <ClCompile Include="src\image_algorithm\Murakami.cpp">
+      <Filter>ソース ファイル\image_algorithm</Filter>
     </ClCompile>
-    <ClCompile Include="src\sort_algorithm\Murakami.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="src\image_algorithm\yrange2.cpp">
+      <Filter>ソース ファイル\image_algorithm</Filter>
     </ClCompile>
-    <ClCompile Include="src\algorithm_2.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="src\image_algorithm\yrange5.cpp">
+      <Filter>ソース ファイル\image_algorithm</Filter>
     </ClCompile>
-    <ClCompile Include="src\charles.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="src\image_algorithm\adjacent.cpp">
+      <Filter>ソース ファイル\image_algorithm</Filter>
     </ClCompile>
-    <ClCompile Include="src\truncater.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="src\image_algorithm\compare.cpp">
+      <Filter>ソース ファイル\image_algorithm</Filter>
+    </ClCompile>
+    <ClCompile Include="src\image_algorithm\genetic.cpp">
+      <Filter>ソース ファイル\image_algorithm</Filter>
+    </ClCompile>
+    <ClCompile Include="src\slide_algorithm\algorithm.cpp">
+      <Filter>ソース ファイル\slide_algorithm</Filter>
+    </ClCompile>
+    <ClCompile Include="src\slide_algorithm\algorithm_2.cpp">
+      <Filter>ソース ファイル\slide_algorithm</Filter>
+    </ClCompile>
+    <ClCompile Include="src\slide_algorithm\charles.cpp">
+      <Filter>ソース ファイル\slide_algorithm</Filter>
+    </ClCompile>
+    <ClCompile Include="src\slide_algorithm\truncater.cpp">
+      <Filter>ソース ファイル\slide_algorithm</Filter>
     </ClCompile>
     <ClCompile Include="src\image_comparator.cpp">
       <Filter>ソース ファイル</Filter>
@@ -75,9 +81,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\gui.hpp">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="include\algorithm.hpp">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="include\data_type.hpp">
@@ -89,38 +92,41 @@
     <ClInclude Include="include\splitter.hpp">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="include\sort_algorithm\genetic.hpp">
-      <Filter>ヘッダー ファイル\sort_algorithm</Filter>
-    </ClInclude>
-    <ClInclude Include="include\sort_algorithm\yrange2.hpp">
-      <Filter>ヘッダー ファイル\sort_algorithm</Filter>
-    </ClInclude>
-    <ClInclude Include="include\sort_algorithm\adjacent.hpp">
-      <Filter>ヘッダー ファイル\sort_algorithm</Filter>
-    </ClInclude>
-    <ClInclude Include="include\sort_algorithm\compare.hpp">
-      <Filter>ヘッダー ファイル\sort_algorithm</Filter>
-    </ClInclude>
     <ClInclude Include="include\test_tool.hpp">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="include\network.hpp">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="include\sort_algorithm\yrange5.hpp">
-      <Filter>ヘッダー ファイル\sort_algorithm</Filter>
+    <ClInclude Include="include\image_algorithm\adjacent.hpp">
+      <Filter>ヘッダー ファイル\image_algorithm</Filter>
     </ClInclude>
-    <ClInclude Include="include\algorithm_2.hpp">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="include\image_algorithm\compare.hpp">
+      <Filter>ヘッダー ファイル\image_algorithm</Filter>
     </ClInclude>
-    <ClInclude Include="include\sort_algorithm\Murakami.hpp">
-      <Filter>ヘッダー ファイル\sort_algorithm</Filter>
+    <ClInclude Include="include\image_algorithm\genetic.hpp">
+      <Filter>ヘッダー ファイル\image_algorithm</Filter>
     </ClInclude>
-    <ClInclude Include="include\charles.hpp">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="include\image_algorithm\Murakami.hpp">
+      <Filter>ヘッダー ファイル\image_algorithm</Filter>
     </ClInclude>
-    <ClInclude Include="include\truncater.hpp">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="include\image_algorithm\yrange2.hpp">
+      <Filter>ヘッダー ファイル\image_algorithm</Filter>
+    </ClInclude>
+    <ClInclude Include="include\image_algorithm\yrange5.hpp">
+      <Filter>ヘッダー ファイル\image_algorithm</Filter>
+    </ClInclude>
+    <ClInclude Include="include\slide_algorithm\algorithm.hpp">
+      <Filter>ヘッダー ファイル\slide_algorithm</Filter>
+    </ClInclude>
+    <ClInclude Include="include\slide_algorithm\algorithm_2.hpp">
+      <Filter>ヘッダー ファイル\slide_algorithm</Filter>
+    </ClInclude>
+    <ClInclude Include="include\slide_algorithm\charles.hpp">
+      <Filter>ヘッダー ファイル\slide_algorithm</Filter>
+    </ClInclude>
+    <ClInclude Include="include\slide_algorithm\truncater.hpp">
+      <Filter>ヘッダー ファイル\slide_algorithm</Filter>
     </ClInclude>
     <ClInclude Include="include\image_comparator.hpp">
       <Filter>ヘッダー ファイル</Filter>

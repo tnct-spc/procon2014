@@ -3,7 +3,7 @@
 
 #include <boost/optional.hpp>
 #include "data_type.hpp"
-#include "algorithm.hpp"
+#include "slide_algorithm/algorithm.hpp"
 
 class truncater
 {
