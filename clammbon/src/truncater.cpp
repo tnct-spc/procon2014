@@ -7,8 +7,6 @@
 #include <deque>
 #include <random>
 #include <boost/bind.hpp>
-#include <boost/coroutine/all.hpp>
-#include <boost/coroutine/coroutine.hpp>
 #include <boost/function.hpp>
 #include <boost/noncopyable.hpp>
 #include "truncater.hpp"
@@ -36,11 +34,9 @@ public:
     void reset(question_data const& data);
 
 private:
-    void process(boost::coroutines::coroutine<return_type>::push_type& yield);
-    void operator() (boost::coroutines::coroutine<return_type>::push_type& yield);
+    auto process() -> boost::optional<return_type>;
 
     boost::optional<question_data> data_;
-    boost::coroutines::coroutine<return_type>::pull_type co_;
 
     void ymove();
     int form_evaluate(matrix_type const& mat);
@@ -81,27 +77,12 @@ void truncater::reset(question_data const& data)
 
 auto truncater::impl::get() -> boost::optional<return_type>
 {
-    if(co_ && data_)
-    {
-        auto&& result = co_.get();
-        co_();
-        return result;
-    }
-    return boost::none;
+    return this->process();
 }
 
 void truncater::impl::reset(question_data const& data)
 {
     data_ = data.clone();
-    co_   = boost::coroutines::coroutine<return_type>::pull_type(
-            boost::bind(&impl::process, this, _1)
-            );
-}
-
-void truncater::impl::process(boost::coroutines::coroutine<return_type>::push_type& yield)
-{
-    // 訳ありで転送するだけの関数
-    (*this)(yield);
 }
 
 // yoshikawa {{{1
@@ -303,8 +284,8 @@ void truncater::impl::ymove()
     std::cout << "ymove done." << std::endl;
 }
 
-// operator() {{{1
-void truncater::impl::operator() (boost::coroutines::coroutine<return_type>::push_type& yield)
+// process {{{1
+auto truncater::impl::process() -> boost::optional<return_type>
 {
     algorithm algo;
     matrix = data_->block;
@@ -326,5 +307,5 @@ void truncater::impl::operator() (boost::coroutines::coroutine<return_type>::pus
     algo.reset(std::move(qdata));
     answer_type subsequent_answer = *algo.get();
     std::copy(subsequent_answer.list.begin(), subsequent_answer.list.end(), std::back_inserter(answer.list));
-    yield(std::move(answer));
+    return std::move(answer);
 }
