@@ -7,7 +7,7 @@
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
 #include <boost/noncopyable.hpp>
-#include "algorithm.hpp"
+#include "slide_algorithm/algorithm.hpp"
 
 // class definition {{{1
 class algorithm::impl : boost::noncopyable

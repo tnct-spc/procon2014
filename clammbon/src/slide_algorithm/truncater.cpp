@@ -9,7 +9,7 @@
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
 #include <boost/noncopyable.hpp>
-#include "truncater.hpp"
+#include "slide_algorithm/truncater.hpp"
 
 typedef std::vector<std::vector<point_type>> matrix_type;
 struct evaluate_set_type
