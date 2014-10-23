@@ -54,7 +54,7 @@ private:
     int selectable;
 };
 
-// interfaces for Boost.Coroutine {{{1
+// interfaces for pointer to implementation idiom {{{1
 truncater::truncater()
     : pimpl_(new impl())
 {
