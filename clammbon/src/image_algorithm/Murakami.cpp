@@ -9,9 +9,9 @@
 #include <algorithm>
 #include <unordered_map>
 #include <data_type.hpp>
-#include <sort_algorithm/compare.hpp>
-#include <sort_algorithm/adjacent.hpp>
-#include <sort_algorithm/Murakami.hpp>
+#include <image_algorithm/compare.hpp>
+#include <image_algorithm/adjacent.hpp>
+#include <image_algorithm/Murakami.hpp>
 #include <./gui.hpp>
 #include <boost/timer.hpp>
 #include <omp.h>

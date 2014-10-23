@@ -25,10 +25,10 @@
 #include "network.hpp"
 #include "test_tool.hpp"
 
-#include <sort_algorithm/yrange2.hpp>
-#include <sort_algorithm/yrange5.hpp>
-#include <sort_algorithm/genetic.hpp>
-#include <sort_algorithm/Murakami.hpp>
+#include <image_algorithm/yrange2.hpp>
+#include <image_algorithm/yrange5.hpp>
+#include <image_algorithm/genetic.hpp>
+#include <image_algorithm/Murakami.hpp>
 
 class position_manager : boost::noncopyable
 {

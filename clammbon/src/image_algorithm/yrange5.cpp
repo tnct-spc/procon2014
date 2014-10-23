@@ -8,10 +8,10 @@
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
 #include <data_type.hpp>
-#include <sort_algorithm/compare.hpp>
-#include <sort_algorithm/adjacent.hpp>
-#include <sort_algorithm/compare.hpp>
-#include <sort_algorithm/yrange5.hpp>
+#include <image_algorithm/compare.hpp>
+#include <image_algorithm/adjacent.hpp>
+#include <image_algorithm/compare.hpp>
+#include <image_algorithm/yrange5.hpp>
 #include <gui.hpp>
 
 

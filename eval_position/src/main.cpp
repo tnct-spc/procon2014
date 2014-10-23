@@ -9,7 +9,7 @@
 #include <boost/spirit/include/qi.hpp>
 #include "ppm_reader.hpp"
 #include "pixel_sorter.hpp"
-#include "sort_algorithm/yrange2.hpp"
+#include "image_algorithm/yrange2.hpp"
 
 namespace fs = boost::filesystem;
 namespace qi = boost::spirit::qi;
