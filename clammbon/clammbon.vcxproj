@@ -154,6 +154,7 @@
     <ClCompile Include="src\algorithm_2.cpp" />
     <ClCompile Include="src\charles.cpp" />
     <ClCompile Include="src\gui.cpp" />
+    <ClCompile Include="src\image_comparator.cpp" />
     <ClCompile Include="src\network.cpp" />
     <ClCompile Include="src\ppm_reader.cpp" />
     <ClCompile Include="src\sort_algorithm\adjacent.cpp" />
@@ -172,8 +173,8 @@
     <ClInclude Include="include\gui.hpp" />
     <ClInclude Include="include\algorithm.hpp" />
     <ClInclude Include="include\data_type.hpp" />
+    <ClInclude Include="include\image_comparator.hpp" />
     <ClInclude Include="include\network.hpp" />
-    <ClInclude Include="include\pixel_sorter.hpp" />
     <ClInclude Include="include\ppm_reader.hpp" />
     <ClInclude Include="include\sort_algorithm\adjacent.hpp" />
     <ClInclude Include="include\sort_algorithm\compare.hpp" />

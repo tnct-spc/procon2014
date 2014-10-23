@@ -14,7 +14,7 @@
 #include <boost/timer/timer.hpp>
 #include <boost/range/algorithm.hpp>
 #include "data_type.hpp"
-#include "pixel_sorter.hpp"
+#include "image_comparator.hpp"
 #include "ppm_reader.hpp"
 #include "splitter.hpp"
 #include "algorithm.hpp"
@@ -99,8 +99,8 @@ public:
 
         // compare用の画像を作成
         auto const arranged_split = is_blur_ ? sp.split_image_gaussianblur(split_image_) : split_image_;
-        auto const image_comp = sorter_.image_comp(raw_data_, arranged_split);
-		auto const image_comp_dx = sorter_dx.image_comp(raw_data_, arranged_split);
+        auto const image_comp    = comparator_   .image_comp(raw_data_, arranged_split);
+		auto const image_comp_dx = comparator_dx_.image_comp(raw_data_, arranged_split);
 
         // 原画像推測部
         yrange2 yrange2_(raw_data_, image_comp);
@@ -323,8 +323,8 @@ private:
 	split_image_type  split_image_gaussianblur;
 
     mutable boost::shared_ptr<network::client> client_;
-    pixel_sorter<yrange5> sorter_;
-	pixel_sorter<yrange2> sorter_dx;
+    image_comparator    comparator_;
+	image_comparator_dx comparator_dx_;
 
     // 送信用mutex
     mutable boost::timer::cpu_timer timer_;
