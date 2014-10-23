@@ -74,6 +74,8 @@ private:
     int bfs_width;
 };
 
+constexpr int algorithm::impl::BFS_MAX_SIZE;
+
 // interfaces for pointer to implementation idiom {{{1
 algorithm::algorithm()
     : pimpl_(new impl())

@@ -1,7 +1,7 @@
 ﻿#include <iostream>
 #include <string>
 #include <boost/format.hpp>
-#include "algorithm.hpp"
+#include "slide_algorithm/algorithm.hpp"
 #include "data_type.hpp"
 
 int main(int argc, char* argv[])

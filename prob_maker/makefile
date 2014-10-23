@@ -3,7 +3,7 @@ include ../makefile.in
 OUTDIR := ../bin/$(buildtype)
 TARGET = prob_maker
 
-SRCS := src/main.cpp
+SRCS := $(wildcard src/*.cpp)
 PROG := $(OUTDIR)/$(TARGET)
 OBJS := $(SRCS:src/%.cpp=obj/$(buildtype)/%.o)
 DEPS := $(SRCS:src/%.cpp=obj/$(buildtype)/%.d)
