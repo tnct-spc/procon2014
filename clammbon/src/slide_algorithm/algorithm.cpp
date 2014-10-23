@@ -74,7 +74,9 @@ private:
     int bfs_width;
 };
 
+#if defined(__GNUC__)
 constexpr int algorithm::impl::BFS_MAX_SIZE;
+#endif
 
 // interfaces for pointer to implementation idiom {{{1
 algorithm::algorithm()
