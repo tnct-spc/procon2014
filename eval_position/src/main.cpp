@@ -7,9 +7,13 @@
 #include <boost/filesystem/operations.hpp>
 #include <boost/fusion/include/adapt_struct.hpp>
 #include <boost/spirit/include/qi.hpp>
+#include <boost/thread.hpp>
 #include "ppm_reader.hpp"
 #include "image_comparator.hpp"
+#include "splitter.hpp"
 #include "sort_algorithm/yrange2.hpp"
+#include "sort_algorithm/yrange5.hpp"
+#include "sort_algorithm/Murakami.hpp"
 
 namespace fs = boost::filesystem;
 namespace qi = boost::spirit::qi;
@@ -24,7 +28,7 @@ class csv_manager : boost::noncopyable
 {
 public:
     csv_manager(fs::path const& csv_path)
-        : ofs_(csv_path, std::ios_base::binary | std::ios_base::out)
+        : ofs_(csv_path, std::ios_base::binary | std::ios_base::out), all_correct_(0), push_num_(0)
     {
         if(!ofs_.is_open())
         {
@@ -33,28 +37,44 @@ public:
         }
         else
         {
-            ofs_ << "問題セット,解答候補総数,正解総数,不正解総数,正答率\r\n";
+            ofs_ << "問題セット,yrange2[0],yrange5[0],Murakami,正答率\r\n";
         }
         return;
     }
 
-    virtual ~csv_manager() = default;
+    virtual ~csv_manager()
+    {
+        ofs_ << ",,,平均," << ((double)all_correct_ / (push_num_ * 3) * 100) << "%\r\n";
+    }
 
     // ファイルに書き込むわけだが，trueが帰れば正常書き込み
-    bool push(std::string const& identifier, int const total, int const correct)
+    bool push(std::string const& identifier, bool const yrange2, bool const yrange5, bool const murakami)
     {
         // openされてないなら帰れ
         if(!ofs_.is_open()) return false;
 
-        int const failure = total - correct;
-        ofs_ << boost::format("%s,%d,%d,%d,%f%%\r\n")
-            % identifier % total % correct % failure
-            % ((double)correct / total * 100);
+        int correct = 0;
+        if(yrange2 ) ++correct;
+        if(yrange5 ) ++correct;
+        if(murakami) ++correct;
+
+        ofs_ << boost::format("%s,%s,%s,%s,%f%%\r\n")
+            % identifier
+            % (yrange2 ? "○" : "×")
+            % (yrange5 ? "○" : "×")
+            % (murakami ? "○" : "×")
+            % ((double)correct / 3 * 100)
+            ;
+
+        all_correct_ += correct;
+        ++push_num_;
 
         return true;
     }
 
 private:
+    int all_correct_;
+    int push_num_;
     fs::ofstream ofs_;
 };
 
@@ -111,9 +131,10 @@ namespace clammbon{
 
 int main(int argc, char *argv[])
 {
-    ppm_reader reader;
-    pixel_sorter<yrange2> sorter;
-    csv_manager csv("report.csv");
+    ppm_reader       reader;
+    splitter         sp;
+    image_comparator comparator;
+    csv_manager      csv("report.csv");
 
     if(argc != 2)
     {
@@ -146,10 +167,48 @@ int main(int argc, char *argv[])
             continue;
         }
 
-        // 問題を解く
+        //
+        // Start: 問題を解く
+        //
         auto const raw_question = reader.from_file(filepath.string());
-        auto const splitted = splitter().split_image(raw_question);
-        auto const proposed_answers = sorter.proposed_answer(raw_question, splitted); // TODO: sorterはただ1つの解答を返すべき
+        auto const split        = sp.split_image(raw_question);
+        auto const compared     = comparator.image_comp(raw_question, split);
+        
+        // ソルバの準備
+        yrange2  y2(raw_question, compared);
+        yrange5  y5(raw_question, compared);
+        Murakami mu(raw_question, compared, true);
+
+        // ソルバ解答の受け皿
+        std::vector<answer_type_y> ans_yrange2;
+        std::vector<answer_type_y> ans_yrange5;
+        std::vector<answer_type_y> ans_murakami;
+        
+        // yrange2/5の実行
+        boost::thread y_thread(
+            [&y2, &y5, &ans_yrange2, &ans_yrange5]() -> void
+            {
+                ans_yrange2 = y2();
+                ans_yrange5 = y5(y2.sorted_matrix());
+            });
+
+        // Murakamiの実行
+        boost::thread m_thread(
+            [&mu, &ans_murakami]() -> void
+            {
+                ans_murakami = mu();
+            });
+
+        y_thread.join();
+        m_thread.join();
+        
+        //
+        // End: 問題を解く
+        //
+
+        //
+        // 検証
+        //
 
         // 解答ファイルを読み取る
         auto const correct_answer = read_answer(answer_filename, raw_question.split_num.first, raw_question.split_num.second);
@@ -159,13 +218,13 @@ int main(int argc, char *argv[])
             continue;
         }
 
-        // 正しいものの数を数える
-        int correct = 0;
-        for(int i=0; i<proposed_answers.size(); ++i)
-            if(proposed_answers[i].points == *correct_answer)
-                ++correct;
-
-        csv.push(filepath.stem().string(), proposed_answers.size(), correct);
+        // yrange*, Murakamiがそれぞれ正しい答えを持っているかどうか判定
+        csv.push(
+            filepath.stem().string(),
+            !ans_yrange2.empty()  && ans_yrange2[0].points == *correct_answer,
+            !ans_yrange5.empty()  && ans_yrange5[0].points == *correct_answer,
+            !ans_murakami.empty() && ans_murakami[0].points == *correct_answer
+            );
     }
 
     return 0;
