@@ -5,7 +5,7 @@
 #include <random>
 #include <boost/range/algorithm.hpp>
 #include <data_type.hpp>
-#include <sort_algorithm/genetic.hpp>
+#include <image_algorithm/genetic.hpp>
 
 void genetic::shuffle(std::vector<int>& arr) const
 {

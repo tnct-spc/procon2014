@@ -10,7 +10,7 @@
 #include "data_type.hpp"
 #include "splitter.hpp"
 #include "impl/gui_move.ipp"
-#include <sort_algorithm/compare.hpp>
+#include <image_algorithm/compare.hpp>
 
 #include <boost/thread.hpp>
 

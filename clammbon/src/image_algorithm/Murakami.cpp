@@ -9,12 +9,11 @@
 #include <algorithm>
 #include <unordered_map>
 #include <data_type.hpp>
-#include <sort_algorithm/compare.hpp>
-#include <sort_algorithm/adjacent.hpp>
-#include <sort_algorithm/Murakami.hpp>
+#include <image_algorithm/compare.hpp>
+#include <image_algorithm/adjacent.hpp>
+#include <image_algorithm/Murakami.hpp>
 #include <./gui.hpp>
 #include <boost/timer.hpp>
-#include <omp.h>
 Murakami::Murakami(question_raw_data const& data, compared_type const& comp,bool const w_mode)
 	: data_(data), comp_(comp)
 {

@@ -5,11 +5,9 @@
 #include <unordered_map>
 #include <queue>
 #include <boost/bind.hpp>
-#include <boost/coroutine/all.hpp>
-#include <boost/coroutine/coroutine.hpp>
 #include <boost/function.hpp>
 #include <boost/noncopyable.hpp>
-#include "algorithm.hpp"
+#include "slide_algorithm/algorithm.hpp"
 
 // class definition {{{1
 class algorithm::impl : boost::noncopyable
@@ -24,11 +22,9 @@ public:
     void reset(question_data const& data);
 
 private:
-    void process(boost::coroutines::coroutine<return_type>::push_type& yield);
-    void operator() (boost::coroutines::coroutine<return_type>::push_type& yield);
+    auto process() -> boost::optional<return_type>;
 
     boost::optional<question_data> data_;
-    boost::coroutines::coroutine<return_type>::pull_type co_;
 
     const answer_type solve();
     void greedy();
@@ -78,7 +74,11 @@ private:
     int bfs_width;
 };
 
-// interfaces for Boost.Coroutine {{{1
+#if defined(__GNUC__)
+constexpr int algorithm::impl::BFS_MAX_SIZE;
+#endif
+
+// interfaces for pointer to implementation idiom {{{1
 algorithm::algorithm()
     : pimpl_(new impl())
 {
@@ -101,32 +101,17 @@ void algorithm::reset(question_data const& data)
 
 auto algorithm::impl::get() -> boost::optional<return_type>
 {
-    if(co_ && data_)
-    {
-        auto&& result = co_.get();
-        co_();
-        return result;
-    }
-    return boost::none;
+    return this->process();
 }
 
 void algorithm::impl::reset(question_data const& data)
 {
     data_ = data.clone();
-    co_   = boost::coroutines::coroutine<return_type>::pull_type(
-            boost::bind(&impl::process, this, _1)
-            );
-}
-
-void algorithm::impl::process(boost::coroutines::coroutine<return_type>::push_type& yield)
-{
-    // 訳ありで転送するだけの関数
-    (*this)(yield);
 }
 
 // implements {{{1
-// operator() {{{2
-void algorithm::impl::operator() (boost::coroutines::coroutine<return_type>::push_type& yield)
+// process {{{2
+auto algorithm::impl::process() -> boost::optional<return_type>
 {
     //
     // Main Algorithm
@@ -166,7 +151,7 @@ void algorithm::impl::operator() (boost::coroutines::coroutine<return_type>::pus
 #ifdef _DEBUG
     print(matrix);
 #endif
-    yield(solve());
+    return solve();
 }
 
 // move_selecting {{{2

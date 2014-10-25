@@ -2,7 +2,7 @@
 #include <vector>
 #include <string>
 #include <opencv2/opencv.hpp>
-#include <sort_algorithm/compare.hpp>
+#include <image_algorithm/compare.hpp>
 #include <data_type.hpp>
 #include <splitter.hpp>
 
